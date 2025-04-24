@@ -1,0 +1,12 @@
+export * from './HomePage';
+export * from './AcercaDePage';
+export * from './EdicionRegistrosPage';
+// export * from './PersonalQuincenalPage';
+export * from './PagoComplementarioPage';
+export * from './PresupuestoRutasPage';
+export * from './ProveedoresPage';
+export * from './Reports';
+export * from './ReportesPage';
+export * from './RutasPage';
+export * from '../routes/ReportesRoutes';
+export * from './VehiculosPage';

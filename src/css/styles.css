@@ -1,0 +1,100 @@
+
+@import url('https://fonts.googleapis.com/css?family=Numans');
+
+html,body{
+    background-image: url('../../assets/Campo.png');
+    background-size: cover;
+    background-repeat: no-repeat;
+    height: 100%;
+    font-family: 'Numans', sans-serif;
+}
+    
+.container{
+    height: 100%;
+    align-content: center;
+}
+
+#pagesContainer{
+    /* height: 100%;
+    align-content: center;
+    background-color: white; */
+
+    width: 100%;
+    max-width: 1600px; /* Ancho máximo del contenedor externo */
+    margin: 0 auto; /* Centrar el contenedor externo en la página */
+    padding: 20px;
+    background-color: white;
+}
+
+@media (max-width: 768px) {
+    #pagesContainer {
+      padding: 15px;
+    }
+  }
+  
+  @media (max-width: 576px) {
+    #pagesContainer {
+      padding: 10px;
+    }
+  }
+    
+.card{
+    height: auto;
+    margin-top: 150px;
+    margin-bottom: auto;
+    width: 400px;
+    background-color: rgba(0,0,0,0.5) !important;
+}
+    
+.card-header h3{
+    color: white;
+}
+    
+.input-group span{
+    width: 50px;
+    background-color: #081165;
+    color: white;
+    border:1px !important;
+}
+    
+input:focus{
+    outline: 0 0 0 0  !important;
+    box-shadow: 0 0 0 0 !important;
+}
+    
+.remember{
+    color: white;
+}
+    
+.remember input{
+    width: 20px;
+    height: 20px;
+    margin-left: 15px;
+    margin-right: 5px;
+}
+    
+.login_btn{
+    color: white;
+    background-color: #081165;
+    width: 100px;
+}
+    
+.login_btn:hover{
+    color: black;
+    background-color: white;
+}
+
+/* NavBar Styles */
+.text-body-emphasis{
+    align-content: center;
+}
+
+/* Tables styles */
+#containerPagesTable{
+    overflow-y:scroll;
+    max-height: 60vh;
+}
+
+.table tbody tr.highlight td {
+    background-color: #ddd;
+}

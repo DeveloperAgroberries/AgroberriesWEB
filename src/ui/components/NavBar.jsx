@@ -19,7 +19,8 @@ export const NavBar = (props) => {
 		dispatch(startLogout());
 	}
 
-	console.log(user?.permissions)
+	//Lo comento para que no este saliedno todo el tiempo: Ricardo Dimas - 04/05/2025
+	// console.log(user?.permissions)
 
 	return (
 		<nav className="navbar bg-body-tertiary fixed-top" data-bs-theme="dark">
@@ -29,7 +30,7 @@ export const NavBar = (props) => {
 				</NavLink>
 
 				<div className='d-flex'>
-					<h6 className='text-body-emphasis me-4'> Bienvenido** {user?.name} </h6>
+					<h6 className='text-body-emphasis me-4'> Bienvenido {user?.name} </h6>
 					<button className="navbar-toggler" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasNavbar" aria-controls="offcanvasNavbar" aria-label="Toggle navigation">
 						<span className="navbar-toggler-icon"></span>
 					</button>
@@ -114,6 +115,40 @@ export const NavBar = (props) => {
 																Vehiculos
 															</NavLink>
 														</li>
+													)}
+												</ul>
+											</li>
+										</>
+									)}
+
+									{user?.permissions.includes("02350") && (
+										<>
+											<li className="nav-item dropdown">
+												<a className="dropdown-item dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+													Activos Fijos
+												</a>
+												<ul className="dropdown-menu-end">
+
+													{user?.permissions.includes("02351") && (
+														<li className='nav-item'>
+															<NavLink className={({ isActive }) => `rounded-1 dropdown-item ${isActive ? 'active' : ''}`} to="/activos">
+																Catálogo de Activos Fijos
+															</NavLink>
+														</li>
+													)}
+													{user?.permissions.includes("02352") && (
+													<li className='nav-item'>
+														<NavLink className={({ isActive }) => `rounded-1 dropdown-item ${isActive ? 'active' : ''}`} to="/combustibles">
+															Combustibles
+														</NavLink>
+													</li>
+													)}
+													{user?.permissions.includes("02353") && (
+													<li className='nav-item'>
+														<NavLink className={({ isActive }) => `rounded-1 dropdown-item ${isActive ? 'active' : ''}`} to="/catalogoChoferes">
+															Catalogo de Choferes
+														</NavLink>
+													</li>
 													)}
 												</ul>
 											</li>
@@ -295,6 +330,24 @@ export const NavBar = (props) => {
 														</NavLink>
 													</li>
 												)}
+											</ul>
+										</li>
+									)}
+
+									{user?.permissions.includes("02400") && (
+										<li className="nav-item dropdown">
+											<a className="dropdown-item dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+												Combustibles
+											</a>
+											<ul className="dropdown-menu-end">
+												{user?.permissions.includes("02401") && (
+													<li className='nav-item'>
+														<NavLink className={({ isActive }) => `rounded-1 dropdown-item ${isActive ? 'active' : ''}`} to="/reporteCombustibles">
+															Registro de Combustibles
+														</NavLink>
+													</li>
+												)}
+
 											</ul>
 										</li>
 									)}

@@ -1,6 +1,6 @@
 import { Navigate, Route, Routes } from 'react-router-dom';
 import { NavBar } from '../../ui';
-import { HomePage, RutasPage, VehiculosPage, ProveedoresPage, ReportesRoutes, AcercaDePage, PresupuestoRutasPage, EdicionRegistrosPage, PagoComplementarioPage } from '../pages';
+import { HomePage, RutasPage, VehiculosPage, ProveedoresPage, ReportesRoutes, AcercaDePage, PresupuestoRutasPage, EdicionRegistrosPage, PagoComplementarioPage, ActivosPage, CombustiblesPage, ReporteCombustibles, CatalogoChoferesPage } from '../pages';
 
 export const AgroWebRoutes = () => {
 	return (
@@ -18,6 +18,10 @@ export const AgroWebRoutes = () => {
 					<Route path="proveedores" element={<ProveedoresPage/>} />
 					<Route path="reportes/*" element={<ReportesRoutes/>} />
 					<Route path="acercade" element={<AcercaDePage/>} />
+					<Route path="activos" element={<ActivosPage/>} />
+					<Route path="combustibles" element={<CombustiblesPage/>} />
+					<Route path="reporteCombustibles" element={<ReporteCombustibles/>} />
+					<Route path="catalogoChoferes" element={<CatalogoChoferesPage/>} />
 
 					<Route path="/" element={<Navigate to="/home"/>} />
 				</Routes>

@@ -13,6 +13,8 @@ import { phytosanitarySlice } from './slices/phytosanitary/phytosanitarySlice';
 import { diningRoomSlice } from './slices/diningRoom/diningRoomSlice';
 import { routeBudgetSlice, selRouteBudgetSlice } from './slices/routesBudget';
 import { vehicleAccessSlice } from './slices/vehicleAccess/vehicleAccessSlice';
+import { combustiblesSlice } from './slices/combustibles'; // Asegúrate de que la ruta sea correcta
+import { combustibleModSlice } from './slices/combustiblesMod'; // Asegúrate de que la ruta sea correcta
 
 
 export const store = configureStore({
@@ -39,6 +41,8 @@ export const store = configureStore({
 		transportAnalysis: transportAnalysisSlice.reducer,
 		registrosTransporte: registrosTransporteSlice.reducer,
 		transportBaseReport: reporteBaseSlice.reducer,
-		vehicleAccess: vehicleAccessSlice.reducer
+		vehicleAccess: vehicleAccessSlice.reducer,
+		combustibles: combustiblesSlice.reducer,  // Añade esto para el nuevo slice de combustibles
+		combustiblesMod: combustibleModSlice.reducer  // Añade esto para el nuevo slice de combustibles
   	},
 })

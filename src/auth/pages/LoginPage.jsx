@@ -7,10 +7,11 @@ import { startLoginWithUserPassword } from '../../store/auth/thunks';
 import { Loading } from '../../ui/components/Loading';
 import ReCAPTCHA from "react-google-recaptcha";
 import md5 from "md5";
+import logo from '../../../assets/logo.png';
 
 export const LoginPage = () => {
 
-	const logoImageUrl = `/assets/logo.png`;
+	// const logoImageUrl = `/assets/logo.png`;
 
 	const navigate = useNavigate();
 	const dispatch = useDispatch();
@@ -87,7 +88,7 @@ export const LoginPage = () => {
 						<div className="d-flex justify-content-center h-100">
 							<div className="card">
 								<div className="card-header">
-									<img src={logoImageUrl} alt='logo' />
+									<img src={logo} alt='logo' />
 								</div>
 
 								<div className="card-body">

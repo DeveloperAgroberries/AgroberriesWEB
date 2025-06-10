@@ -29,7 +29,11 @@ import {
     VehiculosPorProveedor,
     PagoComplementarioPage,
     HomePage,
-    AcercaDePage
+    AcercaDePage,
+    ActivosPage,
+    CombustiblesPage,
+    ReporteCombustibles,
+    CatalogoChoferesPage
 } from '../agroWeb/pages';
 
 import { ProtectedRoute } from './ProtectedRoute';
@@ -70,7 +74,11 @@ export const AppRouter = () => {
 			{ path: "/reportes/registrostransportes", permission: "02203", component: RegistrosTransportes },
 			{ path: "/reportes/reportebasetransportes", permission: "02204", component: ReporteBaseTransportes },
 			{ path: "/reportes/vehiculosporproveedor", permission: "02205", component: VehiculosPorProveedor },
-			{ path: "/reportes/reportebasecomplementario", permission: "02206", component: ReporteBaseComplementario }
+			{ path: "/reportes/reportebasecomplementario", permission: "02206", component: ReporteBaseComplementario },
+            { path: "/activos", permission: "02351", component: ActivosPage },
+            { path: "/combustibles", permission: "02352", component: CombustiblesPage },
+            { path: "/reporteCombustibles", permission: "02401", component: ReporteCombustibles },
+            { path: "/catalogoChoferes", permission: "02353", component: CatalogoChoferesPage }
 		];
 
         let timer;

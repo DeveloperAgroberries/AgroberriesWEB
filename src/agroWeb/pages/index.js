@@ -10,3 +10,7 @@ export * from './ReportesPage';
 export * from './RutasPage';
 export * from '../routes/ReportesRoutes';
 export * from './VehiculosPage';
+export * from './ActivosPage';
+export * from './CombustiblesPage';
+export * from './ReporteCombustibles';
+export * from './CatalogoChoferesPage';

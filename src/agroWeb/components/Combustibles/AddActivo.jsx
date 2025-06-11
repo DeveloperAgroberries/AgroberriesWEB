@@ -3,7 +3,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { AuthContext } from '../../../auth/context/AuthContext';
 import dayjs from 'dayjs';
 import { useForm } from '../../../hooks';
-import { getActivos, getCode, getProveedor, getDepartamentos, getEmpresas, getLotesActivos, getActividadesFijasActivas, getCamposActivos, startAddNewActivoFijo, uploadPDF } from "../../../store/slices/combustibles";
+import { getActivos, getCode, getProveedor, getDepartamentos, getEmpresas, getLotesActivos, getActividadesFijasActivas, getCamposActivos, startAddNewActivoFijo, uploadPDF, getChoferes } from "../../../store/slices/combustibles";
 import { Modal, Spinner, Button } from 'react-bootstrap'; // Importa los componentes de React Bootstrap para el modal
 import leaf_loader_slow from '../../../../assets/leaf_loader_slow.gif';
 
@@ -21,6 +21,11 @@ export const AddActivo = ({ onClose, subfamilias }) => {
     const empresas = useSelector(state => state.combustibles.empresas);
     const isLoadingEmpresas = useSelector(state => state.combustibles.isLoadingEmpresas);
     const empresasError = useSelector(state => state.combustibles.errorMessageEmpresas);
+    //Choferes
+    const choferes = useSelector(state => state.combustibles.choferes);
+    const isLoadingChoferes = useSelector(state => state.combustibles.isLoadingChoferes);
+    const choferesError = useSelector(state => state.combustibles.errorMessageChoferes);
+    // CÓDIGO ECONÓMICO    
     const [nuevoCodigoActivo, setCodigoActivo] = useState('');
     // PROVEEDORES
     const [searchProveedor, setSearchProveedor] = useState('');
@@ -73,6 +78,7 @@ export const AddActivo = ({ onClose, subfamilias }) => {
         dispatch(getActividadesFijasActivas());
         dispatch(getCamposActivos());
         dispatch(getLotesActivos());
+        dispatch(getChoferes());
     }, [dispatch]);
 
     const handleClose = () => {
@@ -95,16 +101,13 @@ export const AddActivo = ({ onClose, subfamilias }) => {
     };
 
     useEffect(() => {
-        if (codeResponse && codeResponse.cPrefijoAff && codeResponse.cNumeconAfi) {
-            const numeroEconomicoStr = codeResponse.cNumeconAfi.replace(/[^0-9]/g, '');
-            // console.log(numeroEconomicoStr);
-            const numeroEconomico = parseInt(numeroEconomicoStr, 10);
-            // console.log(numeroEconomico);
-            const siguienteNumero = isNaN(numeroEconomico) ? 1 : numeroEconomico + 1; // Ahora incrementamos si es un número válido
-            // console.log(siguienteNumero);
-            const nuevoCodigoActivo = `${codeResponse.cPrefijoAff}-${String(siguienteNumero).padStart(5, '0')}`;
-            // console.log(nuevoCodigoActivo);
-            setCodigoActivo(nuevoCodigoActivo);
+        // console.log('Valor de codeResponse en useEffect:', codeResponse);
+        // *** ¡ESTE ES EL ACCESO CORRECTO! ***
+        // codeResponse es DIRECTAMENTE el array, así que accedemos con .[0]
+        const nuevoNumeroEconomico = codeResponse?.[0]?.nuevoNumEco;
+        if (nuevoNumeroEconomico) {
+            // console.log('Código económico obtenido:', nuevoNumeroEconomico);
+            setCodigoActivo(nuevoNumeroEconomico);
         } else {
             setCodigoActivo('');
         }
@@ -207,8 +210,8 @@ export const AddActivo = ({ onClose, subfamilias }) => {
         vNombreAfi,
         cCodigoAff,
         cCodigoDep,
-        cCodcliPrv,
         cCodigoAfc,
+        cCodcliPrv,
         cCodigoPrv,
         cCodigoFac,
         dAltaAfi,
@@ -260,8 +263,8 @@ export const AddActivo = ({ onClose, subfamilias }) => {
         vNombreAfi: '',
         cCodigoAff: '',
         cCodigoDep: '',
-        cCodcliPrv: '',
         cCodigoAfc: '',
+        cCodcliPrv: '',
         cCodigoPrv: '',
         cCodigoFac: '',
         dAltaAfi: '',
@@ -314,6 +317,7 @@ export const AddActivo = ({ onClose, subfamilias }) => {
             !vNombreAfi ||
             !subfamiliaSeleccionada.nombre ||
             !cCodigoDep ||
+            // !cCodigoAfc ||
             !cCodigoEmp ||
             // !cCodigoFac ||
             // !dFacturaAfi ||
@@ -338,6 +342,7 @@ export const AddActivo = ({ onClose, subfamilias }) => {
                 { value: vNombreAfi, name: 'Nombre' },
                 { value: subfamiliaSeleccionada.nombre, name: 'Subfamilia' },
                 { value: cCodigoDep, name: 'Departamento' },
+                { value: cCodigoAfc, name: 'Chofer' },
                 { value: cCodigoEmp, name: 'Propietario' },
                 { value: cTipodepreciaAfi, name: 'Tipo de Depreciación' },
                 { value: vMarcaAfi, name: 'Marca' },
@@ -375,7 +380,7 @@ export const AddActivo = ({ onClose, subfamilias }) => {
                 cCodigoAff: subfamiliaSeleccionada.codigo || '',
                 cCodigoDep: cCodigoDep || '',
                 cCodcliPrv: cCodcliPrv || '',
-                cCodigoAfc: '', // No hay correspondencia directa en el formulario actual
+                cCodigoAfc: cCodigoAfc || '',
                 cCodigoPrv: codigoProveedorSeleccionado || '', // No hay correspondencia directa en el formulario actual
                 cCodigoFac: cCodigoFac || '',
                 dAltaAfi: dAltaAfi ? dayjs(dAltaAfi).format("YYYY-MM-DDTHH:mm:ss") : null,
@@ -507,8 +512,8 @@ export const AddActivo = ({ onClose, subfamilias }) => {
                     }`
                 }
             </style>
-            <div className="popup-container" style={{ fontSize: '12px'}}>
-                <div className="rounded-4 popup" style={{ maxHeight: '60vh', overflowY: 'auto', backgroundColor: '#fafafa'  }}>
+            <div className="popup-container" style={{ fontSize: '12px' }}>
+                <div className="rounded-4 popup" style={{ maxHeight: '60vh', overflowY: 'auto', backgroundColor: '#fafafa' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px' }}>
                         <h2>Agregar Activo Fijo</h2>
                         <button className='btn btn-danger rounded-2' onClick={handleClose}>X</button>
@@ -516,19 +521,27 @@ export const AddActivo = ({ onClose, subfamilias }) => {
                     <div className='container'>
                         <form>
                             <div className="mb-3 row">
-                                <div className="col-md-6">
+                                <div className="col-md-3">
                                     <label className="form-label">N° Económico *</label>
-                                    <input
-                                        type="text"
-                                        className="form-control"
-                                        name='cNumeconAfi'
-                                        readOnly
-                                        value={nuevoCodigoActivo} // Conecta el estado al valor del input
-                                    />
+                                    <input type="text" className="form-control" name='cNumeconAfi' value={nuevoCodigoActivo} style={{fontSize: '12px'}} readOnly disabled/>
                                 </div>
-                                <div className="col-md-6">
-                                    <label className="form-label">Nombre *</label>
-                                    <input required type="text" className="form-control" name='vNombreAfi' value={vNombreAfi} onChange={onInputChange} />
+                                <div className="col-md-5">
+                                    <label className="form-label">Nombre de Activo Fijo *</label>
+                                    <input required type="text" className="form-control" name='vNombreAfi' value={vNombreAfi} onChange={onInputChange} style={{fontSize: '12px'}}/>
+                                </div>
+                                <div className="col-md-4"> {/* Aumentamos el ancho para dar más espacio */}
+                                    <label className="form-label">Chofer</label>
+                                    <select className="form-select" name='cCodigoAfc' value={cCodigoAfc} onChange={onInputChange} style={{fontSize: '12px'}}>
+                                        <option hidden value="">Seleccionar chofer</option>
+                                        {isLoadingChoferes && <option disabled>Cargando choferes...</option>}
+                                        {choferesError && <option disabled className="text-danger">Error al cargar choferes</option>}
+                                        {choferes.length == 0 && <option disabled className="text-danger">No hay choferes activos</option>}
+                                        {choferes && choferes.map(choferes => (
+                                            <option key={choferes.cCodigoAfc} value={choferes.cCodigoAfc}>
+                                                {choferes.vNombreAfc}
+                                            </option>
+                                        ))}
+                                    </select>
                                 </div>
                                 {/* El codigo se necesita oculto ya que se va generar de manera automática al momento de guardar AF */}
                                 {/* <div className="col-md-6" hidden>
@@ -537,15 +550,10 @@ export const AddActivo = ({ onClose, subfamilias }) => {
                             </div> */}
                             </div>
 
-                            <div className="mb-3 row align-items-center"> {/* Añadimos align-items-center para alinear verticalmente */}
+                            <div className="mb-3 row align-items-center" style={{marginTop: '-1%'}}> {/* Añadimos align-items-center para alinear verticalmente */}
                                 <div className="col-md-3"> {/* Aumentamos el ancho para dar más espacio */}
                                     <label className="form-label">SubFamilia *</label>
-                                    <select
-                                        className="form-select"
-                                        name='cCodigoAff'
-                                        onChange={handleSubfamiliaChange}
-                                        value={subfamiliaSeleccionada.cCodigoAff}
-                                    >
+                                    <select className="form-select" name='cCodigoAff' onChange={handleSubfamiliaChange} value={subfamiliaSeleccionada.cCodigoAff} style={{fontSize: '12px'}}>
                                         <option hidden value="">Seleccionar</option>
                                         {subfamilias && subfamilias.map(subfamilia => (
                                             <option key={subfamilia.cCodigoAff} value={subfamilia.cCodigoAff}>
@@ -556,7 +564,7 @@ export const AddActivo = ({ onClose, subfamilias }) => {
                                 </div>
                                 <div className="col-md-3"> {/* Aumentamos el ancho para dar más espacio */}
                                     <label className="form-label">Departamento *</label>
-                                    <select className="form-select" name='cCodigoDep' value={cCodigoDep} onChange={onInputChange}>
+                                    <select className="form-select" name='cCodigoDep' value={cCodigoDep} onChange={onInputChange} style={{fontSize: '12px'}}>
                                         <option hidden value="">Seleccionar</option>
                                         {isLoadingDepartamentos && <option disabled>Cargando departamentos...</option>}
                                         {departamentosError && <option disabled className="text-danger">Error al cargar departamentos</option>}
@@ -569,7 +577,7 @@ export const AddActivo = ({ onClose, subfamilias }) => {
                                 </div>
                                 <div className="col-md-3"> {/* Aumentamos el ancho para dar más espacio */}
                                     <label className="form-label">Propietario *</label>
-                                    <select required className="form-select" name='cCodigoEmp' value={cCodigoEmp} onChange={onInputChange}>
+                                    <select required className="form-select" name='cCodigoEmp' value={cCodigoEmp} onChange={onInputChange} style={{fontSize: '12px'}}>
                                         <option hidden value="">Seleccionar</option>
                                         {esEmpresa ? (
                                             isLoadingEmpresas ? (
@@ -587,16 +595,11 @@ export const AddActivo = ({ onClose, subfamilias }) => {
                                             <option disabled>Marcar empresa si AF pertenece a Agroberries MX</option>
                                         )}
                                     </select>
-                                    <div className="form-text">Marcar empresa para habilitar opciones.</div>
+                                    {/* <div className="form-text">Marcar empresa para habilitar opciones.</div> */}
                                 </div>
                                 <div className="col-md-3 d-flex align-items-center"> {/* Usamos d-flex y align-items-center para alinear el checkbox y la etiqueta */}
                                     <div className="mb-3 form-check m-0"> {/* Eliminamos el margen inferior del div interno */}
-                                        <input
-                                            type="checkbox"
-                                            className="form-check-input"
-                                            id="empresa"
-                                            name='cEsempresaAfi'
-                                            checked={esEmpresa}
+                                        <input type="checkbox" className="form-check-input" id="empresa" name='cEsempresaAfi' checked={esEmpresa}
                                             onChange={(e) => {
                                                 setEsEmpresa(e.target.checked);
                                                 setPropietarioSeleccionado('');
@@ -613,13 +616,7 @@ export const AddActivo = ({ onClose, subfamilias }) => {
                                 <label className="form-label" style={{ background: '#00d581', color: '#FFFFFF', fontSize: '20px', fontWeight: 'bold', width: '100%', marginBottom: '1%', paddingLeft: '10px' }}>
                                     Proveedor
                                 </label>
-                                <input
-                                    type="text"
-                                    className="form-control"
-                                    placeholder="Buscar nombre proveedor..."
-                                    value={searchProveedor}
-                                    onChange={handleSearchProveedorChange}
-                                />
+                                <input type="text" className="form-control" placeholder="Buscar nombre proveedor..." value={searchProveedor} onChange={handleSearchProveedorChange} style={{fontSize: '12px'}}/>
                                 {isLoadingProveedor && <div className="form-text">Buscando proveedores...</div>}
                                 {mostrarListaProveedores && searchResultsProveedor.length > 0 && (
                                     <ul className="list-group mt-2" style={{ maxHeight: '150px', overflowY: 'auto', cursor: 'pointer' }}>
@@ -642,22 +639,11 @@ export const AddActivo = ({ onClose, subfamilias }) => {
                                 <div className="mb-3 row">
                                     <div className="col-md-6">
                                         <label className="form-label">Código Proveedor</label>
-                                        <input
-                                            type="text"
-                                            className="form-control"
-                                            name='cCodcliPrv'
-                                            value={codigoProveedorSeleccionado}
-                                            readOnly
-                                        />
+                                        <input type="text" className="form-control" name='cCodcliPrv' value={codigoProveedorSeleccionado} style={{fontSize: '12px'}} readOnly disabled/>
                                     </div>
                                     <div className="col-md-6">
                                         <label className="form-label">Nombre Proveedor</label>
-                                        <input
-                                            type="text"
-                                            className="form-control"
-                                            value={nombreProveedorSeleccionado}
-                                            readOnly
-                                        />
+                                        <input type="text" className="form-control" value={nombreProveedorSeleccionado} style={{fontSize: '12px'}} readOnly disabled/>
                                     </div>
                                 </div>
                             )}
@@ -669,17 +655,17 @@ export const AddActivo = ({ onClose, subfamilias }) => {
                             <div className="mb-3 row">
                                 <div className="col-md-6">
                                     <label className="form-label">Nº Factura</label>
-                                    <input type="text" className="form-control" name='cCodigoFac' value={cCodigoFac} onChange={onInputChange} />
+                                    <input type="text" className="form-control" name='cCodigoFac' value={cCodigoFac} onChange={onInputChange} style={{fontSize: '12px'}}/>
                                 </div>
                                 <div className="col-md-6">
                                     <label className="form-label">F. Factura</label>
-                                    <input type="date" className="form-control" name='dFacturaAfi' value={dFacturaAfi} onChange={onInputChange} />
+                                    <input type="date" className="form-control" name='dFacturaAfi' value={dFacturaAfi} onChange={onInputChange} style={{fontSize: '12px'}}/>
                                 </div>
                             </div>
                             <div className="mb-3 row">
                                 <div className="col-md-6">
                                     <label className="form-label">Importe Acumulado Ext.</label>
-                                    <input type="number" className="form-control" min="0" onKeyDown={(e) => {
+                                    <input type="number" className="form-control" min="0" style={{fontSize: '12px'}} onKeyDown={(e) => {
                                         if (!/[0-9]/.test(e.key) && e.key !== 'Backspace' && e.key !== 'Delete' && e.key !== 'ArrowLeft' && e.key !== 'ArrowRight' && e.key !== 'Tab' && e.key !== '.') {
                                             e.preventDefault();
                                         }
@@ -693,39 +679,33 @@ export const AddActivo = ({ onClose, subfamilias }) => {
                                 </div>
                                 <div className="col-md-6">
                                     <label className="form-label">F. Alta *</label>
-                                    <input required type="date" className="form-control" name='dAltaAfi' value={dAltaAfi} onChange={onInputChange} />
+                                    <input required type="date" className="form-control" name='dAltaAfi' value={dAltaAfi} onChange={onInputChange} style={{fontSize: '12px'}}/>
                                 </div>
                             </div>
 
                             <label className="form-label" style={{ background: '#00d581', color: '#FFFFFF', fontSize: '20px', fontWeight: 'bold', width: '100%', marginBottom: '1%', paddingLeft: '10px' }}>
-                                Depreciación y datos de AF
+                                Depreciación y datos de Activo Fijo
                             </label>
                             <div className="mb-3 row">
                                 <div className="col-md-6">
                                     <label className="form-label">Nº Meses Depreciación</label>
-                                    <input
-                                        required
-                                        type="number"
-                                        className="form-control"
-                                        aria-describedby="emailHelp"
-                                        min="0"
-                                        step="1"
-                                        name='nMesesdepAfi'
-                                        value={mesesDep} // Ahora está controlado por el estado
+                                    <input required type="number" className="form-control" aria-describedby="emailHelp" min="0" step="1" 
+                                        name='nMesesdepAfi'value={mesesDep} // Ahora está controlado por el estado
                                         onChange={handleInputChange} // Actualiza el estado al cambiar
                                         onKeyDown={(e) => checkChar(e)}
                                         onPaste={onPaste}
+                                        style={{fontSize: '12px'}}
                                     />
                                 </div>
                                 <div className="col-md-6">
-                                    <label className="form-label">F. Depreciación</label>
-                                    <input type="date" className="form-control" name='dIniciadepreciaAfi' value={dIniciadepreciaAfi} onChange={onInputChange} />
+                                    <label className="form-label">Fecha Inicial de Depreciación</label>
+                                    <input type="date" className="form-control" name='dIniciadepreciaAfi' value={dIniciadepreciaAfi} onChange={onInputChange} style={{fontSize: '12px'}}/>
                                 </div>
                             </div>
                             <div className="mb-3 row">
                                 <div className="col-md-6">
                                     <label className="form-label">Tipo Depreciación *</label>
-                                    <select className="form-select" name='cTipodepreciaAfi' value={cTipodepreciaAfi} onChange={onInputChange}>
+                                    <select className="form-select" name='cTipodepreciaAfi' value={cTipodepreciaAfi} onChange={onInputChange} style={{fontSize: '12px'}}>
                                         <option hidden value="">Seleccionar</option>
                                         <option value="1">Normal</option>
                                         <option value="2">Acelerada</option>
@@ -733,7 +713,7 @@ export const AddActivo = ({ onClose, subfamilias }) => {
                                 </div>
                                 <div className="col-md-6">
                                     <label className="form-label">Precio Compra</label>
-                                    <input required type="number" className="form-control" min="0" onKeyDown={(e) => {
+                                    <input required type="number" className="form-control" min="0" style={{fontSize: '12px'}} onKeyDown={(e) => {
                                         if (!/[0-9]/.test(e.key) && e.key !== 'Backspace' && e.key !== 'Delete' && e.key !== 'ArrowLeft' && e.key !== 'ArrowRight' && e.key !== 'Tab' && e.key !== '.') {
                                             e.preventDefault();
                                         }
@@ -750,22 +730,22 @@ export const AddActivo = ({ onClose, subfamilias }) => {
                             <div className="mb-3 row">
                                 <div className="col-md-6">
                                     <label className="form-label">Marca *</label>
-                                    <input type="text" className="form-control" name='vMarcaAfi' value={vMarcaAfi} onChange={onInputChange} />
+                                    <input type="text" className="form-control" name='vMarcaAfi' value={vMarcaAfi} onChange={onInputChange} style={{fontSize: '12px'}}/>
                                 </div>
                                 <div className="col-md-6">
                                     <label className="form-label">Modelo *</label>
-                                    <input type="text" className="form-control" name='vModeloAfi' value={vModeloAfi} onChange={onInputChange} />
+                                    <input type="text" className="form-control" name='vModeloAfi' value={vModeloAfi} onChange={onInputChange} style={{fontSize: '12px'}}/>
                                 </div>
                             </div>
 
                             <div className="mb-3 row">
                                 <div className="col-md-6">
                                     <label className="form-label">Nº Serie *</label>
-                                    <input type="text" className="form-control" name='vNumserieAfi' value={vNumserieAfi} onChange={onInputChange} />
+                                    <input type="text" className="form-control" name='vNumserieAfi' value={vNumserieAfi} onChange={onInputChange} style={{fontSize: '12px'}}/>
                                 </div>
                                 <div className="col-md-6">
                                     <label className="form-label">Placas</label>
-                                    <input required type="text" className="form-control" name='vPlacasAfi' value={vPlacasAfi} onChange={onInputChange} />
+                                    <input required type="text" className="form-control" name='vPlacasAfi' value={vPlacasAfi} onChange={onInputChange} style={{fontSize: '12px'}}/>
                                     <div className="form-text">Evitar el caracter "-" al ingresar las placas del vehiculo.</div>
                                 </div>
                             </div>
@@ -786,6 +766,7 @@ export const AddActivo = ({ onClose, subfamilias }) => {
                                                 handleSelectLote(loteSeleccionado);
                                             }
                                         }}
+                                        style={{fontSize: '12px'}}
                                     >
                                         <option hidden value="">Seleccionar</option>
                                         {isLoadingLote && <option disabled>Cargando lotes...</option>}
@@ -827,65 +808,32 @@ export const AddActivo = ({ onClose, subfamilias }) => {
                                 <div className="mb-3 row">
                                     <div className="col-md-2"> {/* Ajustamos el ancho de cada columna */}
                                         <label className="form-label">Código Lote</label>
-                                        <input
-                                            type="text"
-                                            className="form-control"
-                                            name='cCodigoLot'
-                                            value={codigoLoteSeleccionado}
-                                            readOnly
-                                        />
+                                        <input type="text" className="form-control" name='cCodigoLot' value={codigoLoteSeleccionado} style={{fontSize: '12px'}} readOnly disabled/>
                                     </div>
                                     <div className="col-md-3">
                                         <label className="form-label">Nombre Lote</label>
-                                        <input
-                                            type="text"
-                                            className="form-control"
-                                            value={nombreLoteSeleccionado}
-                                            readOnly
-                                        />
+                                        <input type="text" className="form-control" value={nombreLoteSeleccionado} style={{fontSize: '12px'}} readOnly disabled/>
                                     </div>
                                     <div className="col-md-2">
                                         <label className="form-label">Código Cultivo</label>
-                                        <input
-                                            type="text"
-                                            className="form-control"
-                                            name='cCodigoCul'
-                                            value={codigoCultivoSeleccionado}
-                                            readOnly
-                                        />
+                                        <input type="text" className="form-control" name='cCodigoCul' value={codigoCultivoSeleccionado} style={{fontSize: '12px'}} readOnly disabled/>
                                     </div>
                                     <div className="col-md-5">
                                         <label className="form-label">Nombre Cultivo</label>
-                                        <input
-                                            type="text"
-                                            className="form-control"
-                                            value={nombreCultivoSeleccionado}
-                                            readOnly
-                                        />
+                                        <input type="text" className="form-control" value={nombreCultivoSeleccionado} style={{fontSize: '12px'}} readOnly disabled/>
                                     </div>
                                     <div className="mb-3 row" style={{ marginTop: '1%' }}>
                                         <div className="col-md-2">
                                             <label className="form-label">Código Campo</label>
-                                            <input
-                                                type="text"
-                                                className="form-control"
-                                                name='cCodigoCam'
-                                                value={codigoCampoSeleccionado}
-                                                readOnly
-                                            />
+                                            <input type="text" className="form-control" name='cCodigoCam' value={codigoCampoSeleccionado} style={{fontSize: '12px'}} readOnly disabled/>
                                         </div>
                                         <div className="col-md-5">
                                             <label className="form-label">Nombre Campo</label>
-                                            <input
-                                                type="text"
-                                                className="form-control"
-                                                value={nombreCampoSeleccionado}
-                                                readOnly
-                                            />
+                                            <input type="text" className="form-control" value={nombreCampoSeleccionado} style={{fontSize: '12px'}} readOnly disabled/>
                                         </div>
                                         <div className="col-md-5"> {/* Aumentamos el ancho para dar más espacio */}
                                             <label className="form-label">Actividad *</label>
-                                            <select className="form-select" name='cCodigoAct' value={cCodigoAct} onChange={onInputChange}>
+                                            <select className="form-select" name='cCodigoAct' value={cCodigoAct} onChange={onInputChange} style={{fontSize: '12px'}}>
                                                 <option hidden value="">Seleccionar</option>
                                                 {isLoadingActividades && <option disabled>Cargando actividades...</option>}
                                                 {actividadesError && <option disabled className="text-danger">Error al cargar actividades</option>}
@@ -916,7 +864,7 @@ export const AddActivo = ({ onClose, subfamilias }) => {
                         </div> */}
                             <div className="mb-3">
                                 <label className="form-label">Observación</label>
-                                <textarea className="form-control" name='vObservacionAfi' value={vObservacionAfi} onChange={onInputChange} maxLength={250}></textarea>
+                                <textarea className="form-control" name='vObservacionAfi' value={vObservacionAfi} onChange={onInputChange} maxLength={250} style={{fontSize: '12px'}}></textarea>
                                 <div className="form-text">Máximo 250 caracteres.</div>
                             </div>
 
@@ -927,38 +875,19 @@ export const AddActivo = ({ onClose, subfamilias }) => {
                                 <div className="row align-items-center"> {/* Usamos 'row' para controlar el layout horizontal */}
                                     <div className="col-md-auto"> {/* 'col-md-auto' ajusta el ancho al contenido */}
                                         <div className="form-check m-0 me-3">
-                                            <input
-                                                type="checkbox"
-                                                className="form-check-input"
-                                                id="noDepreciar"
-                                                checked={noDepreciar}
-                                                onChange={(e) => setNoDepreciar(e.target.checked)}
-                                                value={noDepreciar ? 1 : 0}
-                                            />
+                                            <input type="checkbox" className="form-check-input" id="noDepreciar" checked={noDepreciar} onChange={(e) => setNoDepreciar(e.target.checked)} value={noDepreciar ? 1 : 0}/>
                                             <label className="form-check-label" htmlFor="noDepreciar">No depreciar</label>
                                         </div>
                                     </div>
                                     <div className="col-md-auto"> {/* 'col-md-auto' ajusta el ancho al contenido */}
                                         <div className="form-check m-0 me-3">
-                                            <input
-                                                type="checkbox"
-                                                className="form-check-input"
-                                                id="operativo"
-                                                checked={operativo}
-                                                onChange={(e) => setOperativo(e.target.checked)}
-                                                value={operativo ? 1 : 0}
-                                            />
+                                            <input type="checkbox" className="form-check-input" id="operativo" checked={operativo} onChange={(e) => setOperativo(e.target.checked)} value={operativo ? 1 : 0}/>
                                             <label className="form-check-label" htmlFor="operativo">Operativo</label>
                                         </div>
                                     </div>
                                     <div className="col-md-6">
                                         <label htmlFor="archivoFactura" className="form-label me-2">Archivo Factura:</label>
-                                        <input
-                                            type="file"
-                                            className="form-control"
-                                            id="archivoFactura"
-                                            onChange={handleArchivoChange} // Asocia la función para guardar el archivo
-                                        />
+                                        <input type="file" className="form-control" id="archivoFactura" onChange={handleArchivoChange} style={{fontSize: '12px'}}/>
                                     </div>
                                 </div>
                             </div>
@@ -984,11 +913,7 @@ export const AddActivo = ({ onClose, subfamilias }) => {
             <Modal show={isLoadingGuardado} centered>
                 <Modal.Body className="text-center">
                     {/* <Spinner animation="border" role="status" className="mb-2" /> */}
-                    <img
-                        src={leaf_loader_slow}
-                        alt="Cargando..."
-                        style={{ width: '64px', height: '64px' }}
-                    />
+                    <img src={leaf_loader_slow} alt="Cargando..." style={{ width: '64px', height: '64px' }}/>
                     <p>Guardando activo fijo...</p>
                 </Modal.Body>
             </Modal>

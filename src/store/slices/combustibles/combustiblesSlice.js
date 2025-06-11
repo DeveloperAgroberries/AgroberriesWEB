@@ -15,9 +15,11 @@ export const combustiblesSlice = createSlice({
         proveedores: [],
         isLoadingProveedores: false,
         errorMessageProveedores: null,
+
         empresas: [],
         isLoadingEmpresas: false,
         errorMessageEmpresas: null,
+
         departamentos: [],
         isLoadingDepartamentos: false,
         errorMessageDepartamentos: null,
@@ -31,7 +33,11 @@ export const combustiblesSlice = createSlice({
         activosCampos: [],
         isLoadingCamposActivos: false,
         errorMessageCamposActivos: null,
-        activoF: []
+        activoF: [],
+        //List choferes
+        isLoadingChoferes: false,
+        errorMessageChoferes: null,
+        choferes: []
     },
     reducers: {
         checkingIsLoading: (state) => {
@@ -167,6 +173,22 @@ export const combustiblesSlice = createSlice({
             state.errorMessageCamposActivos = action.payload;
             state.activosCampos = [];
         },
+
+        checkingIsLoadingChoferes: (state) => {
+            state.isLoadingChoferes = true;
+            state.choferes = [];
+            state.errorMessageChoferes = null;
+        },
+        setChoferes: (state, action) => {
+            state.isLoadingChoferes = false;
+            state.choferes = action.payload;
+            state.errorMessageChoferes = null;
+        },
+        setErrorChoferes: (state, action) => {
+            state.isLoadingChoferes = false;
+            state.errorMessageChoferes = action.payload;
+            state.choferes = [];
+        },
         // ********************
     },
 });
@@ -199,7 +221,11 @@ export const {
     setErrorLotesActivos,
     addNewActivoFijo, //insert activo
     setCamposActivos,
-    setErrorCamposActivos //CAMPOS
-} = combustiblesSlice.actions; //CAMPOS
+    setErrorCamposActivos, //CAMPOS
+    //Choferes
+    checkingIsLoadingChoferes,
+    setChoferes,
+    setErrorChoferes
+} = combustiblesSlice.actions;
 
 export default combustiblesSlice.reducer;

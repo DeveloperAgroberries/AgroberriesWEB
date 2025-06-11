@@ -97,21 +97,25 @@ export const ActivosPage = () => {
             width: '220px',
         },
         {
-            name: 'Factura',
+            name: (
+                <div style={{ width: '100%', textAlign: 'center' }}>
+                    <span className="factura-header">
+                        Factura
+                    </span>
+                </div>
+            ),
             cell: row => {
                 const facturaDisponible = row.cRutafactAfi != null && row.cRutafactAfi !== '';
                 return (
-                    facturaDisponible ? (
-                        <a
-                            href={baseURL + '/CombustiblesApp/facturas/' + row.cRutafactAfi}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                        >
-                            Ver Factura
-                        </a>
-                    ) : (
-                        'N/D'
-                    )
+                    <div style={{ width: '100%', textAlign: 'center' }}>
+                        {facturaDisponible ? (
+                            <a href={baseURL + '/CombustiblesApp/facturas/' + row.cRutafactAfi} target="_blank" rel="noopener noreferrer">
+                                <i className="fas fa-file-pdf fa-lg" style={{ color: '#d22500' }}></i>
+                            </a>
+                        ) : (
+                            'N/D'
+                        )}
+                    </div>
                 );
             },
             sortable: false, // La columna de la factura no necesita ser ordenable
@@ -132,7 +136,7 @@ export const ActivosPage = () => {
                     />
                 </div>
             ),
-            width: '100px',
+            width: '50px',
             sortable: true,
         },
         {
@@ -151,7 +155,7 @@ export const ActivosPage = () => {
                     />
                 </div>
             ),
-            width: '100px',
+            width: '50px',
             sortable: true,
         }
         // {
@@ -186,7 +190,7 @@ export const ActivosPage = () => {
 
     //FUNCION PARA BUSQUEDA POR NOMBRE EN TABLE
     const handleChange = (e) => {
-        console.log(e.target.value)
+        // console.log(e.target.value)
         const filterRecords = activosData.filter(record => {
             return record.vNombreAfi.toLowerCase().includes(e.target.value.toLowerCase())
         })
@@ -245,20 +249,20 @@ export const ActivosPage = () => {
                 <div className="rounded-3" style={{ background: '#198754', color: 'white', fontSize: '35px', textAlign: 'center' }}>
                     <strong>Activos Fijos</strong>
                 </div>
-                
+
                 <div className="d-flex justify-content-between align-items-center mt-3" style={{ marginBottom: '1%' }}>
                     <p className="m-0">Consulta y registro de Activos Fijos.</p>
                     {/* Input de búsqueda */}
                     <input
-                    type="text"
-                    className="form-control"
-                    id="miInput"
-                    onChange={handleChange}
-                    placeholder="Busqueda por nombre..."
-                    style={{ width: '300px' }} 
-                />
+                        type="text"
+                        className="form-control"
+                        id="miInput"
+                        onChange={handleChange}
+                        placeholder="Busqueda por nombre..."
+                        style={{ width: '300px' }}
+                    />
                 </div>
-                
+
                 {/* CODIGO DE FRANK */}
                 {/* <div className="container-fluid overflow-auto" id="containerPagesTable">
                     <table className="table table-bordered table-dark table-striped-columns table-hover" >
@@ -294,7 +298,7 @@ export const ActivosPage = () => {
                         //     selectAllRowsItem: 'Todos',
                         //     selectAllRowsItemText: 'Mostrar Todos',
                         // }}
-                        onSelectedRowsChange={data => console.log(data)}
+                        // onSelectedRowsChange={data => console.log(data)} mostrar datos seleccionados de la tabla
                         fixedHeader
                         progressPending={!initialLoadComplete}
                         progressComponent={

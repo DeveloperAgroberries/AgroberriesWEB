@@ -28,7 +28,11 @@ import {
     setErrorLotesActivos,
     addNewActivoFijo,
     setCamposActivos,
-    setErrorCamposActivos
+    setErrorCamposActivos,
+    //Choferes
+    checkingIsLoadingChoferes,
+    setChoferes,
+    setErrorChoferes
 } from './combustiblesSlice';
 
 
@@ -287,6 +291,23 @@ export const uploadPDF = (formData) => {
                 payload: 'Error al subir el archivo.'
             });
             return { success: false, error: 'Error al subir el archivo.' }; // Devuelve un objeto de error
+        }
+    };
+};
+
+export const getChoferes = () => {
+    return async (dispatch) => {
+        dispatch(checkingIsLoadingChoferes()); 
+        try {
+            const { data } = await activosApi.get('/ListChoferes');
+            if (data && data.response) {
+                dispatch(setChoferes(data.response));
+            } else {
+                dispatch(setErrorChoferes("No se recibieron datos de choferes"));
+            }
+        } catch (error) {
+            console.error("Error al cargar los choferes:", error);
+            dispatch(setErrorChoferes(error.message || 'Error desconocido al cargar choferes'));
         }
     };
 };

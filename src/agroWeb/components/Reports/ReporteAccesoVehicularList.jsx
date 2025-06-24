@@ -3,6 +3,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { getVehicleAccessRecords } from '../../../store/slices/vehicleAccess/thunks';
 import { Alert, Spinner } from 'react-bootstrap';
 import dayjs from 'dayjs';
+import leaf_loader_slow from '../../../../assets/leaf_loader_slow.gif';
 
 export const ReporteAccesoVehicularList = ({ isSearchTriggered }) => {
 	const dispatch = useDispatch();
@@ -18,32 +19,40 @@ export const ReporteAccesoVehicularList = ({ isSearchTriggered }) => {
 	}
 
 	useEffect(() => {
-		if(isSearchTriggered){
+		if (isSearchTriggered) {
 			dispatch(getVehicleAccessRecords(vehicleAccessFilters));
 		}
 	}, [isSearchTriggered, dispatch]);
 
 	if (isLoadingVehicleAccessFilters) {
-        return(
-            <tr>
-                <td colSpan="10" className="text-center">
-                    <Spinner animation="border" /> Cargando datos...
-                </td>
-            </tr>
-        );
-    }
+		return (
+			<tr>
+				<td colSpan="10" className="text-center">
+					{/* <Spinner animation="border" /> Cargando datos... */}
+					<div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', height: '100px' }}>
+						<img
+							src={leaf_loader_slow}
+							alt="Cargando..."
+							style={{ width: '64px', height: '64px' }}
+						/>
+					</div>
+					<h4>Cargando...</h4>
+				</td>
+			</tr>
+		);
+	}
 
 	if (errorVehicleAccessFilters) {
-        return (
-            <tr>
-                <td colSpan="10" className="text-center">
-                    <Alert variant="danger">
-                        {errorVehicleAccessFilters ? `Error al cargar datos: ${errorVehicleAccessFilters}` : `Error al cargar complementarios: ${errorVehicleAccessFilters}`}
-                    </Alert>
-                </td>
-            </tr>
-        );
-    }
+		return (
+			<tr>
+				<td colSpan="10" className="text-center">
+					<Alert variant="danger">
+						{errorVehicleAccessFilters ? `Error al cargar datos: ${errorVehicleAccessFilters}` : `Error al cargar complementarios: ${errorVehicleAccessFilters}`}
+					</Alert>
+				</td>
+			</tr>
+		);
+	}
 
 	return (
 		<>
@@ -62,7 +71,7 @@ export const ReporteAccesoVehicularList = ({ isSearchTriggered }) => {
 						<td scope="col">{onlyHour(report.dHrsalidaInv)}</td>
 					</tr>
 				))
-			):(
+			) : (
 				<tr>
 					<td colSpan="10" className="text-center">
 						No hay datos disponibles.

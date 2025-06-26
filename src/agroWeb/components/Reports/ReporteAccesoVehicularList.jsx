@@ -59,16 +59,16 @@ export const ReporteAccesoVehicularList = ({ isSearchTriggered }) => {
 			{reports.length > 0 ? (
 				reports.map((report, index) => (
 					<tr key={index + 1}>
-						<td scope="col">{index + 1}</td>
-						<td scope="col">{onlyDate(report.dIngresoInv)}</td>
-						<td scope="col">{report.vNombrechofInv}</td>
-						<td scope="col">{report.vAcompanianteInv}</td>
-						<td scope="col">{report.vEmpresaInv}</td>
-						<td scope="col">{report.cPlacaInv}</td>
-						<td scope="col">{report.vMotivoInv}</td>
-						<td scope="col">{report.vNombreCam}</td>
-						<td scope="col">{onlyHour(report.dHringresoInv)}</td>
-						<td scope="col">{onlyHour(report.dHrsalidaInv)}</td>
+						<td className="text-center">{index + 1}</td>
+						<td>{onlyDate(report.dIngresoInv)}</td>
+						<td style={{paddingLeft: "10px"}}>{report.vNombrechofInv}</td>
+						<td>{report.vAcompanianteInv}</td>
+						<td>{report.vEmpresaInv}</td>
+						<td>{report.cPlacaInv}</td>
+						<td>{report.vMotivoInv}</td>
+						<td>{report.vNombreCam}</td>
+						<td>{onlyHour(report.dHringresoInv)}</td>
+						<td>{onlyHour(report.dHrsalidaInv)}</td>
 					</tr>
 				))
 			) : (

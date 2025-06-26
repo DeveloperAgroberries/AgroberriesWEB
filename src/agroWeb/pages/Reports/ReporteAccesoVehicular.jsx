@@ -62,12 +62,28 @@ export const ReporteAccesoVehicular = () => {
 
 	return (
 		<>
+			<style type="text/css">
+				{`
+                    .table_AC tbody tr:hover {
+                        background-color: #d19ff9;
+                        cursor: pointer;
+                    }
+                     .data-table-container { /* Nuevo estilo para el contenedor de la tabla */
+                        height: 500px; /* Establece la altura deseada */
+                        overflow-y: auto; /* Agrega scroll vertical si el contenido excede la altura */
+                    }
+					/* HACER BORDES MUY OBVIOS para depuración */
+					.table_AC tbody td { 
+            			border-bottom: 1px solid #cfcfcf !important; /* Borde inferior para cada fila */
+					}   
+                `}
+			</style>
 			<hr />
 			<hr />
 			<hr />
 
 			<div id="pagesContainer" className="container-fluid h rounded-3 p-3 mt-5 animate__animated animate__fadeIn">
-				<div className="rounded-3" style={{ background: '#198754', color: 'white', fontSize: '35px', textAlign: 'center' }}>
+				<div className="rounded-3" style={{ background: '#7c30b8', color: 'white', fontSize: '35px', textAlign: 'center' }}>
 					<strong>Reporte de Acceso Vehicular</strong>
 				</div>
 				<div className="container-fluid overflow-auto m-2" style={{ display: "flex" }}>
@@ -83,29 +99,36 @@ export const ReporteAccesoVehicular = () => {
 
 
 					<div className="mt-2">
-						<button className="btn btn-success rounded-2 m-1 mt-4 " onClick={handleSearchRAV} disabled={!isValidForSearch}>Buscar</button>
+						<button className="btn btn-warning rounded-2 m-1 mt-4 " onClick={handleSearchRAV} disabled={!isValidForSearch}>Buscar</button>
 					</div>
 
 					<div className="mt-2">
-						<button className="btn btn-dark rounded-2 m-1 mt-4" onClick={cleanFilters} >Limpiar Filtros</button>
+						<button className="btn btn-secondary rounded-2 m-1 mt-4" onClick={cleanFilters} >Limpiar Filtros</button>
 					</div>
 				</div>
 
-
 				<div className="table-responsive" style={{ maxHeight: '400px', overflowY: 'auto' }}>
-					<table className='table table-striped table-hover' style={{ fontSize: '14px', borderCollapse: 'separate', borderSpacing: '0px', tableLayout: 'fixed', width: '100%', height: '10px' }} ref={tableRef}>
+					<table className='table_AC table-striped' style={{ fontSize: '14px', borderCollapse: 'separate', borderSpacing: '0px', tableLayout: 'auto', width: '100%' }} ref={tableRef}>
 						<thead style={{ position: 'sticky', top: '0', zIndex: '1' }}>
 							<tr>
-								<th scope="col" style={{ background: '#198754', color: 'white', padding: '5px', borderRight: '1px solid #ffffff', borderTopLeftRadius: '10px' }}>No.</th>
-								<th scope="col" style={{ background: '#198754', color: 'white', padding: '5px', borderRight: '1px solid #ffffff' }}>Fecha de ingreso</th>
-								<th scope="col" style={{ background: '#198754', color: 'white', padding: '5px', borderRight: '1px solid #ffffff' }}>Nombre Chofer</th>
-								<th scope="col" style={{ background: '#198754', color: 'white', padding: '5px', borderRight: '1px solid #ffffff' }}>Acompañante</th>
-								<th scope="col" style={{ background: '#198754', color: 'white', padding: '5px', borderRight: '1px solid #ffffff' }}>Empresa</th>
-								<th scope="col" style={{ background: '#198754', color: 'white', padding: '5px', borderRight: '1px solid #ffffff' }}>Placa</th>
-								<th scope="col" style={{ background: '#198754', color: 'white', padding: '5px', borderRight: '1px solid #ffffff' }}>Motivo de visita</th>
-								<th scope="col" style={{ background: '#198754', color: 'white', padding: '5px', borderRight: '1px solid #ffffff' }}>Rancho</th>
-								<th scope="col" style={{ background: '#198754', color: 'white', padding: '5px', borderRight: '1px solid #ffffff' }}>Hora de ingreso</th>
-								<th cope="col" style={{ background: '#198754', color: 'white', padding: '5px', borderRight: '1px solid #ffffff', borderTopRightRadius: '10px' }}>Hora de salida</th>
+								<th scope="col" style={{ background: '#7c30b8', color: 'white', padding: '5px', borderRight: '1px solid #ffffff', borderTopLeftRadius: '10px' }}>No.</th>
+								<th scope="col" style={{ background: '#7c30b8', color: 'white', padding: '5px', borderRight: '1px solid #ffffff' }}>F. Ingreso</th>
+								<th scope="col" style={{ background: '#7c30b8', color: 'white', padding: '5px', borderRight: '1px solid #ffffff' }}>Nombre Chofer</th>
+								<th scope="col" style={{ background: '#7c30b8', color: 'white', padding: '5px', borderRight: '1px solid #ffffff' }}>Acompañante</th>
+								<th scope="col" style={{ background: '#7c30b8', color: 'white', padding: '5px', borderRight: '1px solid #ffffff' }}>Empresa</th>
+								<th scope="col" style={{ background: '#7c30b8', color: 'white', padding: '5px', borderRight: '1px solid #ffffff' }}>Placa</th>
+								<th scope="col" style={{ background: '#7c30b8', color: 'white', padding: '5px', borderRight: '1px solid #ffffff' }}>Motivo de visita</th>
+								<th scope="col" style={{ background: '#7c30b8', color: 'white', padding: '5px', borderRight: '1px solid #ffffff' }}>Rancho</th>
+								<th scope="col" style={{ background: '#7c30b8', color: 'white', padding: '5px', borderRight: '1px solid #ffffff' }}>
+									<OverlayTrigger placement="right" overlay=<Tooltip id="tooltip">Hora de ingreso</Tooltip>>
+										<a><i class="fas fa-clock fa-lg"></i> I</a>
+									</OverlayTrigger>
+								</th>
+								<th cope="col" style={{ background: '#7c30b8', color: 'white', padding: '5px', borderRight: '1px solid #ffffff', borderTopRightRadius: '10px' }}>
+									<OverlayTrigger placement="right" overlay=<Tooltip id="tooltip">Hora de salida</Tooltip>>
+										<a><i class="fas fa-clock fa-lg"></i> S</a>
+									</OverlayTrigger>
+								</th>
 							</tr>
 						</thead>
 						<tbody>
@@ -135,12 +158,14 @@ export const ReporteAccesoVehicular = () => {
     	            </table>
     	        </div> */}
 
-				<div style={{ marginTop:"1%"}}>
+				<div style={{ marginTop: "1%" }}>
 					<DownloadTableExcel
 						filename="Tabla de Registros"
 						sheet="Registros"
 						currentTableRef={tableRef.current}>
-						<button className="btn btn-success rounded-2 m-1 mt-2">Exportar a Excel </button>
+						<OverlayTrigger placement="right" overlay=<Tooltip id="tooltip">Exportar a Excel</Tooltip>>
+							<button className="btn btn-success rounded-2 m-1 mt-2"><i className="fas fa-file-excel fa-lg"></i></button>
+						</OverlayTrigger>
 					</DownloadTableExcel>
 				</div>
 			</div>

@@ -325,7 +325,7 @@ export const ListNominaCampo = ({ isSearchTriggered }) => {
 								</div>
 
 								<div className="mb-2 me-3">
-									<div><label className="form-label m-1">Departamento</label></div>
+									<div><label className="form-label m-1">Lote</label></div>
 									<div>
 										<select className="form-select" name="Lote" value={codigoLoteSeleccionado}
 											onChange={(e) => {
@@ -335,7 +335,7 @@ export const ListNominaCampo = ({ isSearchTriggered }) => {
 													handleSelectLote(loteSeleccionado);
 												}
 											}}>
-											{loadDepart ? (<option value="">Cargando Departamentos...</option>) : errorDepart ? (<option value="">Error al cargar...</option>) : (<option value="">Selecciona Departamento</option>)}
+											{loadDepart ? (<option value="">Cargando Lote...</option>) : errorDepart ? (<option value="">Error al cargar...</option>) : (<option value="">Selecciona Lote</option>)}
 											{filterDep.map((depart) => (
 												<option key={depart.codigoLote} value={depart.codigoLote}>
 													{depart.codigoLote} - {depart.nombreLote}

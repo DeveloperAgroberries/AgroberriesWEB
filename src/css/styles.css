@@ -29,7 +29,7 @@ html, body {
     background-color: white; */
 
     width: 100%;
-    max-width: 1600px; /* Ancho máximo del contenedor externo */
+    max-width: 95%; /* Ancho máximo del contenedor externo */
     margin: 0 auto; /* Centrar el contenedor externo en la página */
     padding: 20px;
     background-color: white;

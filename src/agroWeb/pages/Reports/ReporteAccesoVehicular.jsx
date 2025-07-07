@@ -45,6 +45,8 @@ export const ReporteAccesoVehicular = () => {
 			endDate: filters.selectedDate2.trim(),
 		};
 
+		console.log(filterRAV);
+
 		dispatch(resetVehicleAccessFilters());
 		dispatch(setVehicleAccessFilters({ vehicleAccessFilters: filterRAV }));
 		dispatch(checkingIsLoadingVehicleAccessSlice());
@@ -121,12 +123,12 @@ export const ReporteAccesoVehicular = () => {
 								<th scope="col" style={{ background: '#7c30b8', color: 'white', padding: '5px', borderRight: '1px solid #ffffff' }}>Rancho</th>
 								<th scope="col" style={{ background: '#7c30b8', color: 'white', padding: '5px', borderRight: '1px solid #ffffff' }}>
 									<OverlayTrigger placement="right" overlay=<Tooltip id="tooltip">Hora de ingreso</Tooltip>>
-										<a><i class="fas fa-clock fa-lg"></i> I</a>
+										<a><i className="fas fa-clock fa-lg"></i> I</a>
 									</OverlayTrigger>
 								</th>
 								<th cope="col" style={{ background: '#7c30b8', color: 'white', padding: '5px', borderRight: '1px solid #ffffff', borderTopRightRadius: '10px' }}>
 									<OverlayTrigger placement="right" overlay=<Tooltip id="tooltip">Hora de salida</Tooltip>>
-										<a><i class="fas fa-clock fa-lg"></i> S</a>
+										<a><i className="fas fa-clock fa-lg"></i> S</a>
 									</OverlayTrigger>
 								</th>
 							</tr>

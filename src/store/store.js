@@ -15,6 +15,7 @@ import { routeBudgetSlice, selRouteBudgetSlice } from './slices/routesBudget';
 import { vehicleAccessSlice } from './slices/vehicleAccess/vehicleAccessSlice';
 import { combustiblesSlice } from './slices/combustibles'; // Asegúrate de que la ruta sea correcta
 import { combustibleModSlice } from './slices/combustiblesMod'; // Asegúrate de que la ruta sea correcta
+import { nominaCampoSlice, selNominaSlice } from './slices/nominaCampo'; // Asegúrate de que la ruta sea correcta
 
 
 export const store = configureStore({
@@ -43,6 +44,8 @@ export const store = configureStore({
 		transportBaseReport: reporteBaseSlice.reducer,
 		vehicleAccess: vehicleAccessSlice.reducer,
 		combustibles: combustiblesSlice.reducer,  // Añade esto para el nuevo slice de combustibles
-		combustiblesMod: combustibleModSlice.reducer  // Añade esto para el nuevo slice de combustibles
+		combustiblesMod: combustibleModSlice.reducer,  // Añade esto para el nuevo slice de combustibles
+		registrosNomina: nominaCampoSlice.reducer,  // Añade esto para el nuevo slice de registrosNomina
+		selNomina: selNominaSlice.reducer
   	},
 })

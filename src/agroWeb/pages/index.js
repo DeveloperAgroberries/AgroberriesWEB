@@ -14,3 +14,4 @@ export * from './ActivosPage';
 export * from './CombustiblesPage';
 export * from './ReporteCombustibles';
 export * from './CatalogoChoferesPage';
+export * from './NominaPage';

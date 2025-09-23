@@ -37,7 +37,11 @@ export const combustiblesSlice = createSlice({
         //List choferes
         isLoadingChoferes: false,
         errorMessageChoferes: null,
-        choferes: []
+        choferes: [],
+
+        //EMPLEADOS
+        errorMessageEmpleados: null,
+        empleados: []
     },
     reducers: {
         checkingIsLoading: (state) => {
@@ -158,10 +162,10 @@ export const combustiblesSlice = createSlice({
         },
         //ADD ACTIVO FIJO
         addNewActivoFijo: (state, action) => {
-			state.activoF.push(action.payload.activoF);
-			state.isLoading = false;
-			state.errorMessage = action.payload?.errorMessage || null;
-		},
+            state.activoF.push(action.payload.activoF);
+            state.isLoading = false;
+            state.errorMessage = action.payload?.errorMessage || null;
+        },
         //CAMPOS ************
         setCamposActivos: (state, action) => {
             state.isLoadingCamposActivos = false;
@@ -189,7 +193,39 @@ export const combustiblesSlice = createSlice({
             state.errorMessageChoferes = action.payload;
             state.choferes = [];
         },
+
+        setEmpleados: (state, action) => {
+            state.isLoading = false;
+            state.empleados = action.payload;
+            state.errorMessageEmpleados = null;
+        },
+        setErrorEmpleados: (state, action) => {
+            state.isLoading = false;
+            state.errorMessageEmpleados = action.payload;
+            state.empleados = [];
+        },
         // ********************
+        //Editar Activo
+        updateActivo: (state, action) => {
+            const updatedFields = action.payload.activo;
+            state.combustibles = state.combustibles.map(item =>
+                item.cNumeconAfi === updatedFields.cNumeconAfi
+                    ? { ...item, ...updatedFields } // Fusiona los campos antiguos con los nuevos
+                    : item
+            );
+            state.isLoading = false;
+        },
+
+        //Editar Extras TI
+        updateExtras: (state, action) => {
+            const updatedFields = action.payload.activo;
+            state.combustibles = state.combustibles.map(item =>
+                item.cNumeconAfi === updatedFields.cNumeconAfi
+                    ? { ...item, ...updatedFields } // Fusiona los campos antiguos con los nuevos
+                    : item
+            );
+            state.isLoading = false;
+        },
     },
 });
 
@@ -225,7 +261,12 @@ export const {
     //Choferes
     checkingIsLoadingChoferes,
     setChoferes,
-    setErrorChoferes
+    setErrorChoferes,
+    //Editar Activo
+    updateActivo,
+    updateExtras
+    //empleados
+    , setEmpleados, setErrorEmpleados
 } = combustiblesSlice.actions;
 
 export default combustiblesSlice.reducer;

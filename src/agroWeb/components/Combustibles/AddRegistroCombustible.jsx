@@ -113,7 +113,7 @@ export const AddRegistroCombustible = ({ onClose, isModalOpen }) => {
     // Si searchActivo es un objeto (y no está vacío), lo seleccionamos
     if (typeof searchActivo === 'object' && searchActivo !== null && Object.keys(searchActivo).length > 0) {
       setSelectedActivo(searchActivo);
-      setNombreActivoSeleccionado(`${searchActivo.vNombreAfi}`.trim());
+      setNombreActivoSeleccionado(`${searchActivo.nombreAfi}`.trim());
       setMostrarListaActivo(false); // Ocultar la lista
       setMostrarDetallesActivo(true); // Mostrar el input del nombre
     } else if (searchActivo.length >= 5) {
@@ -128,8 +128,8 @@ export const AddRegistroCombustible = ({ onClose, isModalOpen }) => {
   }, [searchActivo]); // Depende solo de searchActivo
   const handleSelectActivo = (activo) => {
     setSelectedActivo(activo);
-    setNombreActivoSeleccionado(`${searchActivo.vNombreAfi}`.trim());
-    setSearchActivo(activo.cNumeconAfi.trim()); // Mostrar el código en el input de búsqueda
+    setNombreActivoSeleccionado(`${searchActivo.nombreAfi}`.trim());
+    setSearchActivo(activo.numecon.trim()); // Mostrar el código en el input de búsqueda
     setMostrarListaActivo(false);
     setMostrarDetallesActivo(true); // Mostrar el input del nombre
   };
@@ -266,12 +266,12 @@ export const AddRegistroCombustible = ({ onClose, isModalOpen }) => {
         {mostrarListaActivo && typeof searchActivo === 'object' && searchActivo !== null && Object.keys(searchActivo).length > 0 && (
           <ul className="list-group mt-2" style={{ maxHeight: '150px', overflowY: 'auto', cursor: 'pointer' }}>
             <li
-              key={searchActivo.cNumeconAfi}
+              key={searchActivo.numecon}
               className="list-group-item list-group-item-action"
               onClick={() => handleSelectActivo(searchActivo)}
             >
-              {searchActivo.vNombreAfi}
-              <small className="text-muted"> - Código {searchActivo.cNumeconAfi.trim()}</small>
+              {searchActivo.nombreAfi}
+              <small className="text-muted"> - Código {searchActivo.numecon.trim()}</small>
             </li>
           </ul>
         )}
@@ -280,12 +280,12 @@ export const AddRegistroCombustible = ({ onClose, isModalOpen }) => {
           <ul className="list-group mt-2" style={{ maxHeight: '150px', overflowY: 'auto', cursor: 'pointer' }}>
             {searchActivo.map(activo => (
               <li
-                key={activo.cNumeconAfi}
+                key={activo.numecon}
                 className="list-group-item list-group-item-action"
                 onClick={() => handleSelectActivo(activo)}
               >
-                {activo.vNombreAfi}
-                <small className="text-muted"> - Código {activo.cNumeconAfi.trim()}</small>
+                {activo.nombreAfi}
+                <small className="text-muted"> - Código {activo.numecon.trim()}</small>
               </li>
             ))}
           </ul>

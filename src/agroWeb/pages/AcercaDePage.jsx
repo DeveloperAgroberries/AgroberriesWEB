@@ -20,7 +20,7 @@ export const AcercaDePage = () => {
                 <div className="text-center mt-5">
                     <p>En caso de requerir apoyo favor de enviar un correo con su solicitud y/o informe a:</p>
                     <h5>aorozco@agroberries.mx</h5>
-                    <h5>fcastellanos@agroberries.mx</h5>
+                    <h5>programador@agroberries.mx</h5>
                     <h5>auxsistemas@agroberries.mx</h5>
                 </div>
                 

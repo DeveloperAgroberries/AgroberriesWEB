@@ -1,5 +1,5 @@
 import { activosApi } from "../../../api/combustiblesApi";
-import { addActivoF } from "../../../sqlserver/activosF";
+import { addActivoF, modActivo, modExtras } from "../../../sqlserver/activosF";
 import {
     checkingIsLoading,
     setActivos,
@@ -32,7 +32,11 @@ import {
     //Choferes
     checkingIsLoadingChoferes,
     setChoferes,
-    setErrorChoferes
+    setErrorChoferes,
+    //Editar Activo
+    updateActivo,
+    setEmpleados,
+    setErrorEmpleados,
 } from './combustiblesSlice';
 
 
@@ -264,6 +268,23 @@ export const startAddNewActivoFijo = (afData) => {
     };
   };
 
+//INSERTAR ACTIVO EXTRAS TI
+export const startExtrasTI = (extrasTIObject) => {
+    return async (dispatch) => {
+        dispatch(checkingIsLoading());
+        try {
+            const { data } = await activosApi.post('/insertExtrasTI', extrasTIObject); 
+            console.log('Respuesta del servidor:', data);
+            return true;
+            
+        } catch (error) {
+            // 4. Maneja cualquier error.
+            console.error("Error al insertar extras TI:", error);
+            dispatch(setError(error.message || 'Error desconocido al insertar extras TI'));
+        }
+    };
+};
+
 //Guardar PDF en el servidor
 export const uploadPDF = (formData) => {
     return async (dispatch) => { // Recibe dispatch y formData como argumento
@@ -308,6 +329,100 @@ export const getChoferes = () => {
         } catch (error) {
             console.error("Error al cargar los choferes:", error);
             dispatch(setErrorChoferes(error.message || 'Error desconocido al cargar choferes'));
+        }
+    };
+};
+
+export const startUpdateActivo = (activo) => {
+    // console.log('Llegue al thunk con: '+JSON.stringify(activo, null, 2));
+    //return
+    return async(dispatch) => {
+        dispatch(checkingIsLoading());
+
+        const result = await modActivo(activo);
+
+        if (!result.ok) {
+            dispatch({ 
+                type: 'UPDATE_ROUTE_ERROR', 
+                payload: result.errorMessage 
+            });
+            return false;
+        } 
+
+        // Despacha la acción con los datos actualizados
+        dispatch(updateActivo({activo}));
+        return true;
+    };
+};
+
+//Modificar Extras TI
+export const modificarExtras = (extrasTIObject) => {
+    //console.log('Llegue al thunk con: '+JSON.stringify(extrasTIObject, null, 2));
+    //return
+    return async(dispatch) => {
+        dispatch(checkingIsLoading());
+
+        const result = await modExtras(extrasTIObject);
+
+        if (!result.ok) {
+            dispatch({ 
+                type: 'UPDATE_ROUTE_ERROR', 
+                payload: result.errorMessage 
+            });
+            return false;
+        } 
+
+        // Despacha la acción con los datos actualizados
+        //dispatch(updateExtras({extrasTIObject}));
+        return true;
+    };
+};
+
+export const getEmpleados = () => {
+    return async (dispatch) => {
+        dispatch(checkingIsLoading()); 
+        try {
+            const { data } = await activosApi.get('/ListEmpleados');
+            if (data && data.response) {
+                dispatch(setEmpleados(data.response));
+            } else {
+                dispatch(setErrorEmpleados("No se recibieron datos de empleados"));
+            }
+        } catch (error) {
+            console.error("Error al cargar los empleados:", error);
+            dispatch(setErrorEmpleados(error.message || 'Error desconocido al cargar chofempleadoseres'));
+        }
+    };
+};
+
+//Guardar PDF en el servidor
+export const uploadResponsiva = (formData, numecon) => { // ✅ Aceptar numecon como argumento
+    return async (dispatch) => {
+        try {
+            // ✅ Modificar la URL para incluir el numecon
+            const uploadResponse = await activosApi.post(`/uploadResponsiva/${numecon}`, formData, { 
+                headers: {
+                    'Content-Type': 'multipart/form-data'
+                }
+            });
+            if (uploadResponse.status === 200) {
+                console.log(uploadResponse.data?.filename);
+                return { success: true, ruta: uploadResponse.data?.filename };
+            } else {
+                console.error('Error al subir el archivo:', uploadResponse);
+                dispatch({
+                    type: 'ADD_AF_ERROR',
+                    payload: 'Error al subir el archivo.'
+                });
+                return { success: false, error: 'Error al subir el archivo.' };
+            }
+        } catch (error) {
+            console.error('Error al subir el archivo:', error);
+            dispatch({
+                type: 'ADD_AF_ERROR',
+                payload: 'Error al subir el archivo.'
+            });
+            return { success: false, error: 'Error al subir el archivo.' };
         }
     };
 };

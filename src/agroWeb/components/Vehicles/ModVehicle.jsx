@@ -73,7 +73,7 @@ export const ModVehicle = ({ onClose }) => {
 				cActivoVeh: active ? '1' : '0',
 				cCapacidadVeh: capacity,
 				vTipoVeh: vehicleType.toUpperCase(),
-				cControlPrv: parseInt(provider.trim()),
+				cControlPrv: parseInt(provider),
 				cCodigoUsu: selVehicles.cCodigoUsu,
 				cUsumodVeh: user?.id,
 				dModifiVeh: dayjs(date).format("YYYY-MM-DDTHH:mm:ss")

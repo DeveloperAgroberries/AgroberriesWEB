@@ -34,7 +34,8 @@ import {
     CombustiblesPage,
     ReporteCombustibles,
     CatalogoChoferesPage,
-    NominaPage
+    NominaPage,
+    RindeGastosPage
 } from '../agroWeb/pages';
 
 import { ProtectedRoute } from './ProtectedRoute';
@@ -80,7 +81,8 @@ export const AppRouter = () => {
             { path: "/combustibles", permission: "02352", component: CombustiblesPage },
             { path: "/reporteCombustibles", permission: "02401", component: ReporteCombustibles },
             { path: "/catalogoChoferes", permission: "02353", component: CatalogoChoferesPage },
-            { path: "/nomina", permission: "02451", component: NominaPage }
+            { path: "/nomina", permission: "02451", component: NominaPage },
+            { path: "/rindeGastos", permission: "02400", component: RindeGastosPage }
 		];
 
         let timer;

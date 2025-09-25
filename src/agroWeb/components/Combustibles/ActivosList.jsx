@@ -119,7 +119,8 @@ export const ActivosList = () => { // Ya no recibe openAddActivo como prop si so
 		vUsrrdAti: item.vUsrrdAti?.trim(),
 		vPwdremotoAti: item.vPwdremotoAti?.trim(),
 		vComentariosAti: item.vComentariosAti?.trim(),
-		vDocresponsivaAti: item.vDocresponsivaAti?.trim()
+		vDocresponsivaAti: item.vDocresponsivaAti?.trim(),
+		vDepartamentoAti: item.vDepartamentoAti?.trim()
 	}));
 
 	return {

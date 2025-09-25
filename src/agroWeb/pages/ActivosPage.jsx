@@ -487,6 +487,14 @@ export const ActivosPage = () => {
                                     </Form.Group>)}
                                 </Col>
                             </Row>
+                            <Row className="mb-3">
+                                <Col md={3}>
+                                    <Form.Group controlId="vDepartamentoAti">
+                                        <Form.Label>Departamento</Form.Label>
+                                        <Form.Control style={{ fontSize: '0.7rem' }} type="text" name="vDepartamentoAti" value={formDataExtras.vDepartamentoAti} onChange={handleInputChangeExtras} />
+                                    </Form.Group>
+                                </Col>
+                            </Row>
 
                             {/* ////////////////////////////////////////////////////////////////////////////// */}
                             <label className="form-label" style={{ background: '#9b9b9bff', color: '#FFFFFF', fontSize: '20px', fontWeight: 'bold', width: '100%', marginBottom: '1%', paddingLeft: '10px' }}>
@@ -512,19 +520,19 @@ export const ActivosPage = () => {
                                 <Col md={2}>
                                     <Form.Group controlId="vSerieAti">
                                         <Form.Label>Numero de Serie</Form.Label>
-                                        <Form.Control style={{ fontSize: '0.7rem' }} type="text" name="vSerieAti" value={formDataExtras.vSerieAti} onChange={handleInputChangeExtras} disabled={true}/>
+                                        <Form.Control style={{ fontSize: '0.7rem' }} type="text" name="vSerieAti" value={formDataExtras.vSerieAti} onChange={handleInputChangeExtras} disabled={true} />
                                     </Form.Group>
                                 </Col>
                                 <Col md={2}>
                                     <Form.Group controlId="vModeloAti">
                                         <Form.Label>Modelo</Form.Label>
-                                        <Form.Control style={{ fontSize: '0.7rem' }} type="text" name="vModeloAti" value={formDataExtras.vModeloAti} onChange={handleInputChangeExtras} disabled={true}/>
+                                        <Form.Control style={{ fontSize: '0.7rem' }} type="text" name="vModeloAti" value={formDataExtras.vModeloAti} onChange={handleInputChangeExtras} disabled={true} />
                                     </Form.Group>
                                 </Col>
                                 <Col md={2}>
                                     <Form.Group controlId="dFcompraAti">
                                         <Form.Label>Fecha Compra</Form.Label>
-                                        <Form.Control style={{ fontSize: '0.7rem' }} type="date" name="dFcompraAti" value={formDataExtras.dFcompraAti || ''} onChange={handleInputChangeExtras} disabled={true}/>
+                                        <Form.Control style={{ fontSize: '0.7rem' }} type="date" name="dFcompraAti" value={formDataExtras.dFcompraAti || ''} onChange={handleInputChangeExtras} disabled={true} />
                                     </Form.Group>
                                 </Col>
                                 <Col md={2}>
@@ -1019,7 +1027,8 @@ export const ActivosPage = () => {
         vUsrrdAti: '',
         vPwdremotoAti: '',
         vComentariosAti: '',
-        vDocresponsivaAti: ''
+        vDocresponsivaAti: '',
+        vDepartamentoAti: ''
     });
 
     // useEffect para inicializar formDataExtras cuando se selecciona un activo para editar
@@ -1062,7 +1071,8 @@ export const ActivosPage = () => {
                 vUsrrdAti: activoEncontrado.vUsrrdAti || '',
                 vPwdremotoAti: activoEncontrado.vPwdremotoAti || '',
                 vComentariosAti: activoEncontrado.vComentariosAti || '',
-                vDocresponsivaAti: activoEncontrado.vDocresponsivaAti || ''
+                vDocresponsivaAti: activoEncontrado.vDocresponsivaAti || '',
+                vDepartamentoAti: activoEncontrado.vDepartamentoAti || ''
             });
             // 2. Llenar el estado de búsqueda con el nombre del responsable de la DB
             // Esto asegura que el input no se muestre vacío al cargar
@@ -1110,6 +1120,7 @@ export const ActivosPage = () => {
         vPwdremotoAti,
         vComentariosAti,
         vDocresponsivaAti,
+        vDepartamentoAti,
         onInputChange,
         onResetForm
     } = useForm({
@@ -1139,6 +1150,7 @@ export const ActivosPage = () => {
         vPwdremotoAti: '',
         vComentariosAti: '',
         vDocresponsivaAti: '',
+        vDepartamentoAti: ''
     });
 
 

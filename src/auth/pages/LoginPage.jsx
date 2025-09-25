@@ -23,7 +23,7 @@ export const LoginPage = () => {
 	const [token, setToken] = useState('');
 
 	const checkSpecialCharForRoute = (e) => {
-		if (!/[0-9a-zA-Z*]/.test(e.key)) {
+		if (!/[0-9a-zA-Z]/.test(e.key)) {
 			e.preventDefault();
 		}
 	};

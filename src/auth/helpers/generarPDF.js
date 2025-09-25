@@ -23,7 +23,8 @@ const generarResponsivaPDF = (formData, searchEmpleado) => {
         vAntivirusAti,
         vOfficeAti,
         vDiscoduroAti,
-        vMemoriaAti
+        vMemoriaAti,
+        vDepartamentoAti
     } = formData;
 
     // Obtiene la fecha actual del sistema
@@ -110,7 +111,7 @@ const generarResponsivaPDF = (formData, searchEmpleado) => {
     yPos = drawTextAndHandlePageBreaks(doc, "Responsiva de uso de Software y Hardware propiedad de la Compañía", yPos, 14, 180);
 
     yPos = drawTextAndHandlePageBreaks(doc, "Punto 1", yPos + 8, 14, 180, true);
-    yPos = drawTextAndHandlePageBreaks(doc, `La compañía Inversiones Agrícolas Expoberries S de R.L. de C.V. que para los efectos legales de esta declaración se denominará en lo sucesivo "La Empresa", manifiesta que el equipo electrónico y o de cómputo cuyas características técnicas se describen en el "Anexo 1" es propiedad de "La Empresa" o lo tiene bajo contrato de Arrendamiento y que ha sido asignado al área de Producción para que sea utilizado como herramienta de trabajo en el desempeño de su puesto bajo la responsabilidad de ${searchEmpleado} quien en lo sucesivo será llamado "El Empleado".`, yPos, 14, 180);
+    yPos = drawTextAndHandlePageBreaks(doc, `La compañía Inversiones Agrícolas Expoberries S de R.L. de C.V. que para los efectos legales de esta declaración se denominará en lo sucesivo "La Empresa", manifiesta que el equipo electrónico y o de cómputo cuyas características técnicas se describen en el "Anexo 1" es propiedad de "La Empresa" o lo tiene bajo contrato de Arrendamiento y que ha sido asignado al área de "${vDepartamentoAti}" para que sea utilizado como herramienta de trabajo en el desempeño de su puesto bajo la responsabilidad de ${searchEmpleado} quien en lo sucesivo será llamado "El Empleado".`, yPos, 14, 180);
 
     yPos = drawTextAndHandlePageBreaks(doc, "Punto 2", yPos + 5, 14, 180, true);
     yPos = drawTextAndHandlePageBreaks(doc, `"El Empleado" recibe y conviene en que el equipo objeto de esta responsiva se encuentra en perfecto funcionamiento y sus características corresponden con las detalladas en el documento anexo marcado con el título "Anexo 1" a nombre de su recepción. Además, características como número de línea, plan de voz y datos, accesorios y otros servicios para dispositivos móviles serán detallados en el mismo “Anexo 1” y que será firmado por "El Empleado".`, yPos, 14, 180);

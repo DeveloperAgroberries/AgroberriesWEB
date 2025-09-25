@@ -320,7 +320,7 @@ export const AddActivo = ({ onClose, subfamilias, handleEstatusChange }) => {
                 { value: vNombreAfi, name: 'Nombre' },
                 { value: subfamiliaSeleccionada.nombre, name: 'Subfamilia' },
                 { value: cCodigoDep, name: 'Departamento' },
-                { value: cCodigoAfc, name: 'Chofer' },
+                // { value: cCodigoAfc, name: 'Chofer' },
                 { value: cCodigoEmp, name: 'Propietario' },
                 { value: cTipodepreciaAfi, name: 'Tipo de Depreciación' },
                 { value: vMarcaAfi, name: 'Marca' },

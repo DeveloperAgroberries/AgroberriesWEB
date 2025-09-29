@@ -186,7 +186,13 @@ export const ActivosPage = () => {
             name: "Nombre AF",
             selector: row => row.vNombreAfi,
             sortable: true,
-            width: '370px',
+            width: '200px',
+        },
+        {
+            name: "Usuario Asignado",
+            selector: row => row.vNombreEmpleado,
+            sortable: true,
+            width: '350px',
         },
         {
             name: "Estado",
@@ -303,17 +309,22 @@ export const ActivosPage = () => {
 
     //FUNCION PARA BUSQUEDA POR NOMBRE EN TABLE
     const handleChange = (e) => {
-        // console.log(e.target.value)
+        // console.log(records); // Puedes dejarlo para depuración, pero ya sabemos el problema
         const searchText = e.target.value.toLowerCase();
+
         const filterRecords = activosData.filter(record => {
+            const cCodigoAfi = record.cCodigoAfi ? record.cCodigoAfi.toLowerCase() : '';
+            const vNombreAfi = record.vNombreAfi ? record.vNombreAfi.toLowerCase() : '';
+
+            // ¡¡¡CAMBIO AQUÍ!!! Usa 'vNombreEmpleado' con 'v' minúscula
+            const vNombreEmpleado = record.vNombreEmpleado ? record.vNombreEmpleado.toLowerCase() : '';
+
             return (
-                // Busca por cCodigoAfi (código del activo)
-                record.cCodigoAfi.toLowerCase().includes(searchText) ||
-                // Busca por vNombreAfi (nombre del activo)
-                record.vNombreAfi.toLowerCase().includes(searchText)
-                // Agrega más campos si es necesario
+                cCodigoAfi.includes(searchText) ||
+                vNombreAfi.includes(searchText) ||
+                vNombreEmpleado.includes(searchText)
             );
-        })
+        });
         setRecords(filterRecords);
     };
 
@@ -423,19 +434,19 @@ export const ActivosPage = () => {
                                 <Col md={1}>
                                     <Form.Group controlId="idActivoAti">
                                         <Form.Label>ID</Form.Label>
-                                        <Form.Control style={{ fontSize: '0.7rem', backgroundColor: '#e9ecef' }} type="text" name="idActivoAti" value={formDataExtras.idActivoAti} disabled={true} />
+                                        <Form.Control style={{ fontSize: '0.7rem', backgroundColor: '#e9ecef' }} type="text" name="idActivoAti" value={formDataExtras.idActivoAti || ''} disabled={true} />
                                     </Form.Group>
                                 </Col>
                                 <Col md={2}>
                                     <Form.Group controlId="cCodigoAfi">
                                         <Form.Label>Código Activo</Form.Label>
-                                        <Form.Control style={{ fontSize: '0.7rem', backgroundColor: '#e9ecef' }} type="text" name="cCodigoAfi" value={formDataExtras.cNumeconAfi} disabled={true} />
+                                        <Form.Control style={{ fontSize: '0.7rem', backgroundColor: '#e9ecef' }} type="text" name="cCodigoAfi" value={formDataExtras.cNumeconAfi || ''} disabled={true} />
                                     </Form.Group>
                                 </Col>
                                 <Col md={4}>
                                     <Form.Group controlId="cCodigoCam">
                                         <Form.Label>Codigo de campo</Form.Label>
-                                        <select className="form-select" id=" vTipoAti" name='cCodigoCam' value={formDataExtras.cCodigoCam} onChange={handleInputChangeExtras} style={{ fontSize: '12px' }}>
+                                        <select className="form-select" id=" vTipoAti" name='cCodigoCam' value={formDataExtras.cCodigoCam || ''} onChange={handleInputChangeExtras} style={{ fontSize: '12px' }}>
                                             {/* Opción por defecto */}
                                             <option hidden value="">Seleccionar</option>
 
@@ -491,7 +502,7 @@ export const ActivosPage = () => {
                                 <Col md={3}>
                                     <Form.Group controlId="vDepartamentoAti">
                                         <Form.Label>Departamento</Form.Label>
-                                        <Form.Control style={{ fontSize: '0.7rem' }} type="text" name="vDepartamentoAti" value={formDataExtras.vDepartamentoAti} onChange={handleInputChangeExtras} />
+                                        <Form.Control style={{ fontSize: '0.7rem' }} type="text" name="vDepartamentoAti" value={formDataExtras.vDepartamentoAti || ''} onChange={handleInputChangeExtras} />
                                     </Form.Group>
                                 </Col>
                             </Row>
@@ -503,7 +514,7 @@ export const ActivosPage = () => {
                             <Row className="mb-3">
                                 <Col md={2}>
                                     <Form.Label>Tipo de equipo</Form.Label>
-                                    <select className="form-select" id="vTipoAti" name='vTipoAti' value={formDataExtras.vTipoAti} onChange={handleInputChangeExtras} style={{ fontSize: '12px' }} disabled={true}>
+                                    <select className="form-select" id="vTipoAti" name='vTipoAti' value={formDataExtras.vTipoAti || ''} onChange={handleInputChangeExtras} style={{ fontSize: '12px' }} disabled={true}>
                                         <option hidden value="">Seleccionar</option>
                                         <option value="PC">PC</option>
                                         <option value="LAPTOP">LAPTOP</option>
@@ -514,19 +525,19 @@ export const ActivosPage = () => {
                                 <Col md={2}>
                                     <Form.Group controlId="vMarcaAti">
                                         <Form.Label>Marca</Form.Label>
-                                        <Form.Control style={{ fontSize: '0.7rem' }} type="text" name="vMarcaAti" value={formDataExtras.vMarcaAti} onChange={handleInputChangeExtras} disabled={true} />
+                                        <Form.Control style={{ fontSize: '0.7rem' }} type="text" name="vMarcaAti" value={formDataExtras.vMarcaAti || ''} onChange={handleInputChangeExtras} disabled={true} />
                                     </Form.Group>
                                 </Col>
                                 <Col md={2}>
                                     <Form.Group controlId="vSerieAti">
                                         <Form.Label>Numero de Serie</Form.Label>
-                                        <Form.Control style={{ fontSize: '0.7rem' }} type="text" name="vSerieAti" value={formDataExtras.vSerieAti} onChange={handleInputChangeExtras} disabled={true} />
+                                        <Form.Control style={{ fontSize: '0.7rem' }} type="text" name="vSerieAti" value={formDataExtras.vSerieAti || ''} onChange={handleInputChangeExtras} disabled={true} />
                                     </Form.Group>
                                 </Col>
                                 <Col md={2}>
                                     <Form.Group controlId="vModeloAti">
                                         <Form.Label>Modelo</Form.Label>
-                                        <Form.Control style={{ fontSize: '0.7rem' }} type="text" name="vModeloAti" value={formDataExtras.vModeloAti} onChange={handleInputChangeExtras} disabled={true} />
+                                        <Form.Control style={{ fontSize: '0.7rem' }} type="text" name="vModeloAti" value={formDataExtras.vModeloAti || ''} onChange={handleInputChangeExtras} disabled={true} />
                                     </Form.Group>
                                 </Col>
                                 <Col md={2}>
@@ -538,7 +549,7 @@ export const ActivosPage = () => {
                                 <Col md={2}>
                                     <Form.Group controlId="nCostoAti">
                                         <Form.Label>Costo</Form.Label>
-                                        <Form.Control style={{ fontSize: '0.7rem' }} type="text" name="nCostoAti" value={formDataExtras.nCostoAti} onChange={handleInputChangeExtras} disabled={true} />
+                                        <Form.Control style={{ fontSize: '0.7rem' }} type="text" name="nCostoAti" value={formDataExtras.nCostoAti || ''} onChange={handleInputChangeExtras} disabled={true} />
                                     </Form.Group>
                                 </Col>
                             </Row>
@@ -574,7 +585,7 @@ export const ActivosPage = () => {
                                 <Col md={3}>
                                     {['checkbox'].map((type) => (
                                         <div key={`default-${type}`} className="mb-3" style={{ marginTop: '32px' }}>
-                                            <Form.Check type={type} id="cResponsivaAti" name="cResponsivaAti" checked={!!formDataExtras.vDocresponsivaAti} onChange={handleInputChangeExtras} label={`¿Se entrego responsiva?`} disabled={true} />
+                                            <Form.Check type={type} id="cResponsivaAti" name="cResponsivaAti" checked={!!formDataExtras.vDocresponsivaAti || ''} onChange={handleInputChangeExtras} label={`¿Se entrego responsiva?`} disabled={true} />
                                         </div>
                                     ))}
                                 </Col>
@@ -615,19 +626,19 @@ export const ActivosPage = () => {
                                 <Col md={2}>
                                     <Form.Group controlId="idActivoAti">
                                         <Form.Label>ID</Form.Label>
-                                        <Form.Control style={{ fontSize: '0.7rem', backgroundColor: '#e9ecef' }} type="text" name="idActivoAti" value={formDataExtras.idActivoAti} disabled={true} />
+                                        <Form.Control style={{ fontSize: '0.7rem', backgroundColor: '#e9ecef' }} type="text" name="idActivoAti" value={formDataExtras.idActivoAti || ''} disabled={true} />
                                     </Form.Group>
                                 </Col>
                                 <Col md={2}>
                                     <Form.Group controlId="cCodigoAfi">
                                         <Form.Label>Código Activo</Form.Label>
-                                        <Form.Control style={{ fontSize: '0.7rem', backgroundColor: '#e9ecef' }} type="text" name="cCodigoAfi" value={formDataExtras.cNumeconAfi} disabled={true} />
+                                        <Form.Control style={{ fontSize: '0.7rem', backgroundColor: '#e9ecef' }} type="text" name="cCodigoAfi" value={formDataExtras.cNumeconAfi || ''} disabled={true} />
                                     </Form.Group>
                                 </Col>
                                 <Col md={4}>
                                     <Form.Group controlId="cCodigoCam">
                                         <Form.Label>Codigo de campo</Form.Label>
-                                        <select className="form-select" id=" vTipoAti" name='cCodigoCam' value={formDataExtras.cCodigoCam} onChange={handleInputChangeExtras} style={{ fontSize: '12px' }}>
+                                        <select className="form-select" id=" vTipoAti" name='cCodigoCam' value={formDataExtras.cCodigoCam || ''} onChange={handleInputChangeExtras} style={{ fontSize: '12px' }}>
                                             {/* Opción por defecto */}
                                             <option hidden value="">Seleccionar</option>
 
@@ -669,6 +680,14 @@ export const ActivosPage = () => {
                                     </Form.Group>
                                 </Col>
                             </Row>
+                            <Row className="mb-3">
+                                <Col md={3}>
+                                    <Form.Group controlId="vDepartamentoAti">
+                                        <Form.Label>Departamento</Form.Label>
+                                        <Form.Control style={{ fontSize: '0.7rem' }} type="text" name="vDepartamentoAti" value={formDataExtras.vDepartamentoAti || ''} onChange={handleInputChangeExtras} />
+                                    </Form.Group>
+                                </Col>
+                            </Row>
 
                             {/* ////////////////////////////////////////////////////////////////////////////// */}
                             <label className="form-label" style={{ background: '#9b9b9bff', color: '#FFFFFF', fontSize: '20px', fontWeight: 'bold', width: '100%', marginBottom: '1%', paddingLeft: '10px' }}>
@@ -678,25 +697,25 @@ export const ActivosPage = () => {
                                 <Col md={3}>
                                     <Form.Group controlId="vPlacvEmailAtiasAfi">
                                         <Form.Label>Email</Form.Label>
-                                        <Form.Control style={{ fontSize: '0.7rem' }} type="text" name="vEmailAti" value={formDataExtras.vEmailAti} onChange={handleInputChangeExtras} />
+                                        <Form.Control style={{ fontSize: '0.7rem' }} type="text" name="vEmailAti" value={formDataExtras.vEmailAti || ''} onChange={handleInputChangeExtras} />
                                     </Form.Group>
                                 </Col>
                                 <Col md={3}>
                                     <Form.Group controlId="vPwdemailAti">
                                         <Form.Label>Password Email</Form.Label>
-                                        <Form.Control style={{ fontSize: '0.7rem' }} type="text" name="vPwdemailAti" value={formDataExtras.vPwdemailAti} onChange={handleInputChangeExtras} />
+                                        <Form.Control style={{ fontSize: '0.7rem' }} type="text" name="vPwdemailAti" value={formDataExtras.vPwdemailAti || ''} onChange={handleInputChangeExtras} />
                                     </Form.Group>
                                 </Col>
                                 <Col md={3}>
                                     <Form.Group controlId="vUsreclipseAti">
                                         <Form.Label>Usuario eclipse</Form.Label>
-                                        <Form.Control style={{ fontSize: '0.7rem' }} type="text" name="vUsreclipseAti" value={formDataExtras.vUsreclipseAti} onChange={handleInputChangeExtras} />
+                                        <Form.Control style={{ fontSize: '0.7rem' }} type="text" name="vUsreclipseAti" value={formDataExtras.vUsreclipseAti || ''} onChange={handleInputChangeExtras} />
                                     </Form.Group>
                                 </Col>
                                 <Col md={3}>
                                     <Form.Group controlId="vPwdeclipseAti">
                                         <Form.Label>Pwd eclipse</Form.Label>
-                                        <Form.Control style={{ fontSize: '0.7rem' }} type="text" name="vPwdeclipseAti" value={formDataExtras.vPwdeclipseAti} onChange={handleInputChangeExtras} />
+                                        <Form.Control style={{ fontSize: '0.7rem' }} type="text" name="vPwdeclipseAti" value={formDataExtras.vPwdeclipseAti || ''} onChange={handleInputChangeExtras} />
                                     </Form.Group>
                                 </Col>
                             </Row>
@@ -705,19 +724,19 @@ export const ActivosPage = () => {
                                 <Col md={3}>
                                     <Form.Group controlId="vUsrrdAti">
                                         <Form.Label>Usuario Remoto</Form.Label>
-                                        <Form.Control style={{ fontSize: '0.7rem' }} type="text" name="vUsrrdAti" value={formDataExtras.vUsrrdAti} onChange={handleInputChangeExtras} />
+                                        <Form.Control style={{ fontSize: '0.7rem' }} type="text" name="vUsrrdAti" value={formDataExtras.vUsrrdAti || ''} onChange={handleInputChangeExtras} />
                                     </Form.Group>
                                 </Col>
                                 <Col md={3}>
                                     <Form.Group controlId="vPwdremotoAti">
                                         <Form.Label>Pwd Remoto</Form.Label>
-                                        <Form.Control style={{ fontSize: '0.7rem' }} type="text" name="vPwdremotoAti" value={formDataExtras.vPwdremotoAti} onChange={handleInputChangeExtras} />
+                                        <Form.Control style={{ fontSize: '0.7rem' }} type="text" name="vPwdremotoAti" value={formDataExtras.vPwdremotoAti || ''} onChange={handleInputChangeExtras} />
                                     </Form.Group>
                                 </Col>
                                 <Col md={3}>
                                     <Form.Group controlId="dFasignacionAti">
                                         <Form.Label>Fecha de asignación</Form.Label>
-                                        <Form.Control style={{ fontSize: '0.7rem' }} type="date" name="dFasignacionAti" value={formDataExtras.dFasignacionAti} onChange={handleInputChangeExtras} />
+                                        <Form.Control style={{ fontSize: '0.7rem' }} type="date" name="dFasignacionAti" value={formDataExtras.dFasignacionAti || ''} onChange={handleInputChangeExtras} />
                                     </Form.Group>
                                 </Col>
                             </Row>
@@ -729,7 +748,7 @@ export const ActivosPage = () => {
                             <Row className="mb-3">
                                 <Col md={2}>
                                     <Form.Label>Tipo de equipo</Form.Label>
-                                    <select className="form-select" id="vTipoAti" name='vTipoAti' value={formDataExtras.vTipoAti} onChange={handleInputChangeExtras} style={{ fontSize: '12px' }} >
+                                    <select className="form-select" id="vTipoAti" name='vTipoAti' value={formDataExtras.vTipoAti || ''} onChange={handleInputChangeExtras} style={{ fontSize: '12px' }} >
                                         <option hidden value="">Seleccionar</option>
                                         <option value="PC">PC</option>
                                         <option value="LAPTOP">LAPTOP</option>
@@ -740,19 +759,19 @@ export const ActivosPage = () => {
                                 <Col md={2}>
                                     <Form.Group controlId="vMarcaAti">
                                         <Form.Label>Marca</Form.Label>
-                                        <Form.Control style={{ fontSize: '0.7rem' }} type="text" name="vMarcaAti" value={formDataExtras.vMarcaAti} onChange={handleInputChangeExtras} />
+                                        <Form.Control style={{ fontSize: '0.7rem' }} type="text" name="vMarcaAti" value={formDataExtras.vMarcaAti || ''} onChange={handleInputChangeExtras} />
                                     </Form.Group>
                                 </Col>
                                 <Col md={2}>
                                     <Form.Group controlId="vSerieAti">
                                         <Form.Label>Numero de Serie</Form.Label>
-                                        <Form.Control style={{ fontSize: '0.7rem' }} type="text" name="vSerieAti" value={formDataExtras.vSerieAti} onChange={handleInputChangeExtras} />
+                                        <Form.Control style={{ fontSize: '0.7rem' }} type="text" name="vSerieAti" value={formDataExtras.vSerieAti || ''} onChange={handleInputChangeExtras} />
                                     </Form.Group>
                                 </Col>
                                 <Col md={2}>
                                     <Form.Group controlId="vModeloAti">
                                         <Form.Label>Modelo</Form.Label>
-                                        <Form.Control style={{ fontSize: '0.7rem' }} type="text" name="vModeloAti" value={formDataExtras.vModeloAti} onChange={handleInputChangeExtras} />
+                                        <Form.Control style={{ fontSize: '0.7rem' }} type="text" name="vModeloAti" value={formDataExtras.vModeloAti || ''} onChange={handleInputChangeExtras} />
                                     </Form.Group>
                                 </Col>
                                 <Col md={2}>
@@ -764,7 +783,7 @@ export const ActivosPage = () => {
                                 <Col md={2}>
                                     <Form.Group controlId="vNombrePrv">
                                         <Form.Label>Nombre Provedor</Form.Label>
-                                        <Form.Control style={{ fontSize: '0.7rem' }} type="text" name="vNombrePrv" value={formDataExtras.vNombrePrv} onChange={handleInputChangeExtras} />
+                                        <Form.Control style={{ fontSize: '0.7rem' }} type="text" name="vNombrePrv" value={formDataExtras.vNombrePrv || ''} onChange={handleInputChangeExtras} />
                                     </Form.Group>
                                 </Col>
                             </Row>
@@ -773,7 +792,7 @@ export const ActivosPage = () => {
                                 <Col md={2}>
                                     <Form.Group controlId="nCostoAti">
                                         <Form.Label>Costo</Form.Label>
-                                        <Form.Control style={{ fontSize: '0.7rem' }} type="text" name="nCostoAti" value={formDataExtras.nCostoAti} onChange={handleInputChangeExtras} />
+                                        <Form.Control style={{ fontSize: '0.7rem' }} type="text" name="nCostoAti" value={formDataExtras.nCostoAti || ''} onChange={handleInputChangeExtras} />
                                     </Form.Group>
                                 </Col>
                                 <Col md={2}>
@@ -792,31 +811,31 @@ export const ActivosPage = () => {
                                 <Col md={2}>
                                     <Form.Group controlId="vAntivirusAti">
                                         <Form.Label>Antivirus</Form.Label>
-                                        <Form.Control style={{ fontSize: '0.7rem' }} type="text" name="vAntivirusAti" value={formDataExtras.vAntivirusAti} onChange={handleInputChangeExtras} />
+                                        <Form.Control style={{ fontSize: '0.7rem' }} type="text" name="vAntivirusAti" value={formDataExtras.vAntivirusAti || ''} onChange={handleInputChangeExtras} />
                                     </Form.Group>
                                 </Col>
                                 <Col md={2}>
                                     <Form.Group controlId="vOfficeAti">
                                         <Form.Label>Office</Form.Label>
-                                        <Form.Control style={{ fontSize: '0.7rem' }} type="text" name="vOfficeAti" value={formDataExtras.vOfficeAti} onChange={handleInputChangeExtras} />
+                                        <Form.Control style={{ fontSize: '0.7rem' }} type="text" name="vOfficeAti" value={formDataExtras.vOfficeAti || ''} onChange={handleInputChangeExtras} />
                                     </Form.Group>
                                 </Col>
                                 <Col md={2}>
                                     <Form.Group controlId="vVerwindowsAti">
                                         <Form.Label>Versión de Windows</Form.Label>
-                                        <Form.Control style={{ fontSize: '0.7rem' }} type="text" name="vVerwindowsAti" value={formDataExtras.vVerwindowsAti} onChange={handleInputChangeExtras} />
+                                        <Form.Control style={{ fontSize: '0.7rem' }} type="text" name="vVerwindowsAti" value={formDataExtras.vVerwindowsAti || ''} onChange={handleInputChangeExtras} />
                                     </Form.Group>
                                 </Col>
                                 <Col md={2}>
                                     <Form.Group controlId="vProcesadorAti">
                                         <Form.Label>Procesador</Form.Label>
-                                        <Form.Control style={{ fontSize: '0.7rem' }} type="text" name="vProcesadorAti" value={formDataExtras.vProcesadorAti} onChange={handleInputChangeExtras} />
+                                        <Form.Control style={{ fontSize: '0.7rem' }} type="text" name="vProcesadorAti" value={formDataExtras.vProcesadorAti || ''} onChange={handleInputChangeExtras} />
                                     </Form.Group>
                                 </Col>
                                 <Col md={2}>
                                     <Form.Group controlId="vMemoriaAti">
                                         <Form.Label>Memoria RAM</Form.Label>
-                                        <select className="form-select" id="vMemoriaAti" name='vMemoriaAti' value={formDataExtras.vMemoriaAti} onChange={handleInputChangeExtras} style={{ fontSize: '12px' }}>
+                                        <select className="form-select" id="vMemoriaAti" name='vMemoriaAti' value={formDataExtras.vMemoriaAti || ''} onChange={handleInputChangeExtras} style={{ fontSize: '12px' }}>
                                             <option hidden value="">Seleccionar</option>
                                             <option value="4 gb">4 gb</option>
                                             <option value="8 gb">8 gb</option>
@@ -827,7 +846,7 @@ export const ActivosPage = () => {
                                 <Col md={2}>
                                     <Form.Group controlId="vDiscoduroAti">
                                         <Form.Label>Disco duro</Form.Label>
-                                        <Form.Control style={{ fontSize: '0.7rem' }} type="text" name="vDiscoduroAti" value={formDataExtras.vDiscoduroAti} onChange={handleInputChangeExtras} />
+                                        <Form.Control style={{ fontSize: '0.7rem' }} type="text" name="vDiscoduroAti" value={formDataExtras.vDiscoduroAti || ''} onChange={handleInputChangeExtras} />
                                     </Form.Group>
                                 </Col>
                             </Row>
@@ -835,7 +854,7 @@ export const ActivosPage = () => {
                                 <Col md={12}>
                                     <Form.Group className="mb-3" controlId="vComentariosAti">
                                         <Form.Label>Comentarios</Form.Label>
-                                        <Form.Control style={{ fontSize: '0.7rem' }} as="textarea" rows={3} name="vComentariosAti" value={formDataExtras.vComentariosAti} onChange={handleInputChangeExtras} />
+                                        <Form.Control style={{ fontSize: '0.7rem' }} as="textarea" rows={3} name="vComentariosAti" value={formDataExtras.vComentariosAti || ''} onChange={handleInputChangeExtras} />
                                     </Form.Group>
                                 </Col>
                             </Row>
@@ -1155,54 +1174,6 @@ export const ActivosPage = () => {
 
 
     const [errorMessageCarga, setErrorMessageCarga] = useState('');
-    // const onSubmit = async (event) => {
-    //     event.preventDefault();
-
-    //     //setIsLoadingGuardado(true); // Abre el modal de carga
-    //     const afData = {
-    //         cCodigoAfi: obtenerNumecon || '', // Asegúrate de tener esta información del usuario
-    //         cResponsivaAti: cResponsivaAti ? 1 : 0, // Asegúrate de tener esta información del usuario
-    //         cCodigoCam: cCodigoCam || '', // Asegúrate de tener esta información del usuario
-    //         vEmailAti: vEmailAti || '',
-    //     };
-
-    //     console.log('Datos a enviar:', afData);
-
-    //     // Agregar el archivo adjunto
-    //     setErrorMessageCarga('');
-    //     let uploadSuccessful = true; // Bandera para rastrear el éxito de la subida
-
-    //     if (archivoAdjunto) {
-    //         const formDataArchivo = new FormData();
-    //         formDataArchivo.append('archivoFactura', archivoAdjunto);
-    //         const uploadResult = await dispatch(uploadPDF(formDataArchivo));
-    //         if (uploadResult && uploadResult.ruta) {
-    //             afData.cRutafactAfi = uploadResult.ruta;
-    //         } else {
-    //             setErrorMessageCarga('Error al subir el archivo.');
-    //             uploadSuccessful = false;
-    //             // setIsLoadingGuardado(false);
-    //         }
-    //     } else {
-    //         alert('No se subio la responsiva, el proceso continúa.');
-    //     }
-
-
-    //     if (uploadSuccessful) {
-    //         //const success = await dispatch(startAddNewActivoFijo(afData));
-    //         console.log('Reponsiva agregada');
-    //         const success = true;
-    //         if (success) {
-    //             dispatch(getActivos()); //Solo con esto se actualiza la tabla de activos
-    //             //setIsLoadingGuardado(false);
-    //             onResetForm();
-    //             closeModal();
-    //         } else {
-    //             setErrorMessageCarga('Error al agregar el información. Intente nuevamente.');
-    //             //setIsLoadingGuardado(false);
-    //         }
-    //     }
-    // };
 
     // AGREGAR FACTURA Y RESPONSIVA
     const [archivoAdjunto, setArchivoAdjunto] = useState(null); // Estado para el archivo adjunto
@@ -1249,7 +1220,7 @@ export const ActivosPage = () => {
                 <div className="d-flex justify-content-between align-items-center mt-3" style={{ marginBottom: '1%' }}>
                     <p className="m-0">Consulta y registro de Activos Fijos.</p>
                     {/* Input de búsqueda */}
-                    <input type="text" className="form-control" id="miInput" onChange={handleChange} placeholder="Busqueda por nombre..." style={{ width: '300px' }} />
+                    <input type="text" className="form-control" id="miInput" onChange={handleChange} placeholder="Buscar por código AF, nombre AF o usuario asignado..." style={{ width: '500px' }} />
                 </div>
 
                 {/* CODIGO DE FRANK */}

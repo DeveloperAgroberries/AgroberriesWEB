@@ -120,7 +120,10 @@ export const ActivosList = () => { // Ya no recibe openAddActivo como prop si so
 		vPwdremotoAti: item.vPwdremotoAti?.trim(),
 		vComentariosAti: item.vComentariosAti?.trim(),
 		vDocresponsivaAti: item.vDocresponsivaAti?.trim(),
-		vDepartamentoAti: item.vDepartamentoAti?.trim()
+		vDepartamentoAti: item.vDepartamentoAti?.trim(),
+
+		//Nombre usuario asignado al equipo}
+		vNombreEmpleado: item.vNombreEmpleado?.trim(),
 	}));
 
 	return {

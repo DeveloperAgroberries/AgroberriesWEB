@@ -5,16 +5,18 @@ import { AddActivo } from "../components/Combustibles/AddActivo";
 import { useDispatch, useSelector } from "react-redux";
 import DataTable from "react-data-table-component";
 import leaf_loader_slow from '../../../assets/leaf_loader_slow.gif';
-import { getActivos, getCamposActivos, startUpdateActivo, modificarExtras, uploadPDF, uploadResponsiva, getEmpleados } from "../../store/slices/combustibles";
+import { getActivos, getCamposActivos, startUpdateActivo, modificarExtras, uploadPDF, uploadResponsiva, getEmpleados, startHistoricoExtrasTI } from "../../store/slices/combustibles";
 import { Modal, Button, OverlayTrigger, Tooltip, FormControl, Form, InputGroup, Row, Col, Alert, Nav } from 'react-bootstrap';
 import { set } from "date-fns";
 import { useForm } from '../../hooks';
 import dayjs from 'dayjs';
 import generarResponsivaPDF from "../../auth/helpers/generarPDF";
+import { DownloadTableExcel } from "react-export-table-to-excel";
 
 
 export const ActivosPage = () => {
     const dispatch = useDispatch();
+    const tableRef = useRef(null);
     const { subfamilias } = useSelector((state) => state.combustibles);
     const campos = useSelector(state => state.combustibles.activosCampos);
     const { data: activosData, isLoading, errorMessage } = ActivosList();
@@ -38,6 +40,12 @@ export const ActivosPage = () => {
     const [empleadoSeleccionado, setEmpleadoSeleccionado] = useState(null);
     const [isLoadingEmpleados, setIsLoadingEmpleados] = useState(false);
     const searchResultsEmpleados = useSelector(state => state.combustibles.empleados);
+
+    const [responsableActual, setResponsableActual] = useState(''); // Ref para almacenar el responsable actual
+    const [historico, sethistorico] = useState('');
+    useEffect(() => {
+        // console.log('*** responsableActual AHORA es:', responsableActual);
+    }, [responsableActual, historico]);
 
     const handleSearchEmpleadoChange = (event) => {
         const searchText = event.target.value;
@@ -120,8 +128,11 @@ export const ActivosPage = () => {
 
     const openEditModal = (cCodigoAfi) => { // Recibe el objeto chofer como argumento
         const activoSeleccionado = activosData.find(activo => activo.cCodigoAfi === cCodigoAfi);
-        //console.log('Abriendo modal de edición para:', cCodigoAfi);
-        // console.log('Datos:', activoSeleccionado);
+
+        const codigoResponsable = activoSeleccionado.cResponsableAti || '';
+        setResponsableActual(codigoResponsable); // Guarda el responsable actual
+        sethistorico(activoSeleccionado);
+
         setActiveKey('general'); // Reinicia a la pestaña "General" al abrir el modal
         setActivoEncontrado(activosData.find(activo => activo.cCodigoAfi === cCodigoAfi));
         setAssetSelected(activosData.find(activo => activo.cCodigoAfi === cCodigoAfi)); // Guarda el activo seleccionado
@@ -129,6 +140,8 @@ export const ActivosPage = () => {
     }
     const closeEditModal = () => {
         setShowEditModal(false);
+        setResponsableActual('');
+        sethistorico('');
     };
 
     // Inicializa el tooltip de Bootstrap en el encabezado de la columna
@@ -189,6 +202,12 @@ export const ActivosPage = () => {
             width: '200px',
         },
         {
+            name: "Campo",
+            selector: row => row.vNombreCam,
+            sortable: true,
+            width: '250px',
+        },
+        {
             name: "Usuario Asignado",
             selector: row => row.vNombreEmpleado,
             sortable: true,
@@ -213,7 +232,7 @@ export const ActivosPage = () => {
         {
             name: "Num serie",
             selector: row => row.vNumserieAfi,
-            width: '220px',
+            width: '150px',
         },
         {
             name: (
@@ -318,11 +337,13 @@ export const ActivosPage = () => {
 
             // ¡¡¡CAMBIO AQUÍ!!! Usa 'vNombreEmpleado' con 'v' minúscula
             const vNombreEmpleado = record.vNombreEmpleado ? record.vNombreEmpleado.toLowerCase() : '';
+            const vNombreCam = record.vNombreEmpleado ? record.vNombreCam.toLowerCase() : '';
 
             return (
                 cCodigoAfi.includes(searchText) ||
                 vNombreAfi.includes(searchText) ||
-                vNombreEmpleado.includes(searchText)
+                vNombreEmpleado.includes(searchText) ||
+                vNombreCam.includes(searchText)
             );
         });
         setRecords(filterRecords);
@@ -988,6 +1009,51 @@ export const ActivosPage = () => {
             vPlacasAfi: activoEncontrado.vPlacasAfi ? "TEST03" : null */
         };
 
+        const dataForHistoricApi = {
+            cNumeconAfi: historico.cCodigoAfi || null,
+            cReponsivaAti: historico.cReponsivaAti || null,
+            cResponsableAti: historico.cResponsableAti || null,
+            cCodigoCam: historico.cCodigoCam || null,
+            vEmailAti: historico.vEmailAti || null,
+            vPwdemailAti: historico.vPwdemailAti || null,
+            vAntivirusAti: historico.vAntivirusAti || null,
+            vOfficeAti: historico.vOfficeAti || null,
+            vTipoAti: historico.vTipoAti || null,
+            vMarcaAti: historico.vMarcaAti || null, // Asegúrate si es vMarcaAti o vMarcaAfi, la API espera vMarcaAti
+            vSerieAti: historico.vNumserieAfi || null,
+            dFcompraAti: historico.dFcompraAti || null,
+            vNombrePrv: historico.vNombrePrv || null,
+            nCostoAti: historico.nCostoAti || 0, // Asegura que sea un número
+            dFgarantiaAti: historico.dFgarantiaAti || null,
+            vModeloAti: historico.vModeloAti || null, // Asegúrate si es vModeloAti o vModeloAfi, la API espera vModeloAti
+            dFasignacionAti: historico.dFasignacionAti || null,
+            vVerwindowsAti: historico.vVerwindowsAti || null,
+            vProcesadorAti: historico.vProcesadorAti || null,
+            vMemoriaAti: historico.vMemoriaAti || null,
+            vDiscoduroAti: historico.vDiscoduroAti || null,
+            vUsreclipseAti: historico.vUsreclipseAti || null,
+            vPwdeclipseAti: historico.vPwdeclipseAti || null,
+            vUsrrdAti: historico.vUsrrdAti || null,
+            vPwdremotoAti: historico.vPwdremotoAti || null,
+            vComentariosAti: historico.vComentariosAti || null,
+            vDocresponsivaAti: historico.vDocresponsivaAti || null,
+            vDepartamentoAti: historico.vDepartamentoAti || null,
+        };
+
+        if (responsableActual != '' && responsableActual !== dataToSend.cResponsableAti) {
+            console.log('El responsable ha cambiado, se debe hacer un respaldo antes de continuar.');
+            const success = await dispatch(startHistoricoExtrasTI(dataForHistoricApi));
+            if (success) {
+                console.log('Se actualizó el responsable correctamente, ahora se crea el respaldo en historicoExtrasTI.');
+            } else {
+                console.log('No se pudo actualizar el responsable, no se crea el respaldo en historicoExtrasTI.');
+            }
+        } else {
+            console.log('El responsable NO ha cambiado, continuar normalmente.');
+
+        }
+
+
         if (archivoAdjuntoResponsiva) {
             const formDataArchivo = new FormData();
             formDataArchivo.append('archivoResponsiva', archivoAdjuntoResponsiva);
@@ -1008,9 +1074,9 @@ export const ActivosPage = () => {
         // Llama al thunk de actualización
         const success = await dispatch(modificarExtras(dataToSend)); // Asegúrate de tener este thunk
         if (success) {
-            setIsLoadingGuardado(false);
             dispatch(getActivos()); // Recarga los choferes para ver los cambios
             closeEditModal();
+            setIsLoadingGuardado(false);
         } else {
             setIsLoadingGuardado(false);
             alert('Ocurrió un error al actualizar EXTRAS. Comunícate con Soporte TI.');
@@ -1223,6 +1289,43 @@ export const ActivosPage = () => {
                     <input type="text" className="form-control" id="miInput" onChange={handleChange} placeholder="Buscar por código AF, nombre AF o usuario asignado..." style={{ width: '500px' }} />
                 </div>
 
+                <table ref={tableRef} style={{ display: 'none' }}>
+                    <thead>
+                        <tr>
+                            <th>Código AF</th>
+                            <th>Nombre AF</th>
+                            <th>Campo</th>
+                            <th>Usuario aginado</th>
+                            <th>Marca equipo</th>
+                            <th>Modelo</th>
+                            <th>Número de serie</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {(records.length === 0 ? activosData : records).map((item, idx) => {
+                            // 1. Buscamos el objeto campo que coincide con item.cCodigoCam
+                            const campoEncontrado = campos.find(campo => campo.cCodigoCam === item.cCodigoCam);
+
+                            return (
+                                <tr key={idx}>
+                                    <td>{item.cCodigoAfi}</td>
+                                    <td>{item.vNombreAfi}</td>
+                                    {campoEncontrado ? (
+                                        // 2. Si se encuentra el objeto, mostramos su propiedad vNombreCam
+                                        <td>{campoEncontrado.vNombreCam}</td>
+                                    ) : (
+                                        <td></td>
+                                    )}
+                                    <td>{item.vNombreEmpleado}</td>
+                                    <td>{item.vMarcaAfi}</td>
+                                    <td>{item.vModeloAfi}</td>
+                                    <td>{item.vNumserieAfi}</td>
+                                </tr>
+                            );
+                        })}
+                    </tbody>
+                </table>
+
                 {/* CODIGO DE FRANK */}
                 {/* <div className="container-fluid overflow-auto" id="containerPagesTable">
                     <table className="table table-bordered table-dark table-striped-columns table-hover" >
@@ -1274,10 +1377,17 @@ export const ActivosPage = () => {
                         fluid // Esta propiedad hace que las columnas se expandan para llenar el espacio
                     />
                 </div>
-
+                <hr />
                 {/* </div> */}
                 <div className="ms-2 mb-1 mt-2">
                     <button className="btn btn-secondary rounded-2 m-1" onClick={() => openActivoPopup(<AddActivo onClose={closeActivoPopup} />)}>Agregar AF</button>
+                    <DownloadTableExcel
+                        filename="Activos Fijos"
+                        sheet="Activos"
+                        currentTableRef={tableRef.current}
+                    >
+                        <button className="btn btn-success rounded-2">Exportar a Excel</button>
+                    </DownloadTableExcel>
                     {/* <button className="btn btn-outline-primary rounded-2 m-1" onClick={() => openActivoPopup(<ModVehicle onClose={closeActivoPopup} />)}>Modificar</button> */}
                     {/* <button className="btn btn-outline-danger rounded-2 m-1" onClick={ () => openVehiclePopup(<DelVehicle onClose={ closeVehiclePopup }/>) }>Eliminar</button> */}
                 </div>

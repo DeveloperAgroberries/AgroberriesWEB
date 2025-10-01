@@ -426,3 +426,19 @@ export const uploadResponsiva = (formData, numecon) => { // ✅ Aceptar numecon 
         }
     };
 };
+
+export const startHistoricoExtrasTI = (extrasTIObject) => {
+    return async (dispatch) => {
+        dispatch(checkingIsLoading());
+        try {
+            const { data } = await activosApi.post('/insertHistoricoExtrasTI', extrasTIObject); 
+            //console.log('Respuesta del servidor:', data);
+            return true;
+            
+        } catch (error) {
+            // 4. Maneja cualquier error.
+            console.error("Error al insertar historico extras TI:", error);
+            dispatch(setError(error.message || 'Error desconocido al insertar extras TI'));
+        }
+    };
+};

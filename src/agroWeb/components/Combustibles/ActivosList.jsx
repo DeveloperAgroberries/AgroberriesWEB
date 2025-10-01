@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { getActivos, getSubFamilias } from "../../../store/slices/combustibles";
+import { getActivos, getSubFamilias, getCamposActivos } from "../../../store/slices/combustibles";
 import { Alert, Badge, Spinner } from "react-bootstrap";
 
 // export const ActivosList = ({ openAddActivo }) => { // Recibimos la función como prop
@@ -51,6 +51,7 @@ import { Alert, Badge, Spinner } from "react-bootstrap";
 export const ActivosList = () => { // Ya no recibe openAddActivo como prop si solo devuelve datos
 	const dispatch = useDispatch();
 	const { combustibles = [], isLoading, errorMessage } = useSelector((state) => state.combustibles);
+	const campos = useSelector(state => state.combustibles.activosCampos);
 
 	useEffect(() => {
 		const fetchData = async () => {
@@ -77,54 +78,62 @@ export const ActivosList = () => { // Ya no recibe openAddActivo como prop si so
 		return `${year}-${month}-${day}`;
 	};
 
-	const updatedData = combustibles.map(item => ({
-		// Campos de Afiactivo
-		cCodigoAfi: item.cNumeconAfi?.trim(),
-		vNombreAfi: item.vNombreAfi?.trim(),
-		activo: item.cActivoAfi?.trim(),
-		vMarcaAfi: item.vMarcaAfi?.trim(),
-		vModeloAfi: item.vModeloAfi?.trim(),
-		vNumserieAfi: item.vNumserieAfi?.trim(),
-		cCodigorelAfi: item.vPlacasAfi?.trim(), // Este campo parece ser vPlacasAfi
-		cNoDepreciarAfi: item.cNoDepreciarAfi?.trim(),
-		cOperativoAfi: item.cOperativoAfi?.trim(),
-		cRutafactAfi: item.cRutafactAfi?.trim(),
-		vPlacasAfi: item.vPlacasAfi?.trim(),
+	const updatedData = combustibles.map(item => { // CAMBIO: Usar llaves {} para un cuerpo de función explícito
+		// Esto SÍ está permitido aquí:
+		const campoEncontrado = campos.find(campo => campo.cCodigoCam === item.cCodigoCam);
 
-		// Campos de ZAfiactivoti (extras)
-		idActivoAti: item.idActivoAti,
-		cNumeconAfiExtra: item.cNumeconAfiExtra?.trim(),
-		cReponsivaAti: item.cReponsivaAti?.trim(),
-		cResponsableAti: item.cResponsableAti?.trim(),
-		cCodigoCam: item.cCodigoCam?.trim(),
-		vEmailAti: item.vEmailAti?.trim(),
-		vPwdemailAti: item.vPwdemailAti?.trim(),
-		vAntivirusAti: item.vAntivirusAti?.trim(),
-		vOfficeAti: item.vOfficeAti?.trim(),
-		vTipoAti: item.vTipoAti?.trim(),
-		vMarcaAti: item.vMarcaAti?.trim(),
-		vSerieAti: item.vSerieAti?.trim(),
-		dFcompraAti: formatDateString(item.dFcompraAti),
-		vNombrePrv: item.vNombrePrv?.trim(),
-		nCostoAti: item.nCostoAti,
-		dFgarantiaAti: formatDateString(item.dFgarantiaAti),
-		vModeloAti: item.vModeloAti?.trim(),
-		dFasignacionAti: formatDateString(item.dFasignacionAti),
-		vVerwindowsAti: item.vVerwindowsAti?.trim(),
-		vProcesadorAti: item.vProcesadorAti?.trim(),
-		vMemoriaAti: item.vMemoriaAti?.trim(),
-		vDiscoduroAti: item.vDiscoduroAti?.trim(),
-		vUsreclipseAti: item.vUsreclipseAti?.trim(),
-		vPwdeclipseAti: item.vPwdeclipseAti?.trim(),
-		vUsrrdAti: item.vUsrrdAti?.trim(),
-		vPwdremotoAti: item.vPwdremotoAti?.trim(),
-		vComentariosAti: item.vComentariosAti?.trim(),
-		vDocresponsivaAti: item.vDocresponsivaAti?.trim(),
-		vDepartamentoAti: item.vDepartamentoAti?.trim(),
+		return { // Necesitas 'return' explícito
+			// Campos de Afiactivo
+			cCodigoAfi: item.cNumeconAfi?.trim(),
+			vNombreAfi: item.vNombreAfi?.trim(),
+			activo: item.cActivoAfi?.trim(),
+			vMarcaAfi: item.vMarcaAfi?.trim(),
+			vModeloAfi: item.vModeloAfi?.trim(),
+			vNumserieAfi: item.vNumserieAfi?.trim(),
+			cCodigorelAfi: item.vPlacasAfi?.trim(),
+			cNoDepreciarAfi: item.cNoDepreciarAfi?.trim(),
+			cOperativoAfi: item.cOperativoAfi?.trim(),
+			cRutafactAfi: item.cRutafactAfi?.trim(),
+			vPlacasAfi: item.vPlacasAfi?.trim(),
 
-		//Nombre usuario asignado al equipo}
-		vNombreEmpleado: item.vNombreEmpleado?.trim(),
-	}));
+			// CORRECCIÓN: Nueva propiedad para el nombre del campo encontrado
+			vNombreCam: campoEncontrado ? campoEncontrado.vNombreCam : null,
+
+			// Campos de ZAfiactivoti (extras)
+			idActivoAti: item.idActivoAti,
+			cNumeconAfiExtra: item.cNumeconAfiExtra?.trim(),
+			cReponsivaAti: item.cReponsivaAti?.trim(),
+			cResponsableAti: item.cResponsableAti?.trim(),
+			cCodigoCam: item.cCodigoCam?.trim(),
+			vEmailAti: item.vEmailAti?.trim(),
+			vPwdemailAti: item.vPwdemailAti?.trim(),
+			vAntivirusAti: item.vAntivirusAti?.trim(),
+			vOfficeAti: item.vOfficeAti?.trim(),
+			vTipoAti: item.vTipoAti?.trim(),
+			vMarcaAti: item.vMarcaAti?.trim(),
+			vSerieAti: item.vSerieAti?.trim(),
+			dFcompraAti: formatDateString(item.dFcompraAti),
+			vNombrePrv: item.vNombrePrv?.trim(),
+			nCostoAti: item.nCostoAti,
+			dFgarantiaAti: formatDateString(item.dFgarantiaAti),
+			vModeloAti: item.vModeloAti?.trim(),
+			dFasignacionAti: formatDateString(item.dFasignacionAti),
+			vVerwindowsAti: item.vVerwindowsAti?.trim(),
+			vProcesadorAti: item.vProcesadorAti?.trim(),
+			vMemoriaAti: item.vMemoriaAti?.trim(),
+			vDiscoduroAti: item.vDiscoduroAti?.trim(),
+			vUsreclipseAti: item.vUsreclipseAti?.trim(),
+			vPwdeclipseAti: item.vPwdeclipseAti?.trim(),
+			vUsrrdAti: item.vUsrrdAti?.trim(),
+			vPwdremotoAti: item.vPwdremotoAti?.trim(),
+			vComentariosAti: item.vComentariosAti?.trim(),
+			vDocresponsivaAti: item.vDocresponsivaAti?.trim(),
+			vDepartamentoAti: item.vDepartamentoAti?.trim(),
+
+			//Nombre usuario asignado al equipo
+			vNombreEmpleado: item.vNombreEmpleado?.trim(),
+		};
+	});
 
 	return {
 		data: updatedData,

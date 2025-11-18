@@ -142,6 +142,7 @@ export const ActivosPage = () => {
         setShowEditModal(false);
         setResponsableActual('');
         sethistorico('');
+        setRecords('');
     };
 
     // Inicializa el tooltip de Bootstrap en el encabezado de la columna
@@ -337,7 +338,7 @@ export const ActivosPage = () => {
 
             // ¡¡¡CAMBIO AQUÍ!!! Usa 'vNombreEmpleado' con 'v' minúscula
             const vNombreEmpleado = record.vNombreEmpleado ? record.vNombreEmpleado.toLowerCase() : '';
-            const vNombreCam = record.vNombreEmpleado ? record.vNombreCam.toLowerCase() : '';
+            const vNombreCam = record.vNombreCam ? record.vNombreCam.toLowerCase() : '';
 
             return (
                 cCodigoAfi.includes(searchText) ||
@@ -379,6 +380,36 @@ export const ActivosPage = () => {
 
     const handleGenerarPDF = () => {
         generarResponsivaPDF(formDataExtras, searchEmpleado); // Pasa tus datos a la función
+    };
+
+    const checkSpecialCharForRoute = (e) => {
+        const key = e.key;
+
+        // Permitir:
+        // 1. Números (0-9) y el punto decimal (.)
+        const isNumberOrDot = /[0-9.]/.test(key);
+
+        // 2. Teclas de control esenciales para la edición y navegación.
+        // 'Backspace' es para borrar hacia atrás.
+        // 'Delete' es para borrar hacia adelante.
+        // 'ArrowLeft' / 'ArrowRight' son para mover el cursor.
+        // 'Tab' es para salir del campo (aunque a menudo se maneja a nivel de formulario).
+        const isControlKey = key === 'Backspace' ||
+            key === 'Delete' ||
+            key.startsWith('Arrow') ||
+            key === 'Tab';
+
+        // 3. Permitir Ctrl/Cmd + V (pegar), Ctrl/Cmd + X (cortar), etc.
+        // Esto es vital para la usabilidad.
+        const isCopyPaste = (e.ctrlKey || e.metaKey);
+
+        if (isNumberOrDot || isControlKey || isCopyPaste) {
+            // Permitir el evento (no hacer nada)
+            return;
+        } else {
+            // Bloquear cualquier otra tecla (letras, símbolos, espacios, etc.)
+            e.preventDefault();
+        }
     };
 
     // Función para renderizar el contenido según el activeKey
@@ -813,7 +844,7 @@ export const ActivosPage = () => {
                                 <Col md={2}>
                                     <Form.Group controlId="nCostoAti">
                                         <Form.Label>Costo</Form.Label>
-                                        <Form.Control style={{ fontSize: '0.7rem' }} type="text" name="nCostoAti" value={formDataExtras.nCostoAti || ''} onChange={handleInputChangeExtras} />
+                                        <Form.Control style={{ fontSize: '0.7rem' }} type="text" name="nCostoAti" value={formDataExtras.nCostoAti || ''} onKeyDown={(e) => checkSpecialCharForRoute(e)} onChange={handleInputChangeExtras} />
                                     </Form.Group>
                                 </Col>
                                 <Col md={2}>
@@ -1075,7 +1106,7 @@ export const ActivosPage = () => {
         const success = await dispatch(modificarExtras(dataToSend)); // Asegúrate de tener este thunk
         if (success) {
             dispatch(getActivos()); // Recarga los choferes para ver los cambios
-            closeEditModal();
+            //closeEditModal();
             setIsLoadingGuardado(false);
         } else {
             setIsLoadingGuardado(false);

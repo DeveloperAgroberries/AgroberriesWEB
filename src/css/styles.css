@@ -30,7 +30,8 @@ html, body {
 
     width: 100%;
     max-width: 95%; /* Ancho máximo del contenedor externo */
-    margin: 0 auto; /* Centrar el contenedor externo en la página */
+    position: relative; /* Clave para moverlo sin sacarlo del flujo */
+    top: 10px;
     padding: 20px;
     background-color: white;
 }
@@ -38,14 +39,23 @@ html, body {
 @media (max-width: 768px) {
     #pagesContainer {
       padding: 15px;
+      top: 50px;
     }
   }
   
   @media (max-width: 576px) {
     #pagesContainer {
       padding: 10px;
+      top: 50px;
     }
   }
+
+#encabezadosPagina{
+     background: #792482; 
+     color: white; 
+     font-size: 25px; 
+     text-align: center
+}
     
 .card{
     height: auto;

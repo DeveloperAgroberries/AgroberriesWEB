@@ -23,7 +23,7 @@ export const NavBar = (props) => {
 	// console.log(user?.permissions)
 
 	return (
-		<nav className="navbar bg-body-tertiary fixed-top" data-bs-theme="dark">
+		<nav className="navbar bg-body-tertiary fixed-top" data-bs-theme="dark" style={{marginBottom: '200px'}}>
 			<div className="container-fluid">
 				<NavLink className={({ isActive }) => `navbar-brand ${isActive ? 'active' : ''}`} to="/home">
 					<img src={logo} alt='logo' width="100" height="60" />
@@ -150,6 +150,20 @@ export const NavBar = (props) => {
 															</NavLink>
 														</li>
 													)}
+													{user?.permissions.includes("02354") && (
+														<li className='nav-item'>
+															<NavLink className={({ isActive }) => `rounded-1 dropdown-item ${isActive ? 'active' : ''}`} to="/solicitaEquipo" onClick={() => {navigate("/solicitaEquipo");}} data-bs-dismiss="offcanvas">
+																Solicitar equipo de computo
+															</NavLink>
+														</li>
+													)}
+													{/* {user?.permissions.includes("02355") && (
+														<li className='nav-item'>
+															<NavLink className={({ isActive }) => `rounded-1 dropdown-item ${isActive ? 'active' : ''}`} to="/catalogoChoferes" onClick={() => {navigate("/catalogoChoferes");}} data-bs-dismiss="offcanvas">
+																Registro de mantenimiento
+															</NavLink>
+														</li>
+													)} */}
 												</ul>
 											</li>
 										</>
@@ -390,6 +404,33 @@ export const NavBar = (props) => {
 											</li>
 										</>
 									)}
+
+									{user?.permissions.includes("02500") && (
+										<>
+											<li className="nav-item dropdown">
+												<a className="dropdown-item dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+													Reporte Checadores
+												</a>
+												<ul className="dropdown-menu-end">
+													{user?.permissions.includes("02501") && (
+														<li className='nav-item'>
+															<NavLink className={({ isActive }) => `rounded-1 dropdown-item ${isActive ? 'active' : ''}`} to="/reportes/reportechecadorfacial" onClick={() => {navigate("/reportes/reportechecadorfacial");}} data-bs-dismiss="offcanvas">
+																Reporte Checador Facial
+															</NavLink>
+														</li>
+													)}
+												</ul>
+											</li>
+										</>
+									)}
+
+									{/* {user?.permissions.includes("02355") && (
+														<li className='nav-item'>
+															<NavLink className={({ isActive }) => `rounded-1 dropdown-item ${isActive ? 'active' : ''}`} to="/catalogoChoferes" onClick={() => {navigate("/catalogoChoferes");}} data-bs-dismiss="offcanvas">
+																Registro de mantenimiento
+															</NavLink>
+														</li>
+													)} */}
 								</ul>
 							</li>
 

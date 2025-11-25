@@ -1,5 +1,5 @@
 import { Navigate, Route, Routes } from 'react-router-dom';
-import { CostoxRutayKm, AnalisisTransportes, RegistrosTransportes, VehiculosPorProveedor, ReporteBaseTransportes, PruebaRH, ExistenciasME, DashboardTransportes, ReporteMonitoreo, ReporteUsoAppComedor, ReporteComedorGeneral, ReporteAccesoVehicular } from '../pages/Reports';
+import { CostoxRutayKm, AnalisisTransportes, RegistrosTransportes, VehiculosPorProveedor, ReporteBaseTransportes, PruebaRH, ExistenciasME, DashboardTransportes, ReporteMonitoreo, ReporteUsoAppComedor, ReporteComedorGeneral, ReporteAccesoVehicular, ReporteChecadorFacial } from '../pages/Reports';
 
 export const ReportesRoutes = () => {
 	return (
@@ -27,6 +27,8 @@ export const ReportesRoutes = () => {
 			<Route path="vehiculosporproveedor" element={<VehiculosPorProveedor />} />
 			<Route path="reportebasetransportes" element={<ReporteBaseTransportes />} />
 			<Route path="dashboardtransportes" element={<DashboardTransportes />} />
+
+			<Route path="reportechecadorfacial" element={<ReporteChecadorFacial />} />
 
 
 			<Route path="/*" element={<Navigate to="/reportes" />} />

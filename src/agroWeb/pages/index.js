@@ -15,4 +15,5 @@ export * from './CombustiblesPage';
 export * from './ReporteCombustibles';
 export * from './CatalogoChoferesPage';
 export * from './NominaPage';
+export * from './SolicitaEquipo';
 export { default as RindeGastosPage } from './RindeGastosPage';

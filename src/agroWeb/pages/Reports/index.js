@@ -11,3 +11,4 @@ export * from './DashboardTransportes';
 export * from './ReporteMonitoreo';
 export * from './ReporteUsoAppComedor';
 export * from './ReporteComedorGeneral';
+export * from './ReporteChecadorFacial';

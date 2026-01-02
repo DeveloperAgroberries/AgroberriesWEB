@@ -8,7 +8,7 @@ import { resetReports } from "../../../store/slices/reports/registrosTransporteS
 import { Spinner, Alert } from "react-bootstrap";
 import dayjs from 'dayjs';
 
-export const RegistrosTransportesList = ({ isSearchTriggered }) => {
+export const RegistrosTransportesList = ({ isSearchTriggered, searchTerm = '', setTotalRecords }) => {
 	const dispatch = useDispatch();
 
 	const { reports = [], isLoading: isLoadingReports, errorMessage: errorReports } = useSelector((state) => state.registrosTransporte);
@@ -26,7 +26,7 @@ export const RegistrosTransportesList = ({ isSearchTriggered }) => {
 	}
 
 	useEffect(() => {
-		if(isSearchTriggered){
+		if (isSearchTriggered) {
 			dispatch(getDataTransportRecordsByDateForRT(registrosTransporteFilters));
 			dispatch(getVehicles());
 			dispatch(getRoutes());
@@ -37,28 +37,6 @@ export const RegistrosTransportesList = ({ isSearchTriggered }) => {
 			dispatch(resetReports());
 		};
 	}, [dispatch, isSearchTriggered, registrosTransporteFilters])
-
-	if (isLoadingReports || isLoadingVehicles || isLoadingRoutes || isLoadingPRoviders) {
-        return(
-            <tr>
-                <td colSpan="9" className="text-center">
-                    <Spinner animation="border" /> Cargando datos...
-                </td>
-            </tr>
-        );
-    }
-
-	if (errorReports || errorVehicles || errorRoutes || errorProviders) {
-        return (
-            <tr>
-                <td colSpan="9" className="text-center">
-                    <Alert variant="danger">
-                        {errorReports ? `Error al cargar datos: ${errorReports}` : `Error al cargar complementarios: ${errorVehicles}`}
-                    </Alert>
-                </td>
-            </tr>
-        );
-    }
 
 	//Linea comentadas debido a BUG que daba espacios en blanco, las lineas superiores a las comentadas dan el dato correcto
 	const updatedData = reports.map(item => ({
@@ -83,7 +61,40 @@ export const RegistrosTransportesList = ({ isSearchTriggered }) => {
 		// cControlRut: routes[(item.cControlRut - 1)] ? routes[(item.cControlRut - 1)].vDescripcionRut : item.vDescripcionRut,
 	}));
 
-	const updatedData4 = updatedData3.filter((item) => {
+	// FUNCION PARA OBTENER PRECIO REAL DE RUTAS EN SINALOA
+	const updatedEspecial = updatedData3.map(item => {
+		// Definimos las rutas que disparan la multiplicación
+		const rutasEspeciales = [245, 244, 240, 239, 227];
+
+		// Verificamos si la ruta actual debe ser procesada
+		const esRutaEspecial = rutasEspeciales.includes(Number(item.cControlRut));
+
+		if (esRutaEspecial) {
+			// Contamos el grupo para el cálculo
+			const totalEnGrupo = updatedData3.filter(r =>
+				Number(r.cControlRut) === Number(item.cControlRut) &&
+				r.cControlVeh === item.cControlVeh &&
+				r.cTiporegTrn === item.cTiporegTrn &&
+				r.dFechaRegTrn === item.dFechaRegTrn
+			).length;
+
+			return {
+				...item,
+				// Guardamos el precio unitario original
+				precioPorPersona: item.nCostoRut,
+				// Actualizamos el costo total multiplicado
+				nCostoRut: (Number(item.nCostoRut) * totalEnGrupo)
+			};
+		}
+
+		// Si NO es ruta especial, asignamos "N/A" al nuevo campo
+		return {
+			...item,
+			precioPorPersona: "N/A"
+		};
+	});
+
+	const updatedData4 = updatedEspecial.filter((item) => {
 		// Eliminar elementos donde cCodigoTra está vacío o es null
 		return item.cCodigoTra.trim() !== null && item.cCodigoTra.trim() !== '';
 	});
@@ -130,12 +141,71 @@ export const RegistrosTransportesList = ({ isSearchTriggered }) => {
 		filtered = updatedDataFinal;
 	}
 
+	// 🚀 6. FILTRO DINÁMICO (INPUT DE BÚSQUEDA)
+	// Este se aplica al final de todos los filtros anteriores
+	const searchFiltered = filtered.filter(record => {
+		// 1. Limpiamos el texto que escribe el usuario:
+		// .trim() quita espacios al inicio/final
+		// .replace(/\s+/g, ' ') convierte múltiples espacios en uno solo
+		const text = searchTerm.toLowerCase().trim().replace(/\s+/g, ' ');
+		if (!text) return true;
+
+		// 2. Función interna para limpiar los datos de la tabla antes de comparar
+		const cleanField = (field) =>
+			String(field || '').toLowerCase().replace(/\s+/g, ' ').trim();
+
+		const chofer = cleanField(record.vChoferTrn);
+		const proveedor = cleanField(record.vNombrePrv);
+		const vehiculo = cleanField(record.cPlacaVeh);
+		const ruta = cleanField(record.vDescripcionRut);
+
+		// 3. Ahora la comparación será exitosa porque ambos lados tienen UN solo espacio
+		return (
+			chofer.includes(text) ||
+			proveedor.includes(text) ||
+			vehiculo.includes(text) ||
+			ruta.includes(text)
+		);
+	});
+
+	// --- AQUÍ VA EL NUEVO HOOK DEL CONTEO ---
+	// Lo ponemos aquí arriba para que React siempre lo vea, 
+	// incluso si la tabla está cargando.
+	useEffect(() => {
+		if (setTotalRecords) {
+			// Usamos searchFiltered si ya existe, o 0
+			setTotalRecords(searchFiltered ? searchFiltered.length : 0);
+		}
+	}, [searchTerm, reports, setTotalRecords]);
+
+	if (isLoadingReports || isLoadingVehicles || isLoadingRoutes || isLoadingPRoviders) {
+		return (
+			<tr>
+				<td colSpan="9" className="text-center">
+					<Spinner animation="border" /> Cargando datos...
+				</td>
+			</tr>
+		);
+	}
+
+	if (errorReports || errorVehicles || errorRoutes || errorProviders) {
+		return (
+			<tr>
+				<td colSpan="9" className="text-center">
+					<Alert variant="danger">
+						{errorReports ? `Error al cargar datos: ${errorReports}` : `Error al cargar complementarios: ${errorVehicles}`}
+					</Alert>
+				</td>
+			</tr>
+		);
+	}
+
 	return (
 		<>
-			{filtered.length > 0 ?(
-				filtered.map((report, index) => (
+			{searchFiltered.length > 0 ? (
+				searchFiltered.map((report, index) => (
 					<tr key={index + 1}>
-						<th scope="row">{index + 1}</th>
+						{/* <th scope="row">{index + 1}</th> */}
 						<td>{report.vChoferTrn}</td>
 						<td>{report.cCodigoTra}</td>
 						<td>{report.cTiporegTrn}</td>
@@ -143,15 +213,21 @@ export const RegistrosTransportesList = ({ isSearchTriggered }) => {
 						<td>{report.cPlacaVeh}</td>
 						<td>{report.vDescripcionRut}</td>
 						<td>{numberFormat(report.dRegistroTrn)}</td>
-						<td>{"$"+report.nCostoRut.toLocaleString(undefined, {maximumFractionDigits:2})}</td>
+						<td>
+							{report.precioPorPersona === "N/A"
+								? "N/A"
+								: "$" + Number(report.precioPorPersona).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+							}
+						</td>
+						<td>{"$" + report.nCostoRut.toLocaleString(undefined, { maximumFractionDigits: 2 })}</td>
 					</tr>
 				))
-			):(
+			) : (
 				<tr>
-                    <td colSpan="9" className="text-center">
-                        No hay datos disponibles.
-                    </td>
-                </tr>
+					<td colSpan="9" className="text-center">
+						No hay datos disponibles.
+					</td>
+				</tr>
 			)}
 		</>
 	)

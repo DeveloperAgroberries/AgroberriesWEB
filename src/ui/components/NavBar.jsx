@@ -385,7 +385,7 @@ export const NavBar = (props) => {
 										</li>
 									)}
 
-									{user?.permissions.includes("02400") && (
+									{/* {user?.permissions.includes("02400") && (
 										<>
 											<li className="nav-item dropdown">
 												<a className="dropdown-item dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
@@ -403,7 +403,7 @@ export const NavBar = (props) => {
 												</ul>
 											</li>
 										</>
-									)}
+									)} */}
 
 									{user?.permissions.includes("02500") && (
 										<>

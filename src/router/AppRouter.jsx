@@ -103,7 +103,7 @@ export const AppRouter = () => {
       });
       // logs out user
       logoutAction();
-    }, 600000); // 600000ms = 10 minutos.
+    }, 1000 * 60 * 60 * 2); // 7200000 = 2 horas.
   };
 
   // this resets the timer if it exists.

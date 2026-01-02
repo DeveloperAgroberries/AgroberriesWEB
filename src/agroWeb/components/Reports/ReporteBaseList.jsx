@@ -13,7 +13,7 @@ import { getISOWeek } from 'date-fns';
 import { Alert, Spinner } from "react-bootstrap";
 import dayjs from 'dayjs';
 
-export const ReporteBaseList = ({ isSearchTriggered }) => {
+export const ReporteBaseList = ({ isSearchTriggered, searchTerm = '', setTotalRecords }) => {
 	const dispatch = useDispatch();
 	const { reports = [], isLoading: isLoadingReports, errorMessage: errorReports } = useSelector((state) => state.transportBaseReport);
 	const { vehicles = [], isLoading: isLoadingVehicles, errorMessage: errorVehicles } = useSelector((state) => state.vehicles);
@@ -43,27 +43,27 @@ export const ReporteBaseList = ({ isSearchTriggered }) => {
 
 	const extractDate = (datetime) => {
 		return datetime.split('T')[0]; // Suponiendo que el formato es 'YYYY-MM-DDTHH:MM:SS'
-	  };
+	};
 
 	const groupAndCountRecords = (records) => {
 		const grouped = {};
 		records.forEach(item => {
-		const date = extractDate(item.dRegistroTrn);
-		const key = `${date}-${item.cControlVeh}-${item.cControlRut}`;
-		if (!grouped[key]) {
-		  grouped[key] = {
-			...item,
-			nCantidadTransportada: 0,
-		  };
-		}
-		grouped[key].nCantidadTransportada += 1;
-	  });
+			const date = extractDate(item.dRegistroTrn);
+			const key = `${date}-${item.cControlVeh}-${item.cControlRut}`;
+			if (!grouped[key]) {
+				grouped[key] = {
+					...item,
+					nCantidadTransportada: 0,
+				};
+			}
+			grouped[key].nCantidadTransportada += 1;
+		});
 
-	  return Object.values(grouped);
+		return Object.values(grouped);
 	}
 
 	useEffect(() => {
-		if(isSearchTriggered){
+		if (isSearchTriggered) {
 			dispatch(getDataTransportRecordsByDateForBT(transportBaseFilters));
 			dispatch(getVehicles());
 			dispatch(getRoutes());
@@ -90,16 +90,6 @@ export const ReporteBaseList = ({ isSearchTriggered }) => {
 		isLoadingNomWeeks,
 	];
 
-	if ( loadingStates.some(Boolean)) {
-        return(
-            <tr>
-                <td colSpan="16" className="text-center">
-                    <Spinner animation="border" /> Cargando datos...
-                </td>
-            </tr>
-        );
-    }
-
 	const errors = [
 		errorVehicles,
 		errorRoutes,
@@ -110,20 +100,6 @@ export const ReporteBaseList = ({ isSearchTriggered }) => {
 		errorZones,
 		errorNomWeeks
 	].filter(Boolean);
-	
-	if (errors.length > 0) {
-		return (
-			<tr>
-				<td colSpan="16" className="text-center">
-					<Alert variant="danger">
-						{errors.map((error, index) => (
-							<div key={index}>Error al cargar datos: {error}</div>
-						))}
-					</Alert>
-				</td>
-			</tr>
-		);
-	}
 
 	const updatedData = reports.filter((item) => {
 		// Eliminar elementos donde cCodigoTra está vacío o es null
@@ -154,7 +130,7 @@ export const ReporteBaseList = ({ isSearchTriggered }) => {
 			filtered = updatedData3.filter((item) => {
 				if (transportBaseFilters.schedule === "12:00:00") {
 					return onlyTime(item.dRegistroTrn.toLowerCase().trim()) < transportBaseFilters.schedule.toLowerCase().trim();
-				}else{
+				} else {
 					return onlyTime(item.dRegistroTrn.toLowerCase().trim()) > transportBaseFilters.schedule.toLowerCase().trim();
 				}
 			});
@@ -162,7 +138,7 @@ export const ReporteBaseList = ({ isSearchTriggered }) => {
 			filtered = filtered.filter((item) => {
 				if (transportBaseFilters.schedule === "12:00:00") {
 					return onlyTime(item.dRegistroTrn.toLowerCase().trim()) < transportBaseFilters.schedule.toLowerCase().trim();
-				}else{
+				} else {
 					return onlyTime(item.dRegistroTrn.toLowerCase().trim()) > transportBaseFilters.schedule.toLowerCase().trim();
 				}
 			});
@@ -171,8 +147,36 @@ export const ReporteBaseList = ({ isSearchTriggered }) => {
 
 	const updatedDataGroup = groupAndCountRecords(filtered);
 
+	// FUNCION PARA OBTENER PRECIO REAL DE RUTAS EN SINALOA
+	const updatedEspecial = updatedDataGroup.map(item => {
+		const rutasEspeciales = [245, 244, 240, 239, 227];
+		const esRutaEspecial = rutasEspeciales.includes(Number(item.cControlRut));
+
+		if (esRutaEspecial) {
+			// 1. Obtenemos el costo base
+			const costoBase = Number(item.nCostoRut);
+
+			// 2. IMPORTANTE: Usamos la cantidad transportada del ITEM ACTUAL 
+			// Si quieres que se multiplique SOLO por los 11 de esa fila:
+			const cantidadActual = Number(item.nCantidadTransportada || 0);
+			// console.log("Base: " + costoBase + " Actual: " + cantidadActual)
+			return {
+				...item,
+				precioPorPersona: costoBase,
+				nCostoPersona: costoBase,
+				// 3. LA OPERACIÓN: 90 * 11 = 990
+				nCostoRut: (costoBase * cantidadActual)
+			};
+		}
+
+		return {
+			...item,
+			precioPorPersona: "N/A"
+		};
+	});
+
 	//Linea comentadas debido a BUG que daba espacios en blanco, las lineas superiores a las comentadas dan el dato correcto
-	const updatedData4 = updatedDataGroup.map(item => ({
+	const updatedData4 = updatedEspecial.map(item => ({
 		...item,
 		cControlVeh: vehicles.find(p => p.cControlVeh === item.cControlVeh)?.cPlacaVeh || item.cPlacaVeh,
 		// cControlVeh: vehicles[(item.cControlVeh - 1)] ? vehicles[(item.cControlVeh - 1)].cPlacaVeh : item.cPlacaVeh,
@@ -194,7 +198,7 @@ export const ReporteBaseList = ({ isSearchTriggered }) => {
 		cControlRut: routes.find(p => p.cControlRut === item.cControlRut)?.vDescripcionRut || item.vDescripcionRut,
 		// cControlRut: routes[(item.cControlRut - 1)] ? routes[(item.cControlRut - 1)].vDescripcionRut : item.vDescripcionRut,
 		nDistanciaRut: routes.find(p => p.cControlRut === item.cControlRut)?.nDistanciaRut || item.nDistanciaRut,
-		nCostoRut: routes.find(p => p.cControlRut === item.cControlRut)?.nCostoRut || item.nCostoRut,
+		// nCostoRut: routes.find(p => p.cControlRut === item.cControlRut)?.nCostoRut || item.nCostoRut,
 		cCodigoZon: routes.find(p => p.cControlRut === item.cControlRut)?.cCodigoZon || item.cCodigoZon,
 	}));
 
@@ -215,41 +219,84 @@ export const ReporteBaseList = ({ isSearchTriggered }) => {
 
 	const updatedData10 = updatedData9.map(item => ({
 		...item,
-		nOcupacion: Math.round(((item.nCantidadTransportada*100)/item.cCapacidadVeh) * 100)/100,
-		nCostoKm: Math.round((item.nCostoRut/item.nDistanciaRut) * 100)/100,
+		nOcupacion: Math.round(((item.nCantidadTransportada * 100) / item.cCapacidadVeh) * 100) / 100,
+		nCostoKm: Math.round((item.nCostoRut / item.nDistanciaRut) * 100) / 100,
 	}));
 
 	const updatedDataFinal = updatedData10.map(item => ({
 		...item,
-		nCostoPersona: Math.round((item.nCostoRut/item.nCantidadTransportada) * 100)/100,
+		nCostoPersona: Math.round((item.nCostoRut / item.nCantidadTransportada) * 100) / 100,
 	}));
-	
+
+	// 🚀 6. FILTRO DINÁMICO
+	const searchFiltered = updatedDataFinal.filter(record => {
+		const text = searchTerm.toLowerCase().trim().replace(/\s+/g, ' ');
+		if (!text) return true;
+
+		const cleanField = (field) => String(field || '').toLowerCase().replace(/\s+/g, ' ').trim();
+
+		// IMPORTANTE: Verificar que los nombres de las propiedades coincidan con el objeto final
+		return (
+			cleanField(record.cControlVeh).includes(text) ||
+			cleanField(record.cControlRut).includes(text) || // Antes tenías vNombrePrv, pero arriba lo mapeaste a cControlPrv
+			cleanField(record.cControlPrv).includes(text) || // Arriba lo mapeaste a placa
+			cleanField(record.vNombreZon).includes(text)    // Arriba lo mapeaste a descripción
+		);
+	});
+
+	// ✅ CORRECCIÓN DEL EFFECT
+	useEffect(() => {
+		if (setTotalRecords) {
+			// En lugar de pasar searchFiltered como dependencia, 
+			// el efecto reacciona cuando los reportes base o el texto cambian.
+			setTotalRecords(searchFiltered.length);
+		}
+		// Agregamos searchFiltered.length para que se dispare solo cuando el número cambie
+	}, [searchTerm, reports, searchFiltered.length, setTotalRecords]);
+
+	// 3. LOS RENDERS CONDICIONALES AL FINAL
+	if (loadingStates.some(Boolean)) {
+		return <tr><td colSpan="17" className="text-center"><Spinner /> Cargando...</td></tr>;
+	}
+
+	if (errors.length > 0) {
+		return <tr><td colSpan="17" className="text-center"><Alert>Error...</Alert></td></tr>;
+	}
+
+	// console.log("especial: "+JSON.stringify(updatedEspecial, null, 2));
+	console.table(searchFiltered)
 	return (
 		<>
-			{updatedDataFinal.length > 0 ? (
-				updatedDataFinal.map((report, index) => (
+			{searchFiltered.length > 0 ? (
+				searchFiltered.map((report, index) => (
 					<tr key={index + 1}>
-						<th scope="row">{index + 1}</th>
+						{/* <th scope="row">{index + 1}</th> */}
 						<td>{numberFormat(report.dRegistroTrn)}</td>
 						<td>{report.cCodigoSem}</td>
 						<td>{report.cControlVeh}</td>
 						<td>{report.cControlRut}</td>
 						<td>{report.vNombreCam}</td>
 						<td>{report.nDistanciaRut}</td>
-						<td>{"$"+report.nCostoRut}</td>
+						<td>
+							{report.precioPorPersona === "N/A"
+								? "N/A"
+								: "$" + report.precioPorPersona
+							}
+						</td>
+						<td>{"$" + report.nCostoRut}</td>
 						<td>{report.cCapacidadVeh}</td>
 						<td>{report.nCantidadTransportada}</td>
-						<td>{report.nOcupacion+"%"}</td>
-						<td>{"$"+report.nCostoKm}</td>
+						<td>{report.nOcupacion + "%"}</td>
+						<td>{"$" + report.nCostoKm}</td>
 						<td>{report.cControlPrv}</td>
 						<td>{getWeekNumber2(report.dRegistroTrn)}</td>
-						<td>{"$"+report.nCostoPersona}</td>
+						<td>{"$" + report.nCostoPersona}</td>
 						<td>{report.vNombreZon}</td>
 					</tr>
 				))
-			):(
+			) : (
 				<tr>
-					<td colSpan="16" className="text-center">
+					<td colSpan="17" className="text-center">
 						No hay datos disponibles.
 					</td>
 				</tr>

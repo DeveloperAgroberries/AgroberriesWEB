@@ -2,9 +2,10 @@ import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { getRoutes, setActiveRoute } from '../../../store/slices/rutas';
 import { getZones } from '../../../store/slices/zones';
-import { Badge, Spinner } from 'react-bootstrap';
+import { ModRoute } from "../../components/Routes";
+import { Badge, Spinner, OverlayTrigger, Tooltip } from 'react-bootstrap';
 
-export const RouterList = () => {
+export const RouterList = ({ openRoutePopup, closeRoutePopup, searchTerm = '' })=> {
     const dispatch = useDispatch();
     const { routes = [], isLoading: isLoadingRoutes, errorMessage: errorRoutes } = useSelector((state) => state.routes);
     const { zones = [], isLoading: isLoadingZones, errorMessage: errorZones } = useSelector((state) => state.zones);
@@ -17,12 +18,25 @@ export const RouterList = () => {
             await dispatch(getZones());
         };
         fetchData();
-    },[dispatch]);
-    
+    }, [dispatch]);
+
+    const handleActionClick = (route) => {
+            setSelectedRow(route.cControlVeh);
+            dispatch(setActiveRoute({ selVehicles: route }));
+            
+            // Abrimos el popup pasando la data directamente
+            openRoutePopup(
+                <ModRoute 
+                    onClose={closeRoutePopup} 
+                    vehicleData={route} 
+                />
+            );
+        };
+
     if (isLoadingRoutes || isLoadingZones) {
-        return(
+        return (
             <tr>
-                <td colSpan="8" className="text-center">
+                <td colSpan="9" className="text-center">
                     <Spinner animation="border" /> Cargando datos...
                 </td>
             </tr>
@@ -32,7 +46,7 @@ export const RouterList = () => {
     if (errorRoutes || errorZones) {
         return (
             <tr>
-                <td colSpan="8" className="text-center">
+                <td colSpan="9" className="text-center">
                     <Alert variant="danger">
                         {errorRoutes ? `Error al cargar rutas: ${errorRoutes}` : `Error al cargar zonas: ${errorZones}`}
                     </Alert>
@@ -47,9 +61,9 @@ export const RouterList = () => {
         cActivaRut: item.cActivaRut === '1' ? true : false
     }));
 
-    const handleRowClick = (id,description,active,distance,cost,zone,user) => {
+    const handleRowClick = (id, description, active, distance, cost, zone, user) => {
         setSelectedRow(id === selectedRow ? null : id);
-  
+
         const route = {
             cControlRut: id,
             vDescripcionRut: description.trim(),
@@ -60,13 +74,34 @@ export const RouterList = () => {
             cCodigoUsu: user.trim()
         }
 
-        dispatch( setActiveRoute({selRoutes: route}));
+        dispatch(setActiveRoute({ selRoutes: route }));
     };
+
+    // 🚀 6. FILTRO DINÁMICO (INPUT DE BÚSQUEDA)
+	// Este se aplica al final de todos los filtros anteriores
+	const searchFiltered = updatedData.filter(record => {
+		// 1. Limpiamos el texto que escribe el usuario:
+		// .trim() quita espacios al inicio/final
+		// .replace(/\s+/g, ' ') convierte múltiples espacios en uno solo
+		const text = searchTerm.toLowerCase().trim().replace(/\s+/g, ' ');
+		if (!text) return true;
+
+		// 2. Función interna para limpiar los datos de la tabla antes de comparar
+		const cleanField = (field) =>
+			String(field || '').toLowerCase().replace(/\s+/g, ' ').trim();
+
+		const ruta = cleanField(record.vDescripcionRut);
+
+		// 3. Ahora la comparación será exitosa porque ambos lados tienen UN solo espacio
+		return (
+			ruta.includes(text)
+		);
+	});
 
     return (
         <>
-            {updatedData.length > 0 ? (
-                updatedData.map((route, index) => (
+            {searchFiltered.length > 0 ? (
+                searchFiltered.map((route, index) => (
                     <tr
                         className={selectedRow === route.cControlRut ? 'table-active' : ''}
                         key={route.cControlRut}
@@ -82,7 +117,7 @@ export const RouterList = () => {
                     >
                         <th scope="row">{index + 1}</th>
                         <td>{route.vDescripcionRut}</td>
-                        <td className="text-center">
+                        <td className="text-center" style={{ fontSize: '18px' }}>
                             {route.cActivaRut ? (
                                 <Badge className="mb-10 mr-10 bg-success" pill>Activa</Badge>
                             ) : (
@@ -94,6 +129,13 @@ export const RouterList = () => {
                         <td>{route.vNombreZon}</td>
                         <td>{route.cCodigoUsu}</td>
                         <td>{route.cUsumodRut}</td>
+                        <td className="text-center">
+                            <OverlayTrigger placement="left" overlay={<Tooltip>Modificar</Tooltip>}>
+                                <button className="btn btn-link p-0" onClick={() => handleActionClick(route)}>
+                                    <i className="fas fa-edit fa-lg" style={{ color: '#2b65ff' }}></i>
+                                </button>
+                            </OverlayTrigger>
+                        </td>
                     </tr>
                 ))
             ) : (

@@ -11,7 +11,9 @@ import { set } from "date-fns";
 import { useForm } from '../../hooks';
 import dayjs from 'dayjs';
 import generarResponsivaPDF from "../../auth/helpers/generarPDF";
+import generarInvPDF from "../../auth/helpers/generarInvPDF";
 import { DownloadTableExcel } from "react-export-table-to-excel";
+import Swal from 'sweetalert2'; // 💡 Importar SweetAlert2
 
 
 export const ActivosPage = () => {
@@ -379,7 +381,33 @@ export const ActivosPage = () => {
     const [activeKey, setActiveKey] = useState('general');
 
     const handleGenerarPDF = () => {
-        generarResponsivaPDF(formDataExtras, searchEmpleado); // Pasa tus datos a la función
+        if (searchEmpleado!="") {
+            generarResponsivaPDF(formDataExtras, searchEmpleado); // Pasa tus datos a la función
+        } else {
+            Swal.fire({
+                icon: 'error',
+                title: 'Ocurrio un Error',
+                text: 'Para generar Responsiva se necesita asignar un responsable.',
+                confirmButtonColor: '#7c30b8', // Color morado de tu tema
+                confirmButtonText: 'Entendido'
+            });
+            return; // Detiene la función aquí
+        }
+    };
+
+    const handleGenerarInvPDF = () => {
+       if (searchEmpleado!="") {
+            generarInvPDF(formDataExtras, searchEmpleado); // Pasa tus datos a la función
+        } else {
+            Swal.fire({
+                icon: 'error',
+                title: 'Ocurrio un Error',
+                text: 'Para generar la Carta de Bienvenida se necesita asignar un responsable.',
+                confirmButtonColor: '#7c30b8', // Color morado de tu tema
+                confirmButtonText: 'Entendido'
+            });
+            return; // Detiene la función aquí
+        }
     };
 
     const checkSpecialCharForRoute = (e) => {
@@ -628,7 +656,7 @@ export const ActivosPage = () => {
                                 Subir Documentos
                             </label>
                             <Row className="mb-3">
-                                <Col md={6}>
+                                <Col md={5}>
                                     <div className="col-md-12">
                                         <Form.Label htmlFor="vDocresponsivaAti" className="form-label me-2">Responsiva firmada:</Form.Label>
                                         <Form.Control type="file" className="form-control" name="vDocresponsivaAti" id="vDocresponsivaAti" onChange={handleArchivoChangeResponsiva} style={{ fontSize: '12px' }} />
@@ -641,9 +669,16 @@ export const ActivosPage = () => {
                                         </div>
                                     ))}
                                 </Col>
-                                <Col md={3}>
-                                    <div style={{ marginTop: '32px' }}>
-                                        <button type="button" className="btn btn-danger" onClick={handleGenerarPDF}>Generar Responsiva <i className="fas fa-file-pdf fa-lg" style={{ color: '#d0d0d0ff' }}></i></button>
+                                <Col md={2}>
+                                    <div style={{ textAlign: 'center' }}>
+                                        <div><p className="m-1 me-3 sizeLetra">Generar Responsiva</p></div>
+                                        <button type="button" className="btn btn-danger" onClick={handleGenerarPDF}><i className="fas fa-file-pdf fa-lg" style={{ color: '#d0d0d0ff' }}></i></button>
+                                    </div>
+                                </Col>
+                                <Col md={2}>
+                                    <div style={{ textAlign: 'center' }}>
+                                        <div><p className="m-1 me-3 sizeLetra">Carta Bienvenida</p></div>
+                                        <button type="button" className="btn btn-primary" onClick={handleGenerarInvPDF}><i className="fas fa-file-pdf fa-lg" style={{ color: '#d0d0d0ff' }}></i></button>
                                     </div>
                                 </Col>
                             </Row>

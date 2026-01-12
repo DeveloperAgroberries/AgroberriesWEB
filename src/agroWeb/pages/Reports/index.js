@@ -12,3 +12,4 @@ export * from './ReporteMonitoreo';
 export * from './ReporteUsoAppComedor';
 export * from './ReporteComedorGeneral';
 export * from './ReporteChecadorFacial';
+export * from './ReporteKilometrajeDiario';

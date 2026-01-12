@@ -37,7 +37,8 @@ import {
   NominaPage,
   RindeGastosPage,
   SolicitaEquipo,
-  ReporteChecadorFacial
+  ReporteChecadorFacial,
+  ReporteKilometrajeDiario
 } from '../agroWeb/pages';
 
 import { ProtectedRoute } from './ProtectedRoute';
@@ -86,7 +87,8 @@ export const AppRouter = () => {
     { path: "/nomina", permission: "02451", component: NominaPage },
     { path: "/solicitaEquipo", permission: "02354", component: SolicitaEquipo },
     { path: "/rindeGastos", permission: "02400", component: RindeGastosPage },
-    { path: "/reportes/reportechecadorfacial", permission: "02500", component: ReporteChecadorFacial }
+    { path: "/reportes/reportechecadorfacial", permission: "02500", component: ReporteChecadorFacial },
+    { path: "/reportes/reportekilometrajediario", permission: "02207", component: ReporteKilometrajeDiario }
   ];
 
   let timer;

@@ -363,6 +363,14 @@ export const NavBar = (props) => {
 														</NavLink>
 													</li>
 												)}
+
+												{user?.permissions.includes("02207") && (
+													<li className='nav-item'>
+														<NavLink className={({ isActive }) => `rounded-1 dropdown-item ${isActive ? 'active' : ''}`} to="/reportes/reportekilometrajediario" onClick={() => {navigate("/reportes/reportekilometrajediario");}} data-bs-dismiss="offcanvas">
+															Reporte Kilometraje Diario
+														</NavLink>
+													</li>
+												)}
 											</ul>
 										</li>
 									)}

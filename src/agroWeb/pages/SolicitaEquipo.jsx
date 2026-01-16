@@ -42,7 +42,7 @@ export const SolicitaEquipo = () => {
 
     const initialState = {
         //DATOS SOLICITUD
-        vNomsolicitante: null,
+        vNomsolicitante: '',
         vPuestosoli: '',
         vEmail: '',
         vJustificacion: '',
@@ -225,8 +225,6 @@ export const SolicitaEquipo = () => {
         // 1. Busca la solicitud completa en la lista de solicitudes
         const solicitud = solicitudes.find(s => s.iIdsolicitud === solicitudId);
 
-        console.log('Solicitud seleccionada para revisión:', solicitud);
-
         if (solicitud) {
             // 2. Guarda los datos de la solicitud
             setSolicitudSeleccionada(solicitud);
@@ -322,6 +320,27 @@ export const SolicitaEquipo = () => {
         return Math.floor(diferenciaMs / msPorDia);
     };
 
+    useEffect(() => {
+        // Al entrar: Forzamos el scroll y quitamos bloqueos
+        document.body.style.overflowY = 'auto';
+        document.body.style.height = 'auto';
+        document.body.classList.remove('modal-open');
+
+        return () => {
+            // Al salir (limpieza): Devolvemos el control al CSS global
+            document.body.style.overflowY = '';
+            document.body.style.height = '';
+        };
+    }, []);
+
+    // Este segundo efecto limpia el body cada vez que cierras un modal
+    useEffect(() => {
+        if (!showSolicitudes && !showSolicitudesTerminadas && !showDetalleModal) {
+            document.body.classList.remove('modal-open');
+            document.body.style.overflowY = 'auto';
+        }
+    }, [showSolicitudes, showSolicitudesTerminadas, showDetalleModal]);
+
     return (
         <>
             <style type="text/css">
@@ -376,12 +395,75 @@ export const SolicitaEquipo = () => {
                         max-height: 150px; /* Define una altura máxima para que el contenedor no crezca indefinidamente */
                         overflow-y: auto;  /* Agrega una barra de desplazamiento si el contenido excede el max-height */
                     }
+
+                    /* Estilos para la tabla HTML nativa */
+
+                    .table tbody tr:hover {
+                        --bs-table-hover-bg: #d19ff9 !important; /* Color que tenías */  
+                    }
+
+                    /* Estilo para las filas al pasar el ratón */
+                    .table tbody tr:hover {
+                        background-color: #d19ff9 !important; /* Color que tenías */
+                        {/* cursor: pointer; */}
+                    }
+
+                    /* Estilos para los encabezados de la tabla */
+                    .table thead th {
+                        padding-left: 8px;
+                        padding-right: 8px;
+                        font-weight: bold;
+                        background-color: #7c30b8; /* Color de fondo que tenías */
+                        color: white; /* Color de texto que tenías */
+                    }
+
+                    /* Estilos para body de la tabla */
+                    .table tbody td {
+                        padding-left: 8px;
+                        padding-right: 8px;
+                        font-size: 12px;
+                        white-space: nowrap;
+                        overflow: hidden;
+                        text-overflow: ellipsis;
+                    }
+
+                    /* Redondear esquinas del encabezado */
+                    .table thead th:first-child {
+                        border-top-left-radius: 8px;
+                    }
+                    .table thead th:last-child {
+                        border-top-right-radius: 8px;
+                    }
+
+                    /* Estilo para las celdas del cuerpo */
+                    .mi-tabla-activos tbody td {
+                        min-height: 30px; /* Puedes ajustar esto */
+                        padding-left: 8px;
+                        padding-right: 8px;
+                    }
+
+                    /* Opcional: Redondear también las esquinas inferiores de la tabla (siempre y cuando la tabla no tenga scroll interno que las oculte) */
+                    .table tbody tr:last-child td:first-child {
+                        border-bottom-left-radius: 8px;
+                    }
+                    .table tbody tr:last-child td:last-child {
+                        border-bottom-right-radius: 8px;
+                    }
+
+                    .sizeLetra{
+                        font-size: 13px;
+                    }
                 `}
             </style>
             <br />
             <br />
 
-            <div id="pagesContainer" className="container-fluid h rounded-3 p-3 mt-5 animate__animated animate__fadeIn">
+            <div id="pagesContainer" className="container-fluid rounded-3 p-3 mt-5 animate__animated animate__fadeIn" style={{
+                marginTop: '20px',
+                marginBottom: '40px',
+                alignSelf: 'flex-start', // Evita que se centre verticalmente si es muy largo
+                height: 'auto'
+            }}>
                 <div className="rounded-3" id='encabezadosPagina'>
                     <strong>Solicitud de equipo de computo</strong>
                 </div>
@@ -568,7 +650,7 @@ export const SolicitaEquipo = () => {
 
                 {/* Modal solicitudes pendientes */}
                 <Modal show={showSolicitudes} onHide={closeSolcitudes} size="xl" centered>
-                    <Modal.Header style={{ background: '#792482' }} closeButton>
+                    <Modal.Header style={{ background: '#7c30b8' }} closeButton>
                         <Modal.Title style={{ fontWeight: 'bold', color: 'white' }}>
                             📋 Solicitudes de Equipo Pendientes ({solicitudesPendientes.length})
                         </Modal.Title>
@@ -580,10 +662,10 @@ export const SolicitaEquipo = () => {
                         {errorMessage && <Alert variant="danger">Error al cargar: {errorMessage}</Alert>}
 
                         {!isLoading && solicitudesPendientes.length > 0 ? (
-                            <div style={{ maxHeight: '60vh', overflowY: 'auto' }}>
+                            <div style={{ maxHeight: '60vh', overflowY: 'auto', fontSize: '12px' }}>
                                 {/* 💡 CAMBIOS: Quitamos 'bordered' y mantenemos 'hover' y 'striped' */}
-                                <Table striped hover responsive size="sm" className="table-borderless">
-                                    <thead style={{ position: 'sticky', top: '0', backgroundColor: '#f8f9fa', zIndex: 10 }}>
+                                <table className="table table-striped table-hover">{/* Puedes añadir tus propias clases CSS */}
+                                    <thead style={{ position: 'sticky', top: '0', zIndex: '1' }}>
                                         <tr>
                                             <th>No.</th>
                                             <th>Solicitante</th>
@@ -604,12 +686,17 @@ export const SolicitaEquipo = () => {
                                                 <td>{solicitud.vPuestousuario}</td>
                                                 <td>{formatDateString(solicitud.dFechacreacion)}</td>
                                                 <td>{calcularDiasTranscurridos(solicitud.dFechacreacion)}</td>
-                                                <td><span className={`badge ${solicitud.vEstadosolicitud.toUpperCase() === 'PENDIENTE' ? 'bg-warning text-black' : 'bg-warning'}`}>{solicitud.vEstadosolicitud}</span></td>
-                                                <td><Button variant="info" size="sm" onClick={() => handleRevisar(solicitud.iIdsolicitud)}><i className="fas fa-eye"></i> Revisar</Button></td>
+                                                <td style={{ fontSize: '14px' }}><span className={`badge ${solicitud.vEstadosolicitud.toUpperCase() === 'PENDIENTE' ? 'bg-warning text-black' : 'bg-warning'}`}>{solicitud.vEstadosolicitud}</span></td>
+                                                <td style={{ textAlign: 'center' }}>
+                                                    <OverlayTrigger key={solicitud.iIdsolicitud} placement="right" trigger={['hover', 'focus']} overlay={
+                                                        <Tooltip id={`tooltip-revisar-${solicitud.iIdsolicitud}`}> Revisar Solicitud</Tooltip>}>
+                                                        <Button variant="info" size="sm" onClick={() => handleRevisar(solicitud.iIdsolicitud)}><i className="fas fa-eye"></i></Button>
+                                                    </OverlayTrigger>
+                                                </td>
                                             </tr>
                                         ))}
                                     </tbody>
-                                </Table>
+                                </table>
                             </div>
                         ) : (
                             !isLoading && <Alert variant="success" className="text-center">🎉 No hay solicitudes de equipo pendientes de revisión.</Alert>
@@ -624,7 +711,7 @@ export const SolicitaEquipo = () => {
 
                 {/* Modal solicitudes terminadas */}
                 <Modal show={showSolicitudesTerminadas} onHide={closeSolcitudesTerminadas} size="xl" centered>
-                    <Modal.Header style={{ background: '#792482' }} closeButton>
+                    <Modal.Header style={{ background: '#7c30b8' }} closeButton>
                         <Modal.Title style={{ fontWeight: 'bold', color: 'white' }}>
                             📋 Solicitudes de Equipo Terminadas ({solicitudesTerminadas.length})
                         </Modal.Title>
@@ -636,9 +723,9 @@ export const SolicitaEquipo = () => {
                         {errorMessage && <Alert variant="danger">Error al cargar: {errorMessage}</Alert>}
 
                         {!isLoading && solicitudesTerminadas.length > 0 ? (
-                            <div style={{ maxHeight: '60vh', overflowY: 'auto' }}>
-                                <Table striped bordered hover responsive size="sm">
-                                    <thead style={{ position: 'sticky', top: '0', backgroundColor: '#f8f9fa' }}>
+                            <div style={{ maxHeight: '60vh', overflowY: 'auto', fontSize: '12px' }}>
+                                <table className="table table-striped table-hover">{/* Puedes añadir tus propias clases CSS */}
+                                    <thead style={{ position: 'sticky', top: '0', zIndex: '1', backgroundColor: '#f8f9fa' }}>
                                         <tr>
                                             <th>No.</th>
                                             <th>Solicitante</th>
@@ -658,20 +745,21 @@ export const SolicitaEquipo = () => {
                                                 <td>{solicitud.vPuestousuario}</td>
                                                 {/* 💡 Nota: Asegúrate de que este campo de fecha esté en el formato que necesitas */}
                                                 <td>{formatDateString(solicitud.dFechacreacion)}</td>
-                                                <td>
+                                                <td style={{ fontSize: '14px' }}>
                                                     <span className={`badge ${solicitud.vEstadosolicitud.toUpperCase() === 'TERMINADO' ? 'bg-success text-white' : 'bg-success'}`}>
                                                         {solicitud.vEstadosolicitud}
                                                     </span>
                                                 </td>
-                                                <td>
-                                                    <Button variant="info" size="sm" onClick={() => handleRevisar(solicitud.iIdsolicitud)}>
-                                                        <i className="fas fa-eye"></i> Revisar
-                                                    </Button>
+                                                <td style={{ textAlign: 'center' }}>
+                                                    <OverlayTrigger key={solicitud.iIdsolicitud} placement="right" trigger={['hover', 'focus']} overlay={
+                                                        <Tooltip id={`tooltip-revisar-${solicitud.iIdsolicitud}`}> Revisar Solicitud</Tooltip>}>
+                                                        <Button variant="info" size="sm" onClick={() => handleRevisar(solicitud.iIdsolicitud)}><i className="fas fa-eye"></i></Button>
+                                                    </OverlayTrigger>
                                                 </td>
                                             </tr>
                                         ))}
                                     </tbody>
-                                </Table>
+                                </table>
                             </div>
                         ) : (
                             !isLoading && <Alert variant="success" className="text-center">🎉 No hay solicitudes de equipo terminadas.</Alert>
@@ -686,7 +774,7 @@ export const SolicitaEquipo = () => {
 
                 {/* 👇 MODAL DE DETALLE DE SOLICITUD 👇 */}
                 <Modal show={showDetalleModal} onHide={closeDetalleModal} size="xl" centered>
-                    <Modal.Header style={{ background: '#792482' }} closeButton>
+                    <Modal.Header style={{ background: '#7c30b8' }} closeButton>
                         <Modal.Title style={{ fontWeight: 'bold', color: 'white' }}>
                             🔍 Detalle de Solicitud #{solicitudSeleccionada?.iIdsolicitud || ''}
                         </Modal.Title>

@@ -473,7 +473,7 @@ export const SolicitaEquipo = () => {
                     <p className="m-0 me-auto">Llenado de solicitud de equipo de computo.</p>
 
                     {/* 2. Contenedor de la Derecha: Agrupa los botones */}
-                    {user?.id === "AOROZCO" || user?.id === "RDIMAS" || user?.id === "GMARTINEZ" ? (
+                    {user?.id === "AOROZCO" || user?.id === "RDIMAS" || user?.id === "AUXSISTEMAS" ? (
                         <div className="d-flex gap-2"> {/* Usamos d-flex y gap-2 para espaciar los botones */}
 
                             <Button variant="success" onClick={() => openSolicitudesTerminadas()}>

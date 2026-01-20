@@ -1,7 +1,8 @@
+import logoImageUrl from '../../../assets/logoag.png'; // Ajusta la ruta según tu carpeta
 
 export const AcercaDePage = () => {
 
-    const logoImageUrl = `/assets/logo.png`;
+    // const logoImageUrl = `/assets/logoag.png`;
   
     return (
         <>

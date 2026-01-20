@@ -2,7 +2,7 @@ import { useContext } from 'react';
 import { useDispatch } from 'react-redux';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { AuthContext } from '../../auth/context/AuthContext';
-import logo from '../../../assets/logo.png';
+import logo from '../../../assets/logoag.png';
 import { startLogout } from '../../store/auth/thunks';
 
 export const NavBar = (props) => {
@@ -23,14 +23,15 @@ export const NavBar = (props) => {
 	// console.log(user?.permissions)
 
 	return (
-		<nav className="navbar bg-body-tertiary fixed-top" data-bs-theme="dark" style={{marginBottom: '200px'}}>
+		// <nav className="navbar bg-body-tertiary fixed-top" data-bs-theme="white" style={{marginBottom: '200px'}}>
+		<nav className="navbar fixed-top shadow-sm" style={{ backgroundColor: 'white', borderBottom: '1px solid #dee2e6', marginBottom: '200px' }}>
 			<div className="container-fluid">
 				<NavLink className={({ isActive }) => `navbar-brand ${isActive ? 'active' : ''}`} to="/home">
-					<img src={logo} alt='logo' width="100" height="60" />
+					<img src={logo} alt='logo' width="200" height="60" />
 				</NavLink>
 
 				<div className='d-flex'>
-					<h6 className='text-body-emphasis me-4'> Bienvenido {user?.name} </h6>
+					<h6 className='text-body-emphasis me-4'> Bienvenid@ {user?.name} </h6>
 					<button className="navbar-toggler" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasNavbar" aria-controls="offcanvasNavbar" aria-label="Toggle navigation">
 						<span className="navbar-toggler-icon"></span>
 					</button>
@@ -452,7 +453,7 @@ export const NavBar = (props) => {
 											Acerda De
 										</NavLink>
 									</li>
-									<li className="dropdown-item dropdown">
+									{/* <li className="dropdown-item dropdown">
 										<a className="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
 											Redes Sociales
 										</a>
@@ -461,12 +462,13 @@ export const NavBar = (props) => {
 											<li><a className="dropdown-item" href="#">Instagram</a></li>
 											<li><a className="dropdown-item" href="#">X</a></li>
 										</ul>
-									</li>
+									</li> */}
 								</ul>
 							</li>
 
 						</ul>
-						<button className="btn btn-outline-danger mt-5" onClick={onLogout}>Salir</button>
+						{/* <button className="btn btn-danger mt-5" style={{width: '35'}} onClick={onLogout}>Salir</button> */}
+						<button className="btn btn-danger mt-5 w-100" onClick={onLogout} style={{ fontWeight: '600' }}>Cerrar Sesión</button>
 					</div>
 				</div>
 			</div>

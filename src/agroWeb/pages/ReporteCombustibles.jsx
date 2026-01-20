@@ -154,7 +154,7 @@ export const ReporteCombustibles = () => {
             <style type="text/css">
                 {`
                     .mi-tabla-activos .rdt_TableRow:hover {
-                        background-color: #a5ee9d;
+                        background-color: #d19ff9;
                         cursor: pointer;
                     }
                      .data-table-container { /* Nuevo estilo para el contenedor de la tabla */
@@ -167,7 +167,10 @@ export const ReporteCombustibles = () => {
             <hr />
             <hr />
             <div id="pagesContainer" className="container-fluid h rounded-3 p-3 mt-5 animate__animated animate__fadeIn">
-                <h1>Reporte de combustible</h1>
+               <div className="rounded-3" style={{ background: '#7c30b8', color: 'white', fontSize: '35px', textAlign: 'center' }}>
+                    <strong>Reporte Combustibles</strong>
+                </div>
+
                 <div className="d-flex justify-content-between align-items-center mt-3" style={{ marginBottom: '1%' }}>
                     <p className="m-0">Consulta de surtido de combustibles en todos nuestros campos.</p>
                     <DownloadTableExcel
@@ -175,7 +178,7 @@ export const ReporteCombustibles = () => {
                         sheet="Registros"
                         currentTableRef={tableRef.current}
                     >
-                        <button className="btn btn-outline-success rounded-2">Exportar a Excel</button>
+                        <button className="btn btn-success rounded-2">Exportar a Excel</button>
                     </DownloadTableExcel>
                 </div>
                 <DataTable

@@ -1,5 +1,5 @@
 import jsPDF from "jspdf";
-import logoag from '../../../assets/logoag.png';
+import logoag from '../../../assets/logoPDF.png';
 
 const generarCartaBienvenidaPDF = (formData, searchEmpleado) => {
     const doc = new jsPDF();

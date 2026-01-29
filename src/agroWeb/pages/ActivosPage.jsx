@@ -113,7 +113,7 @@ export const ActivosPage = () => {
 
     const handleEstatusChangeModal = (nuevoEstatus) => {
         // console.log('codigoNuevo cambiado a:', obtenerCodigo);
-        if (user?.id == "AOROZCO" || user?.id == "RDIMAS") {
+        if (user?.id == "AOROZCO" || user?.id == "RDIMAS" || user?.id == "AUXSISTEMAS") {
             if (nuevoEstatus == "1") {
                 //openModalExtrasTI(); SE IBA A USAR PARA ABRIR EL MODAL DE EXTRAS TI PERO SE QUITA AUNQUE SIGUE FUNCIONANDO
             }
@@ -1476,7 +1476,7 @@ export const ActivosPage = () => {
                         <Nav.Item>
                             <Nav.Link eventKey="RRHH">Administración RRHH</Nav.Link>
                         </Nav.Item>
-                        {user?.id === "AOROZCO" || user?.id === "RDIMAS" ? (
+                        {user?.id === "AOROZCO" || user?.id === "RDIMAS" || user?.id === "AUXSISTEMAS" ? (
                             <Nav.Item>
                                 <Nav.Link eventKey="ti">Extras TI</Nav.Link>
                             </Nav.Item>

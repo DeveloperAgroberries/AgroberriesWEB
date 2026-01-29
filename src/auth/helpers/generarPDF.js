@@ -1,5 +1,5 @@
 import jsPDF from "jspdf";
-import logoag from '../../../assets/logoag.png';
+import logoag from '../../../assets/logoPDF.png';
 
 const generarResponsivaPDF = (formData, searchEmpleado) => {
     const doc = new jsPDF();
@@ -39,8 +39,8 @@ const generarResponsivaPDF = (formData, searchEmpleado) => {
 
     // Función para agregar el encabezado (solo se usará una vez)
     const addHeader = (doc) => {
-        const imgWidth = 100;
-        const imgHeight = 20;
+        const imgWidth = 55;
+        const imgHeight = 10;
         const pageWidth = doc.internal.pageSize.getWidth();
         const xPos = (pageWidth / 2) - (imgWidth / 2);
 

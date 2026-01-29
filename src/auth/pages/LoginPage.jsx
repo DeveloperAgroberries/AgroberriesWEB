@@ -117,7 +117,7 @@ export const LoginPage = () => {
 										{/* Botón Ingresar */}
 										<div className="d-grid gap-2 mt-4">
 											<button disabled={!isValid} className="btn btn-primary btn-lg shadow-sm" type="submit" style={{ borderRadius: '10px', backgroundColor: '#7c30b8', border: 'none', fontWeight: '600', color: 'white' }}>
-												Ingresar
+												Iniciar Sesión
 											</button>
 										</div>
 									</form>

@@ -22,8 +22,6 @@ export const NavBar = (props) => {
 	//Lo comento para que no este saliedno todo el tiempo: Ricardo Dimas - 04/05/2025
 	// console.log(user?.permissions)
 
-	//SOLO PROBANDO CAMBIOS
-
 	return (
 		// <nav className="navbar bg-body-tertiary fixed-top" data-bs-theme="white" style={{marginBottom: '200px'}}>
 		<nav className="navbar fixed-top shadow-sm" style={{ backgroundColor: 'white', borderBottom: '1px solid #dee2e6', marginBottom: '200px' }}>

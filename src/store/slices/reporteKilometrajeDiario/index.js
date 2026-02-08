@@ -1,2 +1,2 @@
 export * from './thunks';
-export * from './reporteChecadorFacialSlice';
+export * from './reporteKilometrajeDiarioSlice';

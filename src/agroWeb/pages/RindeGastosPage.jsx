@@ -84,7 +84,7 @@ function RindegastosOperations() {
             const apiParams = {
                 Since: params.startDate ? formatDate(params.startDate) : defaultSince,
                 Until: params.endDate ? formatDate(params.endDate) : defaultUntil,
-                ResultsPerPage: 100, // Máximo de resultados por página
+                ResultsPerPage: 200, // Máximo de resultados por página
                 Page: 1,
                 Currency: 'MXN', // Filtrar por MXN por defecto
                 Category: params.categoryFilter || undefined,
@@ -206,7 +206,7 @@ function RindegastosOperations() {
                 // OrderBy y Order se pueden añadir si es necesario, aquí se usarán los defaults de la API
                 // OrderBy: 2, // Por defecto SendDate
                 // Order: 'DESC', // Por defecto DESC
-                ResultsPerPage: 100,
+                ResultsPerPage: 200,
                 Page: 1,
             };
 

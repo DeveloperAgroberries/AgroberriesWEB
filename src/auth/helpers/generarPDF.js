@@ -24,7 +24,8 @@ const generarResponsivaPDF = (formData, searchEmpleado) => {
         vOfficeAti,
         vDiscoduroAti,
         vMemoriaAti,
-        vDepartamentoAti
+        vDepartamentoAti,
+        vComentariosAti
     } = formData;
 
     // Obtiene la fecha actual del sistema
@@ -225,6 +226,12 @@ const generarResponsivaPDF = (formData, searchEmpleado) => {
     yPos += 3;
     doc.text("Número de activo:", fieldX, yPos);
     doc.text(cNumeconAfi, valueX, yPos);
+
+    yPos += 10;
+    yPos = drawTextAndHandlePageBreaks(doc, "COMENTARIOS:", yPos, 14, 180, true);
+
+    yPos += 3;
+    yPos = drawTextAndHandlePageBreaks(doc, vComentariosAti, yPos, 14, 180);
 
     //Extras de equipo asignado
     // yPos += 10;

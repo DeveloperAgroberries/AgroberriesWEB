@@ -13,6 +13,7 @@ import {
     selectIsLoading,
     selectReporteError,
 } from "../../../store/slices/reporteChecadorFacial/reporteChecadorFacialSlice";
+import { getDepartamentos } from '../../../store/slices/nominaCampo/thunks';
 
 export const ReporteChecadorFacial = () => {
     const dispatch = useDispatch();
@@ -22,6 +23,31 @@ export const ReporteChecadorFacial = () => {
     const filtros = useSelector(selectFiltros);
     const isLoading = useSelector(selectIsLoading);
     const error = useSelector(selectReporteError);
+
+
+    // --- Carga los departamentos cuando el componente se monta ---
+    const [loadDep, setLoadDep] = useState(true); // 1. Faltaba el estado
+
+    const {
+        departamentos: departamentosData = {},
+        isLoading: isLoadingDep,
+        errorMessage: errorDep
+    } = useSelector((state) => state.selNomina);
+
+    // 2. Convertimos el objeto a Array usando el nombre correcto de la variable
+    const departamentosArray = Object.values(departamentosData);
+
+    useEffect(() => {
+        dispatch(getDepartamentos());
+    }, [dispatch]);
+
+    useEffect(() => {
+        // 3. Verificamos la longitud sobre el array procesado
+        if (departamentosArray.length > 0 || errorDep) {
+            setLoadDep(false);
+        }
+    }, [departamentosArray.length, errorDep]);
+    // --- Termina Carga los departamentos cuando el componente se monta ////////////////////////////////////////////////////////
 
     // 🚀 ESTADOS PARA EL FILTRO LOCAL
     const [hasSearched, setHasSearched] = useState(false);
@@ -57,7 +83,7 @@ export const ReporteChecadorFacial = () => {
     }, [dispatch]);
 
     const isSearchDisabled = () => {
-        return !filtros.fechaInicio || !filtros.fechaFin;
+        return !filtros.fechaInicio || !filtros.fechaFin || !filtros.codigoCam;
     };
 
     const handleFilterChange = (e) => {
@@ -70,7 +96,7 @@ export const ReporteChecadorFacial = () => {
             Swal.fire({
                 icon: 'error',
                 title: 'Error en filtros',
-                text: 'Debes seleccionar ambas fechas.',
+                text: 'Debes seleccionar Fecha Inicio, Fecha Fin y un Campo.',
                 confirmButtonText: 'Aceptar'
             });
             return;
@@ -221,48 +247,38 @@ export const ReporteChecadorFacial = () => {
                     <label className="form-label m-3">Consulta de información de checadores faciales ubicados en campo.</label>
                 </div>
 
-                <div className="container-fluid d-flex justify-content-between flex-wrap align-items-end pt-1 pb-1">
-
-                    <div className="d-flex flex-wrap align-items-end">
-
-                        {/* Fecha Inicio */}
-                        <div className="mb-2 me-3">
-                            <div><p className="m-0 me-3 sizeLetra">Fecha Inicio:</p></div>
-                            <input className="form-control" type="date" name="fechaInicio" value={filtros.fechaInicio || ''} onChange={handleFilterChange} />
+                <div className="container-fluid pt-1 pb-1">
+                    <div className="row align-items-end g-2">
+                        <div className="col-xl-9 col-lg-12 d-flex flex-wrap align-items-end">
+                            <div className="me-2" style={{ width: '140px' }}>
+                                <p className="m-0 sizeLetra">Fecha Inicio:</p>
+                                <input className="form-control form-control-sm" type="date" name="fechaInicio" value={filtros.fechaInicio || ''} onChange={handleFilterChange} />
+                            </div>
+                            <div className="me-2" style={{ width: '140px' }}>
+                                <p className="m-0 sizeLetra">Fecha fin:</p>
+                                <input className="form-control form-control-sm" type="date" name="fechaFin" value={filtros.fechaFin || ''} onChange={handleFilterChange} />
+                            </div>
+                            <div className="me-2" style={{ width: '200px' }}>
+                                <p className="m-0 sizeLetra">Campo:</p>
+                                <select className="form-select form-select-sm sizeLetra" value={filtros.codigoCam || ''} name="codigoCam" onChange={handleFilterChange}>
+                                    {loadDep ? <option value="">Cargando...</option> : <option value="">Selecciona Campo</option>}
+                                    {departamentosArray.map((dep) => (<option key={dep.cCodigoLug} value={dep.cCodigoLug}>{dep.vNombreLug}</option>))}
+                                </select>
+                            </div>
+                            <div className="d-flex">
+                                <Button className="btn btn-warning btn-sm rounded-2 me-1" onClick={handleSearch} disabled={isLoading}>{isLoading ? '...' : 'Buscar'}</Button>
+                                <Button className="btn btn-secondary btn-sm rounded-2" onClick={handleClearFilters} disabled={isLoading}>Limpiar</Button>
+                            </div>
+                        </div>
+                        <div className="col-xl-3 col-lg-12 ms-auto">
+                            <p className="m-0 sizeLetra">Buscar en resultados:</p>
+                            <input type="text" className="form-control form-control-sm" onChange={handleChange} value={searchText} placeholder="Filtra por trabajador o supervisor..." style={{ width: '100%' }} disabled={isLoading || !reporteData.length} />
                         </div>
 
-                        {/* Fecha Fin */}
-                        <div className="mb-2 me-3">
-                            <div><p className="m-0 me-3 sizeLetra">Fecha fin:</p></div>
-                            <input className="form-control" type="date" name="fechaFin" value={filtros.fechaFin || ''} onChange={handleFilterChange} />
-                        </div>
-
-                        {/* Botones de Acción (alineados con los inputs) */}
-                        <div className="mb-2 me-3 d-flex">
-                            <Button className="btn btn-warning rounded-2 me-2" onClick={handleSearch} disabled={isLoading}>
-                                {isLoading ? 'Buscando...' : 'Buscar'}
-                            </Button>
-                            <Button className="btn btn-secondary rounded-2" onClick={handleClearFilters} disabled={isLoading} >
-                                Limpiar Filtros
-                            </Button>
-                        </div>
-                    </div>
-
-                    <div className="mb-2 ms-auto ms-2" style={{ width: '500px' }}>
-                        <div><p className="m-0 me-3 sizeLetra">Buscar en resultados:</p></div>
-                        <input
-                            type="text"
-                            className="form-control"
-                            id="miInput"
-                            onChange={handleChange}
-                            value={searchText}
-                            placeholder="Buscar por código, supervisor, trabajador o campo..."
-                            // Añadimos un estilo inline para forzar el ancho del input si fuera necesario
-                            style={{ width: '500px' }}
-                            disabled={isLoading || !reporteData.length}
-                        />
                     </div>
                 </div>
+
+                <hr />
 
                 {/* --- Visualización de Resultados y Errores --- */}
                 {isLoading && hasSearched && <p>Cargando reporte...</p>}
@@ -280,7 +296,7 @@ export const ReporteChecadorFacial = () => {
                                     <th>Salida</th>
                                     <th>Supervisor</th>
                                     <th>Nombre del Trabajador</th>
-                                    <th>Campo del Trabajador</th>
+                                    <th>Campo</th>
                                     <th>Genero</th>
                                     <th>Serie Reloj</th>
                                     <th>Dispositivo ID</th>

@@ -21,6 +21,7 @@ export const startLoadingReporteChecador = (filtros = {}) => {
                     fechaFin: filtros.fechaFin,
                     //horaFin: filtros.horaFin,
                     // Si tienes más filtros, añádelos aquí
+                    codigoCam: filtros.codigoCam // Aquí viaja el cCodigoLug seleccionado
                 }
             });
 

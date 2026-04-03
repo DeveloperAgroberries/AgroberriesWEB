@@ -8,6 +8,7 @@ export const reporteChecadorFacialSlice = createSlice({
     filtros: { // Cambié 'transportBaseFilters' a 'filtros' y lo hice un objeto para manejar mejor los valores
       fechaInicio: '',
       fechaFin: '',
+      codigoCam: '' // 👈 Agrégalo aquí
       //horaInicio: null,
       //horaFin: null,
       // Añade aquí cualquier otro filtro inicial que necesites

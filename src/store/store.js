@@ -18,6 +18,7 @@ import { combustibleModSlice } from './slices/combustiblesMod'; // Asegúrate de
 import { nominaCampoSlice, selNominaSlice } from './slices/nominaCampo'; // Asegúrate de que la ruta sea correcta
 import { activosFijosSlice } from './slices/activosFijos/activosFijosSlice'; // ✅ Asegúrate de la ruta correcta
 import { reporteChecadorFacialSlice } from './slices/reporteChecadorFacial/reporteChecadorFacialSlice'; // ✅ Asegúrate de la ruta correcta
+import { reclutadoresSlice } from './slices/reclutadores/reclutadoresSlice'; // Ajusta la ruta
 
 
 export const store = configureStore({
@@ -51,5 +52,6 @@ export const store = configureStore({
 		selNomina: selNominaSlice.reducer,
 		activosFijos: activosFijosSlice.reducer, // ✅ Asegúrate de que sea .reducer
 		reporteChecadorFacialSlice: reporteChecadorFacialSlice.reducer, // <-- ¡ESTA ES LA CLAVE EN EL STORE!
+		reclutadores: reclutadoresSlice.reducer,
   	},
 })

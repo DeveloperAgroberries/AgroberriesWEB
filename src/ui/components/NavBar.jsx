@@ -188,6 +188,26 @@ export const NavBar = (props) => {
 											</li>
 										</>
 									)}
+
+									{user?.permissions.includes("02550") && (
+										<>
+											<li className="nav-item dropdown">
+												<a className="dropdown-item dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+													Reclutadores
+												</a>
+												<ul className="dropdown-menu-end">
+
+													{user?.permissions.includes("02551") && (
+														<li className='nav-item'>
+															<NavLink className={({ isActive }) => `rounded-1 dropdown-item ${isActive ? 'active' : ''}`} to="/reclutadores" onClick={() => {navigate("/reclutadores");}} data-bs-dismiss="offcanvas">
+																Candidatos
+															</NavLink>
+														</li>
+													)}
+												</ul>
+											</li>
+										</>
+									)}
 								</ul>
 							</li>
 

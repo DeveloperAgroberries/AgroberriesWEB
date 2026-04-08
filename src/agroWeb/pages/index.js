@@ -17,3 +17,4 @@ export * from './CatalogoChoferesPage';
 export * from './NominaPage';
 export * from './SolicitaEquipo';
 export { default as RindeGastosPage } from './RindeGastosPage';
+export * from './ReclutadoresPage';

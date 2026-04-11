@@ -5,7 +5,7 @@ import { AddActivo } from "../components/Combustibles/AddActivo";
 import { useDispatch, useSelector } from "react-redux";
 import DataTable from "react-data-table-component";
 import leaf_loader_slow from '../../../assets/leaf_loader_slow.gif';
-import { getActivos, getCamposActivos, startUpdateActivo, modificarExtras, uploadPDF, uploadResponsiva, getEmpleados, startHistoricoExtrasTI } from "../../store/slices/combustibles";
+import { getActivos, setActivos, getCamposActivos, startUpdateActivo, modificarExtras, uploadPDF, uploadResponsiva, getEmpleados, startHistoricoExtrasTI } from "../../store/slices/combustibles";
 import { Modal, Button, OverlayTrigger, Tooltip, FormControl, Form, InputGroup, Row, Col, Alert, Nav } from 'react-bootstrap';
 import { set } from "date-fns";
 import { useForm } from '../../hooks';
@@ -20,8 +20,14 @@ export const ActivosPage = () => {
     const dispatch = useDispatch();
     const tableRef = useRef(null);
     const { subfamilias } = useSelector((state) => state.combustibles);
+
+    // 1. NUEVO ESTADO PARA FILTRAR POR FAMILIA
+    const [familiaSeleccionada, setFamiliaSeleccionada] = useState("");
+
+    // 2. PASAR LA FAMILIA A LA FUNCIÓN (esto disparará el useEffect interno de ActivosList)
+    const { data: activosData, isLoading, errorMessage } = ActivosList(familiaSeleccionada);
+
     const campos = useSelector(state => state.combustibles.activosCampos);
-    const { data: activosData, isLoading, errorMessage } = ActivosList();
     const [isPopupOpen, setIsPopupOpen] = useState(false); // Estado para controlar la visibilidad
     const baseURL = import.meta.env.VITE_API_URL;
     const headerRef = useRef(null); // Referencia para el encabezado de la columna
@@ -30,6 +36,28 @@ export const ActivosPage = () => {
     const tooltipORef = useRef(null); // para "O"
     let tooltipInstance = null;
     const [isLoadingGuardado, setIsLoadingGuardado] = useState(false);
+
+   useEffect(() => {
+    // 1. SOLO dispara la petición si hay una familia seleccionada
+    if (familiaSeleccionada !== "") {
+        dispatch(getActivos(familiaSeleccionada));
+    } else {
+        // Si no hay familia, nos aseguramos de que el estado esté vacío
+        dispatch(setActivos({ activos: [] }));
+    }
+
+    // 2. Al salir de la pantalla (limpieza)
+    return () => {
+        dispatch(setActivos({ activos: [] }));
+    };
+}, [dispatch, familiaSeleccionada]);
+
+    // 3. ACTUALIZAR RECORDS CUANDO CAMBIAN LOS DATOS
+    useEffect(() => {
+        if (activosData && activosData.length > 0) {
+            setRecords(activosData);
+        }
+    }, [activosData]);
 
     useEffect(() => {
         dispatch(getCamposActivos());
@@ -82,9 +110,20 @@ export const ActivosPage = () => {
         setIsPopupOpen(true); // Función para mostrar el modal
     };
 
-    const closeActivoPopup = async () => {
+    const closeActivoPopup = () => {
         setIsPopupOpen(false);
-        await dispatch(getActivos()); // Vuelve a obtener la lista actualizada
+
+        // ✅ Solo refrescamos si el usuario ya estaba viendo una familia específica
+        // o si ya había realizado una búsqueda previa.
+        if (familiaSeleccionada !== "" || busqueda !== "") {
+            setTimeout(() => {
+                dispatch(getActivos(familiaSeleccionada));
+            }, 300);
+        } else {
+            // Si no hay familia ni búsqueda, simplemente no hacemos nada 
+            // o limpiamos la tabla para que siga vacía.
+            // console.log("No se refresca porque no hay filtros activos.");
+        }
     };
 
     //MODAL PARA EXTRAS TI
@@ -145,6 +184,8 @@ export const ActivosPage = () => {
         setResponsableActual('');
         sethistorico('');
         setRecords('');
+        setBusqueda('');
+        setRecords([]);
     };
 
     // Inicializa el tooltip de Bootstrap en el encabezado de la columna
@@ -330,9 +371,11 @@ export const ActivosPage = () => {
     }, [activosData, records]); // Dependencias importantes
 
     //FUNCION PARA BUSQUEDA POR NOMBRE EN TABLE
+    const [busqueda, setBusqueda] = useState(""); // Agrega este state arriba en tu componente
     const handleChange = (e) => {
         // console.log(records); // Puedes dejarlo para depuración, pero ya sabemos el problema
         const searchText = e.target.value.toLowerCase();
+        setBusqueda(searchText); // ✅ Guardamos el texto original para el mensaje de "No encontrado"
 
         const filterRecords = activosData.filter(record => {
             const cCodigoAfi = record.cCodigoAfi ? record.cCodigoAfi.toLowerCase() : '';
@@ -381,7 +424,7 @@ export const ActivosPage = () => {
     const [activeKey, setActiveKey] = useState('general');
 
     const handleGenerarPDF = () => {
-        if (searchEmpleado!="") {
+        if (searchEmpleado != "") {
             generarResponsivaPDF(formDataExtras, searchEmpleado); // Pasa tus datos a la función
         } else {
             Swal.fire({
@@ -396,7 +439,7 @@ export const ActivosPage = () => {
     };
 
     const handleGenerarInvPDF = () => {
-       if (searchEmpleado!="") {
+        if (searchEmpleado != "") {
             generarInvPDF(formDataExtras, searchEmpleado); // Pasa tus datos a la función
         } else {
             Swal.fire({
@@ -1140,9 +1183,16 @@ export const ActivosPage = () => {
         // Llama al thunk de actualización
         const success = await dispatch(modificarExtras(dataToSend)); // Asegúrate de tener este thunk
         if (success) {
-            dispatch(getActivos()); // Recarga los choferes para ver los cambios
-            //closeEditModal();
-            setIsLoadingGuardado(false);
+            // ✅ 1. Cerramos el modal primero para liberar la pantalla
+            closeEditModal();
+
+            // ✅ 2. Esperamos a que la animación de cierre termine (300ms)
+            // Esto evita que la tabla se refresque con el ancho "bugeado" del modal
+            setTimeout(() => {
+                dispatch(getActivos(familiaSeleccionada)); // Pasa la familia actual para no perder el filtro
+                setIsLoadingGuardado(false);
+            }, 300);
+
         } else {
             setIsLoadingGuardado(false);
             alert('Ocurrió un error al actualizar EXTRAS. Comunícate con Soporte TI.');
@@ -1322,37 +1372,194 @@ export const ActivosPage = () => {
         <>
             <style type="text/css">
                 {`
-                    .mi-tabla-activos .rdt_TableRow:hover {
-                        background-color: #d19ff9;
-                        cursor: pointer;
-                    }
-                     .data-table-container { /* Nuevo estilo para el contenedor de la tabla */
-                        height: 500px; /* Establece la altura deseada */
-                        overflow-y: auto; /* Agrega scroll vertical si el contenido excede la altura */
-                    }   
-                    .contenedor-de-la-tabla {
-                        height: 60vh; /* O una altura fija, ej. 500px */
-                        display: flex; /* Si necesitas que la tabla se ajuste a este contenedor */
-                        flex-direction: column;
-                    }
-                    .nav-tabs .nav-link.active {
-                        background-color: #5e5e5eff; /* El color que tú quieres */
-                        color: white; /* Cambia el color del texto para que contraste */
-                    }
-                `}
+              /* Estilos para la tabla HTML nativa */
+
+              .table tbody tr:hover {
+                  --bs-table-hover-bg: #d19ff9 !important; /* Color que tenías */  
+              }
+
+              /* Estilo para las filas al pasar el ratón */
+              .table tbody tr:hover {
+                  background-color: #d19ff9 !important; /* Color que tenías */
+                  {/* cursor: pointer; */}
+              }
+
+              /* Estilos para los encabezados de la tabla */
+              .table thead th {
+                  padding-left: 8px;
+                  padding-right: 8px;
+                  font-size: 14px;
+                  font-weight: bold;
+                  background-color: #7c30b8; /* Color de fondo que tenías */
+                  color: white; /* Color de texto que tenías */
+              }
+
+              /* Estilos para body de la tabla */
+              .table tbody td {
+                  padding-left: 8px;
+                  padding-right: 8px;
+                  font-size: 12px;
+                  white-space: nowrap;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+              }
+
+              /* Redondear esquinas del encabezado */
+              .table thead th:first-child {
+                  border-top-left-radius: 8px;
+              }
+              .table thead th:last-child {
+                  border-top-right-radius: 8px;
+              }
+
+              /* Estilo para las celdas del cuerpo */
+              .mi-tabla-activos tbody td {
+                  min-height: 30px; /* Puedes ajustar esto */
+                  padding-left: 8px;
+                  padding-right: 8px;
+              }
+
+              /* Opcional: Redondear también las esquinas inferiores de la tabla (siempre y cuando la tabla no tenga scroll interno que las oculte) */
+              .table tbody tr:last-child td:first-child {
+                  border-bottom-left-radius: 8px;
+              }
+              .table tbody tr:last-child td:last-child {
+                  border-bottom-right-radius: 8px;
+              }
+
+              .sizeLetra{
+                font-size: 13px;
+              }
+          `}
             </style>
             <hr />
             <hr />
             <hr />
             <div id="pagesContainer" className="container-fluid h rounded-3 p-3 mt-5 animate__animated animate__fadeIn">
-                <div className="rounded-3" style={{ background: '#792482', color: 'white', fontSize: '35px', textAlign: 'center' }}>
+                <div className="rounded-3" style={{ background: '#7c30b8', color: 'white', fontSize: '35px', textAlign: 'center' }}>
                     <strong>Activos Fijos</strong>
                 </div>
 
-                <div className="d-flex justify-content-between align-items-center mt-3" style={{ marginBottom: '1%' }}>
-                    <p className="m-0">Consulta y registro de Activos Fijos.</p>
-                    {/* Input de búsqueda */}
-                    <input type="text" className="form-control" id="miInput" onChange={handleChange} placeholder="Buscar por código AF, nombre AF o usuario asignado..." style={{ width: '500px' }} />
+                <Row className="mb-3 align-items-end">
+                    {/* SELECTOR DE FAMILIA */}
+                    <Col md={3}>
+                        <p className="m-2 me-3 sizeLetra">Seleccionar Familia:</p>
+                        <Form.Select
+                            value={familiaSeleccionada}
+                            onChange={(e) => {
+                                const valor = e.target.value;
+                                setFamiliaSeleccionada(valor);
+                                dispatch(getActivos(valor)); // Dispara la búsqueda con el prefijo (ej: "CAM")
+                            }}
+                            style={{ fontSize: '0.9rem' }}
+                        >
+                            <option value="">Todas las familias</option>
+
+                            {subfamilias && Object.values(subfamilias).map((fam) => (
+                                <option key={fam.cCodigoAff} value={fam.cPrefijoAff?.trim()}>
+                                    {fam.cPrefijoAff?.trim()} - {fam.vNombreAff?.trim()}
+                                </option>
+                            ))}
+                        </Form.Select>
+                    </Col>
+
+                    <Col md={5}>
+                        <InputGroup>
+                            <InputGroup.Text><i className="fas fa-search"></i></InputGroup.Text>
+                            <FormControl
+                                placeholder="Buscar por Código, Nombre, Empleado o Campo..."
+                                onChange={handleChange}
+                                value={busqueda}
+                            />
+                        </InputGroup>
+                    </Col>
+
+                    <Col md={4} className="text-end">
+                        <button className="btn btn-secondary rounded-2 m-1" onClick={() => openActivoPopup(<AddActivo onClose={closeActivoPopup} />)}>
+                            <i className="fas fa-plus"></i> Agregar Activo
+                        </button>
+                    </Col>
+                </Row>
+
+                <div className="table-responsive mt-3" style={{ maxHeight: '450px' }}>
+                    <table className="table table-striped table-hover">
+                        <thead style={{ position: 'sticky', top: '0', zIndex: '1' }}>
+                            <tr>
+                                <th>Código AF</th>
+                                <th>Nom AF</th>
+                                <th>Campo</th>
+                                <th>Usuario aginado</th>
+                                <th>Marca</th>
+                                <th>Modelo</th>
+                                <th>No. serie</th>
+                                <th>Factura</th>
+                                <th>D</th>
+                                <th>O</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {
+                                isLoading ? (
+                                    <tr>
+                                        <td colSpan="10" className="text-center py-5">
+                                            <div className="spinner-border" style={{ color: '#792482' }} role="status"></div>
+                                            <div className="mt-2" style={{ color: '#792482', fontWeight: 'bold' }}>
+                                                Buscando activos...
+                                            </div>
+                                        </td>
+                                    </tr>
+                                ) : (activosData.length > 0) ? (
+                                    // ✅ Priorizamos mostrar lo que hay en records (si se filtró por texto local)
+                                    // o lo que hay en activosData (que es el resultado real de tu última petición al servidor)
+                                    (records.length > 0 ? records : activosData).map((item) => {
+                                        const campoEncontrado = campos.find(campo => campo.cCodigoCam === item.cCodigoCam);
+                                        return (
+                                            <tr key={`${item.idActivoAti}-${item.cCodigoAfi}`}>
+                                                <td onClick={() => openEditModal(item.cCodigoAfi)} style={{ cursor: 'pointer', fontWeight: 'bold' }}>
+                                                    <i className="fas fa-user-edit fa-lg" style={{ marginRight: '5px', color: '#7c30b8' }}></i>
+                                                    {item.cCodigoAfi}
+                                                </td>
+                                                <td>{item.vNombreAfi}</td>
+                                                <td>{campoEncontrado ? campoEncontrado.vNombreCam : "N/A"}</td>
+                                                <td>{item.vNombreEmpleado || "Sin asignar"}</td>
+                                                <td>{item.vMarcaAfi}</td>
+                                                <td>{item.vModeloAfi}</td>
+                                                <td>{item.vNumserieAfi}</td>
+                                                <td>
+                                                    <div style={{ width: '100%', textAlign: 'center' }}>
+                                                        {item.cRutafactAfi ? (
+                                                            <a href={baseURL + '/CombustiblesApp/facturas/' + item.cRutafactAfi} target="_blank" rel="noopener noreferrer">
+                                                                <i className="fas fa-file-pdf fa-lg" style={{ color: '#d22500' }}></i>
+                                                            </a>
+                                                        ) : (
+                                                            <i className="fas fa-file-pdf fa-lg" style={{ color: '#000000ff' }}></i>
+                                                        )}
+                                                    </div>
+
+                                                </td>
+                                                <td className="text-center">
+                                                    <input type="checkbox" checked={item.cNoDepreciarAfi === '1'} readOnly />
+                                                </td>
+                                                <td className="text-center">
+                                                    <input type="checkbox" checked={item.cOperativoAfi === '1'} readOnly />
+                                                </td>
+                                            </tr>
+                                        );
+                                    })
+                                ) : (
+                                    // ✅ Si activosData viene [] desde la API (como en tu caso de MTT), mostrará esto:
+                                    <tr>
+                                        <td colSpan="10" className="text-center py-4">
+                                            <span style={{ color: '#792482' }}>
+                                                <i className="fas fa-search-minus me-2"></i>
+                                                No se encontraron activos para la familia seleccionada o búsqueda actual.
+                                            </span>
+                                        </td>
+                                    </tr>
+                                )
+                            }
+                        </tbody>
+                    </table>
                 </div>
 
                 <table ref={tableRef} style={{ display: 'none' }}>
@@ -1362,30 +1569,51 @@ export const ActivosPage = () => {
                             <th>Nombre AF</th>
                             <th>Campo</th>
                             <th>Usuario aginado</th>
+                            <th>Departamento</th>
+                            <th>Correo Electronico</th>
                             <th>Marca equipo</th>
                             <th>Modelo</th>
                             <th>Número de serie</th>
+                            <th>Fecha Compra</th>
+                            <th>Costo</th>
+                            <th>Garantia</th>
+                            <th>Fecha Asignacion</th>
+                            <th>Sist operativo</th>
+                            <th>Procesador</th>
+                            <th>Memoria RAM</th>
+                            <th>Disco duro</th>
+                            <th>Antivirus</th>
+                            <th>Office</th>
+                            <th>Comentarios</th>
                         </tr>
                     </thead>
                     <tbody>
-                        {(records.length === 0 ? activosData : records).map((item, idx) => {
-                            // 1. Buscamos el objeto campo que coincide con item.cCodigoCam
+                        {(records.length === 0 ? activosData : records).map((item) => {
                             const campoEncontrado = campos.find(campo => campo.cCodigoCam === item.cCodigoCam);
 
                             return (
-                                <tr key={idx}>
-                                    <td>{item.cCodigoAfi}</td>
+                                /* ✅ CAMBIO: Usar idActivoAti en lugar de idx */
+                                <tr key={`${item.idActivoAti}-${item.cCodigoAfi}`}>
+                                    <td onClick={() => openEditModal(item.cCodigoAfi)}>{item.cCodigoAfi}</td>
                                     <td>{item.vNombreAfi}</td>
-                                    {campoEncontrado ? (
-                                        // 2. Si se encuentra el objeto, mostramos su propiedad vNombreCam
-                                        <td>{campoEncontrado.vNombreCam}</td>
-                                    ) : (
-                                        <td></td>
-                                    )}
+                                    <td>{campoEncontrado ? campoEncontrado.vNombreCam : "N/A"}</td>
                                     <td>{item.vNombreEmpleado}</td>
-                                    <td>{item.vMarcaAfi}</td>
-                                    <td>{item.vModeloAfi}</td>
-                                    <td>{item.vNumserieAfi}</td>
+                                    <td>{item.vDepartamentoAti}</td>
+                                    <td>{item.vEmailAti}</td>
+                                    <td>{item.vMarcaAti}</td>
+                                    <td>{item.vModeloAti}</td>
+                                    <td>{item.vSerieAti}</td>
+                                    <td>{item.dFcompraAti}</td>
+                                    <td>{item.nCostoAti}</td>
+                                    <td>{item.dFgarantiaAti}</td>
+                                    <td>{item.dFasignacionAti}</td>
+                                    <td>{item.vVerwindowsAti}</td>
+                                    <td>{item.vProcesadorAti}</td>
+                                    <td>{item.vMemoriaAti}</td>
+                                    <td>{item.vDiscoAti}</td>
+                                    <td>{item.vAntivirusAti}</td>
+                                    <td>{item.vOfficeAti}</td>
+                                    <td>{item.vComentariosAti}</td>
                                 </tr>
                             );
                         })}
@@ -1412,47 +1640,46 @@ export const ActivosPage = () => {
                     </table>
                 </div> */}
                 {/*<div className="data-table-container">  Contenedor con altura definida */}
-                <div className="contenedor-de-la-tabla">
+                {/* <div className="contenedor-de-la-tabla">
                     <DataTable
-                        className="mi-tabla-activos"
-                        customStyles={customStyles}
-                        columns={columns}
-                        data={initialLoadComplete ? (records.length === 0 ? activosData : records) : []}
-                        // selectableRows
-                        // pagination
-                        // paginationPerPage={10}
-                        // paginationComponentOptions={{
-                        //     rowsPerPageText: 'Filas por página:',
-                        //     rangeSeparatorText: 'de',
-                        //     selectAllRowsItem: 'Todos',
-                        //     selectAllRowsItemText: 'Mostrar Todos',
-                        // }}
-                        // onSelectedRowsChange={data => console.log(data)} mostrar datos seleccionados de la tabla
-                        fixedHeader
-                        progressPending={!initialLoadComplete}
-                        progressComponent={
-                            <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', height: '100px' }}>
-                                <img
-                                    src={leaf_loader_slow}
-                                    alt="Cargando..."
-                                    style={{ width: '64px', height: '64px' }}
-                                />
-                                <span style={{ marginTop: '10px' }}>Cargando...</span> {/* Texto abajo con un margen superior */}
-                            </div>
-                        }
-                        fluid // Esta propiedad hace que las columnas se expandan para llenar el espacio
-                    />
-                </div>
+    className="mi-tabla-activos"
+    customStyles={customStyles}
+    columns={columns}
+    // ✅ Agregamos esta línea:
+    keyField="idActivoAti" 
+    data={initialLoadComplete ? (records.length === 0 ? activosData : records) : []}
+    fixedHeader
+    progressPending={!initialLoadComplete}
+    progressComponent={
+        <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', height: '100px' }}>
+            <img
+                src={leaf_loader_slow}
+                alt="Cargando..."
+                style={{ width: '64px', height: '64px' }}
+            />
+            <span style={{ marginTop: '10px' }}>Cargando...</span>
+        </div>
+    }
+    fluid 
+/>
+                </div> */}
                 <hr />
                 {/* </div> */}
                 <div className="ms-2 mb-1 mt-2">
-                    <button className="btn btn-secondary rounded-2 m-1" onClick={() => openActivoPopup(<AddActivo onClose={closeActivoPopup} />)}>Agregar AF</button>
+                    {/* <button className="btn btn-secondary rounded-2 m-1" onClick={() => openActivoPopup(<AddActivo onClose={closeActivoPopup} />)}>Agregar AF</button> */}
                     <DownloadTableExcel
                         filename="Activos Fijos"
                         sheet="Activos"
                         currentTableRef={tableRef.current}
                     >
-                        <button className="btn btn-success rounded-2">Exportar a Excel</button>
+                        <button className="btn rounded-2" style={{ background: '#218838', color: '#ffff' }}>
+                            <i className="fas fa-file-excel me-2"></i>
+                            Registros ({
+                                // Si records tiene algo, mostramos su tamaño, 
+                                // si no, mostramos el tamaño de activosData
+                                records.length > 0 ? records.length : activosData.length
+                            })
+                        </button>
                     </DownloadTableExcel>
                     {/* <button className="btn btn-outline-primary rounded-2 m-1" onClick={() => openActivoPopup(<ModVehicle onClose={closeActivoPopup} />)}>Modificar</button> */}
                     {/* <button className="btn btn-outline-danger rounded-2 m-1" onClick={ () => openVehiclePopup(<DelVehicle onClose={ closeVehiclePopup }/>) }>Eliminar</button> */}
@@ -1465,22 +1692,39 @@ export const ActivosPage = () => {
 
             {/* Editar ACTIVO FIJO */}
             <Modal show={showEditModal} onHide={closeEditModal} size="xl" centered>
-                <Modal.Header style={{ background: '#792482' }} closeButton>
+                <Modal.Header style={{ background: '#7c30b8' }} closeButton>
                     <Modal.Title style={{ fontWeight: 'bold', color: 'white' }}>Administración de Activo</Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
-                    <Nav justify variant="tabs" defaultActiveKey="general" onSelect={(selectedKey) => setActiveKey(selectedKey)}>
+                    <Nav justify variant="tabs" activeKey={activeKey} onSelect={(k) => setActiveKey(k)}>
                         <Nav.Item>
-                            <Nav.Link eventKey="general">Datos Generales</Nav.Link>
+                            <Nav.Link
+                                eventKey="general"
+                                style={activeKey === 'general' ? { backgroundColor: '#bec1c4', color: '#000' } : {}}
+                            >
+                                Datos Generales
+                            </Nav.Link>
                         </Nav.Item>
+
                         <Nav.Item>
-                            <Nav.Link eventKey="RRHH">Administración RRHH</Nav.Link>
+                            <Nav.Link
+                                eventKey="RRHH"
+                                style={activeKey === 'RRHH' ? { backgroundColor: '#bec1c4', color: '#000' } : {}}
+                            >
+                                Administración RRHH
+                            </Nav.Link>
                         </Nav.Item>
-                        {user?.id === "AOROZCO" || user?.id === "RDIMAS" || user?.id === "AUXSISTEMAS" ? (
+
+                        {(user?.id === "AOROZCO" || user?.id === "RDIMAS" || user?.id === "AUXSISTEMAS") && (
                             <Nav.Item>
-                                <Nav.Link eventKey="ti">Extras TI</Nav.Link>
+                                <Nav.Link
+                                    eventKey="ti"
+                                    style={activeKey === 'ti' ? { backgroundColor: '#bec1c4', color: '#000' } : {}}
+                                >
+                                    Extras TI
+                                </Nav.Link>
                             </Nav.Item>
-                        ) : null}
+                        )}
                     </Nav>
                     <br></br>
                     {renderContent()}

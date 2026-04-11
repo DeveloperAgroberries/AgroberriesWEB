@@ -55,9 +55,9 @@ export const ReclutadoresPage = () => {
     const { actividades = [], isLoading: isLoadingAct, errorMessage: errorAct } = useSelector((state) => state.selNomina);
     const [loadAct, setLoadAct] = useState(true);
 
-    const { candidatos = [], listaReclutadores = [], isLoading } = useSelector(state => state.reclutadores);
-    // const { listaReclutadores = [], isLoading } = useSelector(state => state.reclutadores);
-    // const candidatos = datosPrueba; // <--- Forzamos el uso de los datos de enero a marzo
+    // const { candidatos = [], listaReclutadores = [], isLoading } = useSelector(state => state.reclutadores);
+    const { listaReclutadores = [], isLoading } = useSelector(state => state.reclutadores);
+    const candidatos = datosPrueba; // <--- Forzamos el uso de los datos de enero a marzo
 
     const nombresMeses = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
 
@@ -219,7 +219,19 @@ export const ReclutadoresPage = () => {
 
     // Función para abrir el modal cargando los datos del candidato
     const handleOpenEdit = (candidato) => {
-        setCandidatoAEditar(candidato);
+        // Creamos una copia del objeto con los datos normalizados
+        const candidatoNormalizado = {
+            ...candidato,
+            // Usamos trim() para quitar espacios que vienen de SQL Server
+            // vCodigopersonal es el campo que usa tu Input de texto
+            vCodigopersonal: candidato.cCodigoTra?.trim() || '',
+
+            // vActividad es el campo que usa tu Select (value)
+            // Asegúrate de que los nombres coincidan con los que devuelve el API (ConsultarCandidatos)
+            vActividad: candidato.cCodigoAct?.trim() || ''
+        };
+
+        setCandidatoAEditar(candidatoNormalizado);
         setShowEditModal(true);
     };
 
@@ -443,8 +455,8 @@ export const ReclutadoresPage = () => {
                 <div className="modal fade show d-block" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
                     <div className="modal-dialog">
                         <div className="modal-content">
-                            <div className="modal-header">
-                                <h5 className="modal-title">Editar Candidato</h5>
+                            <div className="modal-header" style={{ background: '#7c30b8', fontWeight: 'bold', color: 'white' }}>
+                                <h5 className="modal-title m-0">Editar Candidato</h5>
                                 <button type="button" className="btn-close" onClick={() => setShowEditModal(false)}></button>
                             </div>
                             <div className="modal-body">
@@ -457,9 +469,20 @@ export const ReclutadoresPage = () => {
                                     <input
                                         type="text"
                                         className="form-control"
-                                        placeholder="Ingrese código..."
+                                        placeholder="Ej. 12345"
+                                        // 1. Evita que el teclado permita escribir más de 5
+                                        maxLength={5}
                                         value={candidatoAEditar.vCodigopersonal || ''}
-                                        onChange={(e) => setCandidatoAEditar({ ...candidatoAEditar, vCodigopersonal: e.target.value })}
+                                        onChange={(e) => {
+                                            const val = e.target.value;
+                                            // 2. Validación: Solo números (opcional) y máximo 5 dígitos
+                                            if (val.length <= 5 && /^[0-9]*$/.test(val)) {
+                                                setCandidatoAEditar({
+                                                    ...candidatoAEditar,
+                                                    vCodigopersonal: val
+                                                });
+                                            }
+                                        }}
                                     />
                                 </div>
                                 <div className="mb-3">
@@ -472,33 +495,24 @@ export const ReclutadoresPage = () => {
                                             onChange={(e) => setCandidatoAEditar({ ...candidatoAEditar, vActividad: e.target.value })}
                                         >
                                             <option value="">Seleccione actividad...</option>
-                                            {
-                                                // Convertimos el objeto en array para poder usar .map
-                                                Object.values(actividades).map((act, index) => (
-                                                    <option
-                                                        key={act.cCodigoAct.trim() || index}
-                                                        value={act.cCodigoAct.trim()} // <--- Se guarda el CÓDIGO
-                                                    >
-                                                        {/* Se visualiza CÓDIGO - NOMBRE */}
-                                                        {`${act.cCodigoAct.trim()} - ${act.vNombreAct.trim()}`}
-                                                    </option>
-                                                ))
-                                            }
+                                            {Object.values(actividades).map((act, index) => (
+                                                <option key={act.cCodigoAct.trim()} value={act.cCodigoAct.trim()}>
+                                                    {`${act.cCodigoAct.trim()} - ${act.vNombreAct.trim()}`}
+                                                </option>
+                                            ))}
                                         </select>
                                     </div>
                                 </div>
                             </div>
                             <div className="modal-footer">
                                 <button className="btn btn-secondary" onClick={() => setShowEditModal(false)}>Cancelar</button>
-                                <button
-                                    className="btn btn-primary"
+                                <button className="btn btn-primary"
                                     onClick={() => {
                                         // console.log("Datos a enviar al API:", candidatoAEditar);
                                         // Aquí llamarías a tu función de guardado
                                         onGuardarCambiosNomina(candidatoAEditar);
                                         setShowEditModal(false);
-                                    }}
-                                >
+                                    }}>
                                     Guardar Cambios
                                 </button>
                             </div>

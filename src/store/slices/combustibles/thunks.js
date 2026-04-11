@@ -39,27 +39,21 @@ import {
     setErrorEmpleados,
 } from './combustiblesSlice';
 
-
-
-
-export const getActivos = () => {
+export const getActivos = (familia = "") => {
     return async (dispatch) => {
-        dispatch(checkingIsLoading()); // Marca que está cargando
-        // console.log("Cargando...");
-
+        dispatch(checkingIsLoading());
         try {
-            const { data } = await activosApi.get('/ListActivosF');
-            // console.log("Datos recibidos:", data);  // Verifica si los datos son correctos
+            // Si familia tiene algo, lo agrega a la ruta, si no, llama a la base
+            const url = familia ? `/ListActivosF/${familia}` : '/ListActivosF';
+            const { data } = await activosApi.get(url);
 
-            // Despacha la acción con los datos correctos
             if (data && data.response) {
-                dispatch(setActivos({ activos: data.response })); // Usa data.response
+                dispatch(setActivos({ activos: data.response }));
             } else {
-                dispatch(setError("No se recibieron datos de activos")); // Si no hay datos, muestra un error
+                dispatch(setError("No se recibieron datos de activos"));
             }
         } catch (error) {
-            // console.error("Error al cargar los datos:", error);
-            dispatch(setError(error.errorMessage || 'Error desconocido')); // Si hay un error, se despacha el error
+            dispatch(setError(error.message || 'Error desconocido'));
         }
     };
 };

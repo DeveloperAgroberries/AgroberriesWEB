@@ -37,20 +37,20 @@ export const ActivosPage = () => {
     let tooltipInstance = null;
     const [isLoadingGuardado, setIsLoadingGuardado] = useState(false);
 
-   useEffect(() => {
-    // 1. SOLO dispara la petición si hay una familia seleccionada
-    if (familiaSeleccionada !== "") {
-        dispatch(getActivos(familiaSeleccionada));
-    } else {
-        // Si no hay familia, nos aseguramos de que el estado esté vacío
-        dispatch(setActivos({ activos: [] }));
-    }
+    useEffect(() => {
+        // 1. SOLO dispara la petición si hay una familia seleccionada
+        if (familiaSeleccionada !== "") {
+            dispatch(getActivos(familiaSeleccionada));
+        } else {
+            // Si no hay familia, nos aseguramos de que el estado esté vacío
+            dispatch(setActivos({ activos: [] }));
+        }
 
-    // 2. Al salir de la pantalla (limpieza)
-    return () => {
-        dispatch(setActivos({ activos: [] }));
-    };
-}, [dispatch, familiaSeleccionada]);
+        // 2. Al salir de la pantalla (limpieza)
+        return () => {
+            dispatch(setActivos({ activos: [] }));
+        };
+    }, [dispatch, familiaSeleccionada]);
 
     // 3. ACTUALIZAR RECORDS CUANDO CAMBIAN LOS DATOS
     useEffect(() => {
@@ -969,6 +969,7 @@ export const ActivosPage = () => {
                                             <option hidden value="">Seleccionar</option>
                                             <option value="4 gb">4 gb</option>
                                             <option value="8 gb">8 gb</option>
+                                            <option value="12 gb">12 gb</option>
                                             <option value="16 gb">16 gb</option>
                                         </select>
                                     </Form.Group>
@@ -1508,54 +1509,55 @@ export const ActivosPage = () => {
                                             </div>
                                         </td>
                                     </tr>
-                                ) : (activosData.length > 0) ? (
-                                    // ✅ Priorizamos mostrar lo que hay en records (si se filtró por texto local)
-                                    // o lo que hay en activosData (que es el resultado real de tu última petición al servidor)
-                                    (records.length > 0 ? records : activosData).map((item) => {
-                                        const campoEncontrado = campos.find(campo => campo.cCodigoCam === item.cCodigoCam);
-                                        return (
-                                            <tr key={`${item.idActivoAti}-${item.cCodigoAfi}`}>
-                                                <td onClick={() => openEditModal(item.cCodigoAfi)} style={{ cursor: 'pointer', fontWeight: 'bold' }}>
-                                                    <i className="fas fa-user-edit fa-lg" style={{ marginRight: '5px', color: '#7c30b8' }}></i>
-                                                    {item.cCodigoAfi}
-                                                </td>
-                                                <td>{item.vNombreAfi}</td>
-                                                <td>{campoEncontrado ? campoEncontrado.vNombreCam : "N/A"}</td>
-                                                <td>{item.vNombreEmpleado || "Sin asignar"}</td>
-                                                <td>{item.vMarcaAfi}</td>
-                                                <td>{item.vModeloAfi}</td>
-                                                <td>{item.vNumserieAfi}</td>
-                                                <td>
-                                                    <div style={{ width: '100%', textAlign: 'center' }}>
-                                                        {item.cRutafactAfi ? (
-                                                            <a href={baseURL + '/CombustiblesApp/facturas/' + item.cRutafactAfi} target="_blank" rel="noopener noreferrer">
-                                                                <i className="fas fa-file-pdf fa-lg" style={{ color: '#d22500' }}></i>
-                                                            </a>
-                                                        ) : (
-                                                            <i className="fas fa-file-pdf fa-lg" style={{ color: '#000000ff' }}></i>
-                                                        )}
-                                                    </div>
-
-                                                </td>
-                                                <td className="text-center">
-                                                    <input type="checkbox" checked={item.cNoDepreciarAfi === '1'} readOnly />
-                                                </td>
-                                                <td className="text-center">
-                                                    <input type="checkbox" checked={item.cOperativoAfi === '1'} readOnly />
-                                                </td>
-                                            </tr>
-                                        );
-                                    })
                                 ) : (
-                                    // ✅ Si activosData viene [] desde la API (como en tu caso de MTT), mostrará esto:
-                                    <tr>
-                                        <td colSpan="10" className="text-center py-4">
-                                            <span style={{ color: '#792482' }}>
-                                                <i className="fas fa-search-minus me-2"></i>
-                                                No se encontraron activos para la familia seleccionada o búsqueda actual.
-                                            </span>
-                                        </td>
-                                    </tr>
+                                    // Cambiamos la lógica aquí: 
+                                    // Si hay algo escrito en 'busqueda', usamos 'records'. 
+                                    // Si no hay nada escrito, usamos 'activosData'.
+                                    (busqueda.trim() !== "" ? records : activosData).length > 0 ? (
+                                        (busqueda.trim() !== "" ? records : activosData).map((item) => {
+                                            const campoEncontrado = campos.find(campo => campo.cCodigoCam === item.cCodigoCam);
+                                            return (
+                                                <tr key={`${item.idActivoAti}-${item.cCodigoAfi}`}>
+                                                    <td onClick={() => openEditModal(item.cCodigoAfi)} style={{ cursor: 'pointer', fontWeight: 'bold' }}>
+                                                        <i className="fas fa-user-edit fa-lg" style={{ marginRight: '5px', color: '#7c30b8' }}></i>
+                                                        {item.cCodigoAfi}
+                                                    </td>
+                                                    <td>{item.vNombreAfi}</td>
+                                                    <td>{campoEncontrado ? campoEncontrado.vNombreCam : "N/A"}</td>
+                                                    <td>{item.vNombreEmpleado || "Sin asignar"}</td>
+                                                    <td>{item.vMarcaAfi}</td>
+                                                    <td>{item.vModeloAfi}</td>
+                                                    <td>{item.vNumserieAfi}</td>
+                                                    <td>
+                                                        <div style={{ width: '100%', textAlign: 'center' }}>
+                                                            {item.cRutafactAfi ? (
+                                                                <a href={baseURL + '/CombustiblesApp/facturas/' + item.cRutafactAfi} target="_blank" rel="noopener noreferrer">
+                                                                    <i className="fas fa-file-pdf fa-lg" style={{ color: '#d22500' }}></i>
+                                                                </a>
+                                                            ) : (
+                                                                <i className="fas fa-file-pdf fa-lg" style={{ color: '#000000ff' }}></i>
+                                                            )}
+                                                        </div>
+                                                    </td>
+                                                    <td className="text-center">
+                                                        <input type="checkbox" checked={item.cNoDepreciarAfi === '1'} readOnly />
+                                                    </td>
+                                                    <td className="text-center">
+                                                        <input type="checkbox" checked={item.cOperativoAfi === '1'} readOnly />
+                                                    </td>
+                                                </tr>
+                                            );
+                                        })
+                                    ) : (
+                                        <tr>
+                                            <td colSpan="10" className="text-center py-4">
+                                                <span style={{ color: '#792482' }}>
+                                                    <i className="fas fa-search-minus me-2"></i>
+                                                    No se encontraron activos para la búsqueda actual.
+                                                </span>
+                                            </td>
+                                        </tr>
+                                    )
                                 )
                             }
                         </tbody>

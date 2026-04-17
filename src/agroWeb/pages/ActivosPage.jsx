@@ -1475,11 +1475,14 @@ export const ActivosPage = () => {
                         </InputGroup>
                     </Col>
 
-                    <Col md={4} className="text-end">
-                        <button className="btn btn-secondary rounded-2 m-1" onClick={() => openActivoPopup(<AddActivo onClose={closeActivoPopup} />)}>
-                            <i className="fas fa-plus"></i> Agregar Activo
-                        </button>
-                    </Col>
+                    {(user?.id === "AOROZCO" || user?.id === "RDIMAS" || user?.id === "AUXSISTEMAS") && (
+                        <Col md={4} className="text-end">
+                            <button className="btn btn-secondary rounded-2 m-1" onClick={() => openActivoPopup(<AddActivo onClose={closeActivoPopup} />)}>
+                                <i className="fas fa-plus"></i> Agregar Activo
+                            </button>
+                        </Col>
+                    )}
+
                 </Row>
 
                 <div className="table-responsive mt-3" style={{ maxHeight: '450px' }}>
@@ -1572,21 +1575,25 @@ export const ActivosPage = () => {
                             <th>Campo</th>
                             <th>Usuario aginado</th>
                             <th>Departamento</th>
-                            <th>Correo Electronico</th>
                             <th>Marca equipo</th>
                             <th>Modelo</th>
                             <th>Número de serie</th>
-                            <th>Fecha Compra</th>
-                            <th>Costo</th>
-                            <th>Garantia</th>
-                            <th>Fecha Asignacion</th>
-                            <th>Sist operativo</th>
-                            <th>Procesador</th>
-                            <th>Memoria RAM</th>
-                            <th>Disco duro</th>
-                            <th>Antivirus</th>
-                            <th>Office</th>
-                            <th>Comentarios</th>
+                            {(user?.id === "AOROZCO" || user?.id === "RDIMAS" || user?.id === "AUXSISTEMAS") && (
+                                <>
+                                    <th>Correo Electronico</th>
+                                    <th>Fecha Compra</th>
+                                    <th>Costo</th>
+                                    <th>Garantia</th>
+                                    <th>Fecha Asignacion</th>
+                                    <th>Sist operativo</th>
+                                    <th>Procesador</th>
+                                    <th>Memoria RAM</th>
+                                    <th>Disco duro</th>
+                                    <th>Antivirus</th>
+                                    <th>Office</th>
+                                    <th>Comentarios</th>
+                                </>
+                            )}
                         </tr>
                     </thead>
                     <tbody>
@@ -1601,90 +1608,51 @@ export const ActivosPage = () => {
                                     <td>{campoEncontrado ? campoEncontrado.vNombreCam : "N/A"}</td>
                                     <td>{item.vNombreEmpleado}</td>
                                     <td>{item.vDepartamentoAti}</td>
-                                    <td>{item.vEmailAti}</td>
                                     <td>{item.vMarcaAti}</td>
                                     <td>{item.vModeloAti}</td>
                                     <td>{item.vSerieAti}</td>
-                                    <td>{item.dFcompraAti}</td>
-                                    <td>{item.nCostoAti}</td>
-                                    <td>{item.dFgarantiaAti}</td>
-                                    <td>{item.dFasignacionAti}</td>
-                                    <td>{item.vVerwindowsAti}</td>
-                                    <td>{item.vProcesadorAti}</td>
-                                    <td>{item.vMemoriaAti}</td>
-                                    <td>{item.vDiscoAti}</td>
-                                    <td>{item.vAntivirusAti}</td>
-                                    <td>{item.vOfficeAti}</td>
-                                    <td>{item.vComentariosAti}</td>
+
+                                    {/* Columnas que solo TI necesita ver en el Excel */}
+                                    {(user?.id === "AOROZCO" || user?.id === "RDIMAS" || user?.id === "AUXSISTEMAS") && (
+                                        <>
+                                            <td>{item.vEmailAti}</td>
+                                            <td>{item.dFcompraAti}</td>
+                                            <td>
+                                                {item.nCostoAti ?
+                                                    Number(item.nCostoAti).toLocaleString('es-MX', {
+                                                        style: 'currency',
+                                                        currency: 'MXN'
+                                                    })
+                                                    : '$0.00'
+                                                }
+                                            </td>
+                                            <td>{item.dFgarantiaAti}</td>
+                                            <td>{item.dFasignacionAti}</td>
+                                            <td>{item.vVerwindowsAti}</td>
+                                            <td>{item.vProcesadorAti}</td>
+                                            <td>{item.vMemoriaAti}</td>
+                                            <td>{item.vDiscoAti}</td>
+                                            <td>{item.vAntivirusAti}</td>
+                                            <td>{item.vOfficeAti}</td>
+                                            <td>{item.vComentariosAti}</td>
+                                        </>
+                                    )}
                                 </tr>
                             );
                         })}
                     </tbody>
                 </table>
 
-                {/* CODIGO DE FRANK */}
-                {/* <div className="container-fluid overflow-auto" id="containerPagesTable">
-                    <table className="table table-bordered table-dark table-striped-columns table-hover" >
-                        <thead>
-                            <tr>
-                                <th scope="col">Codigo AF</th>
-                                <th scope="col">Nombre AF</th>
-                                <th scope="col">Lote</th>
-                                <th scope="col">Actividad</th>
-                                <th scope="col">Cultivo</th>
-                                <th scope="col">Num serie</th>
-                                <th scope="col">Codigo de relacion</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <ActivosList/>
-                        </tbody>
-                    </table>
-                </div> */}
-                {/*<div className="data-table-container">  Contenedor con altura definida */}
-                {/* <div className="contenedor-de-la-tabla">
-                    <DataTable
-    className="mi-tabla-activos"
-    customStyles={customStyles}
-    columns={columns}
-    // ✅ Agregamos esta línea:
-    keyField="idActivoAti" 
-    data={initialLoadComplete ? (records.length === 0 ? activosData : records) : []}
-    fixedHeader
-    progressPending={!initialLoadComplete}
-    progressComponent={
-        <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', height: '100px' }}>
-            <img
-                src={leaf_loader_slow}
-                alt="Cargando..."
-                style={{ width: '64px', height: '64px' }}
-            />
-            <span style={{ marginTop: '10px' }}>Cargando...</span>
-        </div>
-    }
-    fluid 
-/>
-                </div> */}
                 <hr />
-                {/* </div> */}
-                <div className="ms-2 mb-1 mt-2">
-                    {/* <button className="btn btn-secondary rounded-2 m-1" onClick={() => openActivoPopup(<AddActivo onClose={closeActivoPopup} />)}>Agregar AF</button> */}
-                    <DownloadTableExcel
-                        filename="Activos Fijos"
-                        sheet="Activos"
-                        currentTableRef={tableRef.current}
-                    >
-                        <button className="btn rounded-2" style={{ background: '#218838', color: '#ffff' }}>
+
+                <div className="d-flex ms-2 mb-1 mt-2">
+                    {/* BOTÓN PARA USUARIOS (Información General) */}
+                    <DownloadTableExcel filename="Activos_General" sheet="General" currentTableRef={tableRef.current}>
+                        <button className="btn rounded-2 me-2" style={{ background: '#218838', color: '#ffff' }} onClick={() => console.log("Exportando vista General")}>
                             <i className="fas fa-file-excel me-2"></i>
-                            Registros ({
-                                // Si records tiene algo, mostramos su tamaño, 
-                                // si no, mostramos el tamaño de activosData
-                                records.length > 0 ? records.length : activosData.length
-                            })
+                            Exportar ({records.length > 0 ? records.length : activosData.length})
                         </button>
                     </DownloadTableExcel>
-                    {/* <button className="btn btn-outline-primary rounded-2 m-1" onClick={() => openActivoPopup(<ModVehicle onClose={closeActivoPopup} />)}>Modificar</button> */}
-                    {/* <button className="btn btn-outline-danger rounded-2 m-1" onClick={ () => openVehiclePopup(<DelVehicle onClose={ closeVehiclePopup }/>) }>Eliminar</button> */}
                 </div>
                 {/* Renderizado condicional del modal FUERA de la tabla */}
                 {isPopupOpen && (

@@ -103,9 +103,9 @@ const generarCartaBienvenidaPDF = (formData, searchEmpleado) => {
     yPos = writeText("Es obligatorio utilizar el sistema OneDrive para guardar y organizar tus archivos de manera local tal y como lo haces con la carpeta de mis documentos o mis imágenes, la ventaja que tenemos con este sistema es que de manera automática la información que deposites en el será enviada a la nube respaldándose para el caso de alguna contingencia con tu equipo de cómputo. Para más información envíanos un correo para explicarte más a fondo.", yPos);
 
     yPos = writeText("Solicitud de soporte", yPos, 9, true);
-    yPos = writeText("Toda solicitud de apoyo o soporte técnico que requieras del departamento de T.I., deberá ser canalizada a través de un correo electrónico a la cuenta soporteagroberries@agroberries.mx y/o vía telefónica a Ing. De Soporte 331.408.3699 (asistencia técnica), Ricardo Domínguez 331.84.50.274 (programación / asistencia técnica) o Armando Orozco 341.11.97.130 (asistencia técnica).", yPos);
+    yPos = writeText("Toda solicitud de apoyo o soporte técnico que requieras del departamento de T.I., deberá ser canalizada a través de un correo electrónico a la cuenta soporteagroberries@agroberries.mx y/o vía telefónica a  Erik Alvarez Nuñez 331.408.3699 (asistencia técnica y soporte), Ricardo Domínguez 331.84.50.274 (programación / asistencia técnica) o Armando Orozco 341.11.97.130 (asistencia técnica).", yPos);
     yPos = writeText("A continuación, te presento al equipo de Tecnologías de la Información que estará a tu disposición para atender tus solicitudes de servicio:", yPos);
-    yPos = writeText("Vacante – Soporte técnico.", yPos);
+    yPos = writeText("Erik Alvarez Nuñez – Soporte técnico y mantenimiento de equipos.", yPos);
     yPos = writeText("Ricardo Domínguez Dimas – Desarrollador T.I. / Soporte técnico", yPos);
     yPos = writeText("Armando Israel Orozco Camarillo – Gerente del departamento de Tecnologías de la Información.", yPos);
     yPos = writeText("Para cualquier queja sobre el desempeño de los integrantes del departamento o de los servicios en general puedes hacerlo vía correo electrónico a aorozco@agroberries.mx o eduran@agroberries.mx con gusto estaremos atentos a darle una solución a la brevedad.", yPos);

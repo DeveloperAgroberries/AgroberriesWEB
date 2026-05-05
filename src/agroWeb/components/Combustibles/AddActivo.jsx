@@ -419,9 +419,14 @@ export const AddActivo = ({ onClose, subfamilias, handleEstatusChange }) => {
 
             if (uploadSuccessful) {
                 const success = await dispatch(startAddNewActivoFijo(afData));
+                // console.log('Resultado de agregar activo fijo:', afData);
                 const successExtras = await dispatch(startExtrasTI({
                     cNumeconAfi: afData.cNumeconAfi,
-                    cReponsivaAti: '0'
+                    cReponsivaAti: '0',
+                    vMarcaAfi: afData.vMarcaAfi,
+                    vModeloAfi: afData.vModeloAfi,
+                    vNumserieAfi: afData.vNumserieAfi,
+                    vEstatusAti: 'STOCK'
                 }));
                 
                 if (success && successExtras) {

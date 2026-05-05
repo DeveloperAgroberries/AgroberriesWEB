@@ -931,6 +931,27 @@ export const ActivosPage = () => {
                                         <Form.Control style={{ fontSize: '0.7rem' }} type="date" name="dFgarantiaAti" value={formDataExtras.dFgarantiaAti || ''} onChange={handleInputChangeExtras} />
                                     </Form.Group>
                                 </Col>
+                                <Col md={2}>
+                                    <Form.Label>Estatus</Form.Label>
+                                    <select className="form-select" id="vEstatusAti" name='vEstatusAti' value={formDataExtras.vEstatusAti || ''} onChange={handleInputChangeExtras} style={{ fontSize: '12px' }}>
+                                        <option hidden value="">Equipo en:</option>
+                                        <option value="SERVICIO">SERVICIO</option>
+                                        <option value="DAÑADO">DAÑADO</option>
+                                        <option value="REPARACIÓN">REPARACIÓN</option>
+                                        <option value="STOCK">STOCK</option>
+                                        <option value="REFACCIÓN">REFACCIÓN</option>
+                                        <option value="BAJA">BAJA</option>
+                                    </select>
+                                </Col>
+                            </Row>
+
+                            <Row className="mb-3">
+                                <Col md={12}>
+                                    <Form.Group className="mb-3" controlId="vDetalleAti">
+                                        <Form.Label>Actividades del puesto</Form.Label>
+                                        <Form.Control style={{ fontSize: '0.7rem' }} as="textarea" rows={3} name="vDetalleAti" value={formDataExtras.vDetalleAti || ''} onChange={handleInputChangeExtras} />
+                                    </Form.Group>
+                                </Col>
                             </Row>
 
                             {/* ////////////////////////////////////////////////////////////////////////////// */}
@@ -1230,7 +1251,9 @@ export const ActivosPage = () => {
         vPwdremotoAti: '',
         vComentariosAti: '',
         vDocresponsivaAti: '',
-        vDepartamentoAti: ''
+        vDepartamentoAti: '',
+        vEstatusAti: '',
+        vDetalleAti: ''
     });
 
     // useEffect para inicializar formDataExtras cuando se selecciona un activo para editar
@@ -1274,7 +1297,9 @@ export const ActivosPage = () => {
                 vPwdremotoAti: activoEncontrado.vPwdremotoAti || '',
                 vComentariosAti: activoEncontrado.vComentariosAti || '',
                 vDocresponsivaAti: activoEncontrado.vDocresponsivaAti || '',
-                vDepartamentoAti: activoEncontrado.vDepartamentoAti || ''
+                vDepartamentoAti: activoEncontrado.vDepartamentoAti || '',
+                vEstatusAti: activoEncontrado.vEstatusAti || '',
+                vDetalleAti: activoEncontrado.vDetalleAti || ''
             });
             // 2. Llenar el estado de búsqueda con el nombre del responsable de la DB
             // Esto asegura que el input no se muestre vacío al cargar
@@ -1323,6 +1348,8 @@ export const ActivosPage = () => {
         vComentariosAti,
         vDocresponsivaAti,
         vDepartamentoAti,
+        vEstatusAti,
+        vDetalleAti,
         onInputChange,
         onResetForm
     } = useForm({
@@ -1352,7 +1379,9 @@ export const ActivosPage = () => {
         vPwdremotoAti: '',
         vComentariosAti: '',
         vDocresponsivaAti: '',
-        vDepartamentoAti: ''
+        vDepartamentoAti: '',
+        vEstatusAti: '',
+        vDetalleAti: '',
     });
 
 
@@ -1367,6 +1396,55 @@ export const ActivosPage = () => {
     const [archivoAdjuntoResponsiva, setArchivoAdjuntoResponsiva] = useState(null); // Estado para el archivo adjunto
     const handleArchivoChangeResponsiva = (event) => {
         setArchivoAdjuntoResponsiva(event.target.files[0]);
+    };
+
+    const getEstatusIcon = (estatus) => {
+        const estiloBase = "badge border fw-bold"; // Clases base para no repetir
+
+        switch (estatus?.toUpperCase()) {
+            case 'SERVICIO':
+                return (
+                    <span className={`${estiloBase} bg-success-subtle text-success border-success-subtle`}>
+                        <i className="fas fa-check-circle me-1"></i> SERVICIO
+                    </span>
+                );
+            case 'DAÑADO':
+                return (
+                    <span className={`${estiloBase} bg-danger-subtle text-danger border-danger-subtle`}>
+                        <i className="fas fa-times-circle me-1"></i> DAÑADO
+                    </span>
+                );
+            case 'REPARACIÓN':
+                return (
+                    <span className={`${estiloBase} bg-warning-subtle text-warning border-warning-subtle`}>
+                        <i className="fas fa-wrench fa-lg"></i> REPARACIÓN
+                    </span>
+                );
+            case 'STOCK':
+                return (
+                    <span className={`${estiloBase} bg-primary-subtle text-primary border-primary-subtle`}>
+                        <i className="fas fa-box me-1"></i> STOCK
+                    </span>
+                );
+            case 'REFACCIÓN':
+                return (
+                    <span className={`${estiloBase} bg-info-subtle text-info border-info-subtle`}>
+                        <i className="fas fa-microchip me-1"></i> REFACCIÓN
+                    </span>
+                );
+            case 'BAJA':
+                return (
+                    <span className={`${estiloBase} bg-secondary-subtle text-secondary border-secondary-subtle`}>
+                        <i className="fas fa-arrow-down me-1"></i> BAJA
+                    </span>
+                );
+            default:
+                return (
+                    <span className={`${estiloBase} bg-light text-dark border-secondary-subtle`}>
+                        <i className="fas fa-question-circle me-1"></i> SIN ESTATUS
+                    </span>
+                );
+        }
     };
 
     return (
@@ -1491,6 +1569,7 @@ export const ActivosPage = () => {
                             <tr>
                                 <th>Código AF</th>
                                 <th>Nom AF</th>
+                                <th>Estatus</th>
                                 <th>Campo</th>
                                 <th>Usuario aginado</th>
                                 <th>Marca</th>
@@ -1505,7 +1584,7 @@ export const ActivosPage = () => {
                             {
                                 isLoading ? (
                                     <tr>
-                                        <td colSpan="10" className="text-center py-5">
+                                        <td colSpan="11" className="text-center py-5">
                                             <div className="spinner-border" style={{ color: '#792482' }} role="status"></div>
                                             <div className="mt-2" style={{ color: '#792482', fontWeight: 'bold' }}>
                                                 Buscando activos...
@@ -1526,6 +1605,7 @@ export const ActivosPage = () => {
                                                         {item.cCodigoAfi}
                                                     </td>
                                                     <td>{item.vNombreAfi}</td>
+                                                    <td>{getEstatusIcon(item.vEstatusAti)}</td>
                                                     <td>{campoEncontrado ? campoEncontrado.vNombreCam : "N/A"}</td>
                                                     <td>{item.vNombreEmpleado || "Sin asignar"}</td>
                                                     <td>{item.vMarcaAfi}</td>
@@ -1553,7 +1633,7 @@ export const ActivosPage = () => {
                                         })
                                     ) : (
                                         <tr>
-                                            <td colSpan="10" className="text-center py-4">
+                                            <td colSpan="11" className="text-center py-4">
                                                 <span style={{ color: '#792482' }}>
                                                     <i className="fas fa-search-minus me-2"></i>
                                                     No se encontraron activos para la búsqueda actual.
@@ -1580,6 +1660,7 @@ export const ActivosPage = () => {
                             <th>Número de serie</th>
                             {(user?.id === "AOROZCO" || user?.id === "RDIMAS" || user?.id === "AUXSISTEMAS") && (
                                 <>
+                                    <th>Estatus</th>
                                     <th>Correo Electronico</th>
                                     <th>Fecha Compra</th>
                                     <th>Costo</th>
@@ -1592,6 +1673,7 @@ export const ActivosPage = () => {
                                     <th>Antivirus</th>
                                     <th>Office</th>
                                     <th>Comentarios</th>
+                                    <th>Actividades puesto</th>
                                 </>
                             )}
                         </tr>
@@ -1615,6 +1697,7 @@ export const ActivosPage = () => {
                                     {/* Columnas que solo TI necesita ver en el Excel */}
                                     {(user?.id === "AOROZCO" || user?.id === "RDIMAS" || user?.id === "AUXSISTEMAS") && (
                                         <>
+                                            <td>{item.vEstatusAti}</td>
                                             <td>{item.vEmailAti}</td>
                                             <td>{item.dFcompraAti}</td>
                                             <td>
@@ -1635,6 +1718,7 @@ export const ActivosPage = () => {
                                             <td>{item.vAntivirusAti}</td>
                                             <td>{item.vOfficeAti}</td>
                                             <td>{item.vComentariosAti}</td>
+                                            <td>{item.vDetalleAti}</td>
                                         </>
                                     )}
                                 </tr>

@@ -264,11 +264,12 @@ export const startAddNewActivoFijo = (afData) => {
 
 //INSERTAR ACTIVO EXTRAS TI
 export const startExtrasTI = (extrasTIObject) => {
+    // console.log('Respuesta del servidor:', extrasTIObject);
+    // return
     return async (dispatch) => {
         dispatch(checkingIsLoading());
         try {
             const { data } = await activosApi.post('/insertExtrasTI', extrasTIObject); 
-            console.log('Respuesta del servidor:', data);
             return true;
             
         } catch (error) {

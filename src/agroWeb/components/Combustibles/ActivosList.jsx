@@ -75,6 +75,8 @@ export const ActivosList = (familia = "") => { // Ahora puede recibir familia
                 vDocresponsivaAti: item.vDocresponsivaAti?.trim(),
                 vDepartamentoAti: item.vDepartamentoAti?.trim(),
                 vNombreEmpleado: item.vNombreEmpleado?.trim(),
+                vEstatusAti: item.vEstatusAti?.trim(),
+                vDetalleAti: item.vDetalleAti?.trim(),
             };
         });
     }, [combustibles, campos]);

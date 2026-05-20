@@ -5,12 +5,12 @@ export const loginWithUserPassword = async(userUpper, hashPassword) => {
     try {
         const {data} = await authApi.get(`/ObtainLogin/${userUpper}/${hashPassword}`);
 
-        const {cCodigoUsu, vNombreUsu, vEmailUsu } = data.usuario;
+        const {cCodigoUsu, vNombreUsu, vEmailUsu, cCodigoCam } = data.usuario;
         const Permissions = data.permissions;
 
         return{
             ok: true,
-            cCodigoUsu, vNombreUsu, vEmailUsu, Permissions
+            cCodigoUsu, vNombreUsu, vEmailUsu,cCodigoCam, Permissions
         }
     } catch (error) {
         const isDevelopment = import.meta.env.MODE === 'development';

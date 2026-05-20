@@ -1,4 +1,4 @@
-import { useContext } from 'react';
+import { useContext, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { AuthContext } from '../../auth/context/AuthContext';
@@ -10,6 +10,7 @@ export const NavBar = (props) => {
 	const { user, logout } = useContext(AuthContext);
 	const navigate = useNavigate();
 	const dispatch = useDispatch();
+	const [navCollapsed, setNavCollapsed] = useState(false);
 
 	const onLogout = () => {
 		logout();
@@ -20,18 +21,30 @@ export const NavBar = (props) => {
 	}
 
 	//Lo comento para que no este saliedno todo el tiempo: Ricardo Dimas - 04/05/2025
-	// console.log(user?.permissions) Ricardo Dimas
+	// console.log(user?.id)
 
 	return (
-		// <nav className="navbar bg-body-tertiary fixed-top" data-bs-theme="white" style={{marginBottom: '200px'}}>
-		<nav className="navbar fixed-top shadow-sm" style={{ backgroundColor: 'white', borderBottom: '1px solid #dee2e6', marginBottom: '200px' }}>
-			<div className="container-fluid">
-				<NavLink className={({ isActive }) => `navbar-brand ${isActive ? 'active' : ''}`} to="/home">
-					<img src={logo} alt='logo' width="200" height="60" />
+		<nav
+			className={`navbar fixed-top shadow-sm ${navCollapsed ? 'navbar-compact' : ''}`}
+			style={{
+				backgroundColor: 'white',
+				borderBottom: '1px solid #dee2e6',
+				marginBottom: '200px',
+				transition: 'all 180ms ease',
+				padding: navCollapsed ? '0.25rem 1rem' : '0.5rem 1rem',
+				height: navCollapsed ? '52px' : 'auto',
+				overflow: 'hidden',
+			}}
+			onMouseEnter={() => setNavCollapsed(false)}
+			onMouseLeave={() => setNavCollapsed(true)}
+		>
+			<div className="container-fluid d-flex align-items-center justify-content-between">
+				<NavLink className={({ isActive }) => `navbar-brand ${isActive ? 'active' : ''}`} to="/home" style={{ padding: 0 }}>
+					<img src={logo} alt='logo' width={navCollapsed ? '140' : '200'} height={navCollapsed ? '42' : '60'} style={{ transition: 'width 180ms ease, height 180ms ease' }} />
 				</NavLink>
 
-				<div className='d-flex'>
-					<h6 className='text-body-emphasis me-4'> Bienvenid@ {user?.name} </h6>
+				<div className='d-flex align-items-center gap-2'>
+					{!navCollapsed && <h6 className='text-body-emphasis mb-0'>Bienvenid@ {user?.name}</h6>}
 					<button className="navbar-toggler" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasNavbar" aria-controls="offcanvasNavbar" aria-label="Toggle navigation">
 						<span className="navbar-toggler-icon"></span>
 					</button>
@@ -201,6 +214,26 @@ export const NavBar = (props) => {
 														<li className='nav-item'>
 															<NavLink className={({ isActive }) => `rounded-1 dropdown-item ${isActive ? 'active' : ''}`} to="/reclutadores" onClick={() => {navigate("/reclutadores");}} data-bs-dismiss="offcanvas">
 																Candidatos
+															</NavLink>
+														</li>
+													)}
+												</ul>
+											</li>
+										</>
+									)}
+
+									{user?.permissions.includes("02570") && (
+										<>
+											<li className="nav-item dropdown">
+												<a className="dropdown-item dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+													Cooler
+												</a>
+												<ul className="dropdown-menu-end">
+
+													{user?.permissions.includes("02571") && (
+														<li className='nav-item'>
+															<NavLink className={({ isActive }) => `rounded-1 dropdown-item ${isActive ? 'active' : ''}`} to="/cooler" onClick={() => {navigate("/cooler");}} data-bs-dismiss="offcanvas">
+																Envios a Cooler
 															</NavLink>
 														</li>
 													)}

@@ -39,7 +39,8 @@ import {
   SolicitaEquipo,
   ReporteChecadorFacial,
   ReporteKilometrajeDiario,
-  ReclutadoresPage
+  ReclutadoresPage,
+  EnviosCoolerPage,
 } from '../agroWeb/pages';
 
 import { ProtectedRoute } from './ProtectedRoute';
@@ -91,6 +92,7 @@ export const AppRouter = () => {
     { path: "/reportes/reportechecadorfacial", permission: "02500", component: ReporteChecadorFacial },
     { path: "/reportes/reportekilometrajediario", permission: "02207", component: ReporteKilometrajeDiario },
     { path: "/reclutadores", permission: "02550", component: ReclutadoresPage },
+    { path: "/cooler", permission: "02570", component: EnviosCoolerPage },
   ];
 
   let timer;

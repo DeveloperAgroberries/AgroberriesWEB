@@ -7,6 +7,7 @@ export const authSlice = createSlice({
         cCodigoUsu: null,
         vNombreUsu: null,
         vEmailUsu: null,
+        cCodigoCam: null,
         Permissions: [],
         errorMessage: null,
     },
@@ -16,6 +17,7 @@ export const authSlice = createSlice({
             state.cCodigoUsu = payload.cCodigoUsu.trim();
             state.vNombreUsu = payload.vNombreUsu.trim();
             state.vEmailUsu = payload.vEmailUsu.trim();
+            state.cCodigoCam = payload.cCodigoCam ? payload.cCodigoCam.trim() : null;;
             state.Permissions = payload.Permissions;
             state.errorMessage = null;
         },
@@ -25,6 +27,7 @@ export const authSlice = createSlice({
             state.cCodigoUsu = null;
             state.vNombreUsu = null;
             state.vEmailUsu = null;
+            state.cCodigoCam = null;
             state.Permissions = [];
             state.errorMessage = payload?.errorMessage;
         },

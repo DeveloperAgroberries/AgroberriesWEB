@@ -15,15 +15,14 @@ const init = () =>{
 export const AuthProvider = ({children}) => {
     const [authState, dispatch] = useReducer(authReducer, {}, init);
   
-    const login = (id = '',name = '', permissions = []) =>{
+    const login = ({ id = '', name = '', field = '', permissions = [] }) => {
 
-        const user = { id, name, permissions };
-        const action = { type: types.login, payload: user,};
+    const user = { id, name, field, permissions };
+    const action = { type: types.login, payload: user };
 
-        localStorage.setItem('user', JSON.stringify(user));
-
-        dispatch(action);
-    }
+    localStorage.setItem('user', JSON.stringify(user));
+    dispatch(action);
+}
 
     const logout = () => {
         localStorage.removeItem('user');

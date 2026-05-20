@@ -19,6 +19,7 @@ import { nominaCampoSlice, selNominaSlice } from './slices/nominaCampo'; // Aseg
 import { activosFijosSlice } from './slices/activosFijos/activosFijosSlice'; // ✅ Asegúrate de la ruta correcta
 import { reporteChecadorFacialSlice } from './slices/reporteChecadorFacial/reporteChecadorFacialSlice'; // ✅ Asegúrate de la ruta correcta
 import { reclutadoresSlice } from './slices/reclutadores/reclutadoresSlice'; // Ajusta la ruta
+import { enviosCoolerSlice } from './slices/cooler/enviosCoolerSlice'; // Ajusta la ruta
 
 
 export const store = configureStore({
@@ -53,5 +54,6 @@ export const store = configureStore({
 		activosFijos: activosFijosSlice.reducer, // ✅ Asegúrate de que sea .reducer
 		reporteChecadorFacialSlice: reporteChecadorFacialSlice.reducer, // <-- ¡ESTA ES LA CLAVE EN EL STORE!
 		reclutadores: reclutadoresSlice.reducer,
+		enviosCooler: enviosCoolerSlice.reducer, // Añade esta línea para el nuevo slice de envíos del cooler
   	},
 })

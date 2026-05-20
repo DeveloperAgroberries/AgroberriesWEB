@@ -18,3 +18,4 @@ export * from './NominaPage';
 export * from './SolicitaEquipo';
 export { default as RindeGastosPage } from './RindeGastosPage';
 export * from './ReclutadoresPage';
+export * from './EnviosCoolerPage';

@@ -16,7 +16,7 @@ export const LoginPage = () => {
 	const navigate = useNavigate();
 	const dispatch = useDispatch();
 	const { login } = useContext(AuthContext);
-	const { status, vNombreUsu, cCodigoUsu, Permissions, errorMessage } = useSelector(state => state.auth);
+	const { status, vNombreUsu, cCodigoUsu, cCodigoCam, Permissions, errorMessage } = useSelector(state => state.auth);
 	// EN CASO DE NECESITAR CATCHA CAMBIAR A FALSE - RICARDO DIMAS 17/04/2025
 	const [isValid, setIsValid] = useState(true);
 	const [hide, setHide] = useState(false);
@@ -58,7 +58,13 @@ export const LoginPage = () => {
 		if (status === 'authenticated') {
 			const lastPath = localStorage.getItem('/') || '/';
 			// const permissions = ["transportes", "reportes", "reportestransportes", "rh", "fitosanidad", "comedores", "almacenme"]
-			login(cCodigoUsu, vNombreUsu, Permissions);
+			// 🚩 MANDAMOS UN OBJETO (con llaves)
+        login({
+            id: cCodigoUsu,
+            name: vNombreUsu,
+            field: cCodigoCam, // Redux ya lo tiene gracias a tu Slice
+            permissions: Permissions
+        });
 			navigate(lastPath, {
 				replace: true,
 			});

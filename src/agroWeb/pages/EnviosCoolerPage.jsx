@@ -113,6 +113,8 @@ export const EnviosCoolerPage = () => {
   const horaFormateada = ahora.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   const fechaFormateada = ahora.toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' });
 
+  const selectedCoolerName = coolers.find(c => String(c.c_codigo_cam) === String(selectedCooler))?.v_nombre_cam || '';
+
   return (
     <>
       <style type="text/css">
@@ -211,9 +213,9 @@ export const EnviosCoolerPage = () => {
 
       <div id="pagesContainer" className="container-fluid rounded-3 p-4 mt-2 animate__animated animate__fadeIn" style={{ background: 'white', marginBottom: '40px'}}>
 
-        <div className="rounded-3 shadow-sm mb-2" style={{ background: '#7c30b8', color: 'white', padding: '8px 12px', textAlign: 'center' }}>
+        {/* <div className="rounded-3 shadow-sm mb-2" style={{ background: '#7c30b8', color: 'white', padding: '8px 12px', textAlign: 'center' }}>
           <h5 className="m-0 fw-bold" style={{ fontSize: '16px' }}>MONITOR DE ENVÍOS - {isLoading ? 'SINCRONIZANDO...' : 'EN VIVO'}</h5>
-        </div>
+        </div> */}
 
         {isAdmin && (
           <div className="search-container shadow-sm mb-3 p-3 rounded" style={{ background: '#f8fafc', border: '1px solid #e2e8f0' }}>
@@ -273,7 +275,7 @@ export const EnviosCoolerPage = () => {
             <div className="airport-clock"></div>
             <div>
               <h5 className="m-0 text-white fw-bold uppercase">
-                {isAdmin ? 'MONITOR DE COOLER' : `SALIDAS / ${user?.name}`}
+                {isAdmin ? 'MONITOR DE COOLER' : `SALIDAS - ${selectedCoolerName}`}
               </h5>
               <small style={{ color: '#38bdf8', fontSize: '10px' }}>AGROBERRIES COOLER TRACKING SYSTEM</small>
             </div>

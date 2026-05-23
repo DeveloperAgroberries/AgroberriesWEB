@@ -59,13 +59,10 @@ export const EnviosCoolerPage = () => {
 
   const getStatusNeonClass = (status) => {
     switch (status) {
-      case 'CARGANDO':
       case 'CARGANDO EN GALERA': return 'led-bar bg-primary shadow-blue';
-      case 'SALIDA CAMPO':
       case 'SALIDA DE CAMPO': return 'led-bar bg-warning shadow-yellow blink';
       case 'LLEGADA COOLER': return 'led-bar bg-info shadow-cyan';
-      case 'DESEMBARCANDO': return 'led-bar bg-orange shadow-orange';
-      case 'ENTRADA COOLER':
+      case 'DESEMBARCANDO': return 'led-bar bg-danger shadow-danger blink';
       case 'FRUTA EN PISO': return 'led-bar bg-success shadow-green';
       default: return 'led-bar bg-secondary';
     }
@@ -100,10 +97,10 @@ export const EnviosCoolerPage = () => {
     const status = (envio.VEstatusCoo || '').trim().toUpperCase();
     const timeField = status === 'CARGANDO EN GALERA' ? envio.DHcargandoCoo :
       status === 'SALIDA DE CAMPO' ? envio.DHsalidaranchoCoo :
-      status === 'LLEGADA A COOLER' ? envio.DHllegadacoolerCoo :
-      status === 'DESEMBARCANDO' ? envio.DHdesembarcandoCoo :
-      status === 'FRUTA EN PISO' ? envio.DHentradacoolerCoo :
-      envio.DHcargandoCoo || envio.DHsalidaranchoCoo || envio.DHllegadacoolerCoo || envio.DHdesembarcandoCoo || envio.DHentradacoolerCoo || '';
+        status === 'LLEGADA A COOLER' ? envio.DHllegadacoolerCoo :
+          status === 'DESEMBARCANDO' ? envio.DHdesembarcandoCoo :
+            status === 'FRUTA EN PISO' ? envio.DHentradacoolerCoo :
+              envio.DHcargandoCoo || envio.DHsalidaranchoCoo || envio.DHllegadacoolerCoo || envio.DHdesembarcandoCoo || envio.DHentradacoolerCoo || '';
     return formatHoraRegistro(timeField);
   };
 
@@ -211,7 +208,7 @@ export const EnviosCoolerPage = () => {
 
       <br /><br />
 
-      <div id="pagesContainer" className="container-fluid rounded-3 p-4 mt-2 animate__animated animate__fadeIn" style={{ background: 'white', marginBottom: '40px'}}>
+      <div id="pagesContainer" className="container-fluid rounded-3 p-4 mt-2 animate__animated animate__fadeIn" style={{ background: 'white', marginBottom: '40px' }}>
 
         {/* <div className="rounded-3 shadow-sm mb-2" style={{ background: '#7c30b8', color: 'white', padding: '8px 12px', textAlign: 'center' }}>
           <h5 className="m-0 fw-bold" style={{ fontSize: '16px' }}>MONITOR DE ENVÍOS - {isLoading ? 'SINCRONIZANDO...' : 'EN VIVO'}</h5>
@@ -289,51 +286,78 @@ export const EnviosCoolerPage = () => {
             <table className="fids-table-main">
               <thead>
                 <tr>
-                  <th style={{ width: '8%' }} className="text-center">HORA</th>
-                  <th style={{ width: '18%' }}>DESTINO / CHOFER</th>
-                  <th style={{ width: '27%' }}>PRODUCTO / ORIGEN</th>
-                  <th style={{ width: '25%' }}>CAJAS / ENVASE / TAMAÑO</th>
-                  <th style={{ width: '10%' }} className="text-end">ESTATUS</th>
+                  <th style={{ width: '15%' }} className="text-center">HORA / CHOFER</th>
+                  {/* <th style={{ width: '18%' }}>DESTINO / CHOFER</th> */}
+                  <th style={{ width: '45%' }}>PRODUCTO / ORIGEN</th>
+                  <th style={{ width: '15%' }}>CAJAS / ENVASE / TAMAÑO</th>
+                  <th style={{ width: '10%' }} className="text-center">% cumplimiento</th>
+                  <th style={{ width: '20%' }} className="text-center">ESTATUS</th>
                 </tr>
               </thead>
               <tbody>
                 {selectedCooler === "" ? (
                   <tr><td colSpan="5" className="text-center p-5 fids-msg">POR FAVOR SELECCIONE UN COOLER</td></tr>
                 ) :
-                enviosFiltrados.length === 0 ? (
-                  <tr><td colSpan="5" className="text-center p-5 fids-msg">NO HAY ENVÍOS PARA EL COOLER SELECCIONADO</td></tr>
-                ) : (
-                  enviosFiltrados.map((envio, index) => (
-                    <tr key={index}>
-                      <td className="text-center fw-bold" style={{ color: '#f9c12a' }}>{getHoraEstatus(envio)}</td>
-                      <td>
+                  enviosFiltrados.length === 0 ? (
+                    <tr><td colSpan="5" className="text-center p-5 fids-msg">NO HAY ENVÍOS PARA EL COOLER SELECCIONADO</td></tr>
+                  ) : (
+                    enviosFiltrados.map((envio, index) => (
+                      <tr key={index}>
+                        <td className='text-center'>
+                          {/* Hora */}
+                          <span className="fw-bold" style={{ color: '#f9c12a', fontSize: '18px' }}>
+                            {getHoraEstatus(envio)}
+                          </span>
+
+                          {/* Destino: Blanco normal */}
+                          <span className="sub-label-fids" style={{ color: '#FFFFFF' }}>
+                            {envio.destino}
+                          </span>
+
+                          {/* Chofer */}
+                          <span className="sub-label-fids" style={{ color: '#38bdf8', fontWeight: 'bold'}}>
+                            CHOFER: {envio.chofer}
+                          </span>
+
+                          {/* Placas: Color llamativo (puedes elegir entre los ejemplos de abajo) */}
+                          <span className="sub-label-fids" style={{ color: '#ffae00', fontWeight: 'bold'}}>
+                            PLACAS: {envio.placas}
+                          </span>
+                        </td>
+                        {/* <td>
                         <span className="fw-bold">{envio.destino}</span>
-                        <span className="sub-label-fids">PLACAS: {envio.placas}</span>
+                        <span className="sub-label-fids">PLACAS: {envio.placas}</span> */}
                         {/* <span className="sub-label-fids">CUADRILLERO: {envio.cuadrillero}</span> */}
-                        <span className="sub-label-fids" style={{color: '#38bdf8', fontWeight: 'bold'}}>CHOFER: {envio.chofer}</span>
-                      </td>
-                      <td>
-                        <span className="fw-bold" style={{ color: '#f9c12a', fontSize: '14px' }} title={envio.nomproducto}>
-                          {envio.codproducto} - {truncateText(envio.nomproducto, 80)}
-                        </span>
-                        <span className="sub-label-fids" style={{color: '#38bdf8', fontWeight: 'bold'}}>{envio.campo} - {envio.sector}</span>
-                      </td>
-                      <td>
-                        <span className="fw-bold">TOTAL DE CAJAS: {envio.cajas}</span>
-                        <span className="sub-label-fids" style={{color: '#9035e6', fontWeight: 'bold'}}>ENVASE: {envio.v_nombre_env}</span>
-                        <span className="sub-label-fids" style={{color: '#a3e635', fontWeight: 'bold'}}>ETIQUETA: {envio.v_nombre_eti}</span>
-                        {/* <span className="sub-label-fids" style={{color: '#a3e635', fontWeight: 'bold'}}>ETIQUETA: {envio.v_nombre_eti}</span> */}
-                        <span className="sub-label-fids" style={{color: '#f83838', fontWeight: 'bold'}}>TAMAÑO: {envio.v_nombre_tam}</span>
-                      </td>
-                      <td className="text-end" style={{ paddingRight: '25px' }}>
-                        <div className="d-flex align-items-center justify-content-end">
-                          <span className={getStatusNeonClass(getEstatusRegistro(envio))}></span>
-                          <span className="fw-bold" style={{ fontSize: '16px' }}>{getEstatusRegistro(envio)}</span>
-                        </div>
-                      </td>
-                    </tr>
-                  ))
-                )}
+                        {/* <span className="sub-label-fids" style={{color: '#38bdf8', fontWeight: 'bold'}}>CHOFER: {envio.chofer}</span>
+                      </td> */}
+                        <td>
+                          <span className="fw-bold" style={{ color: '#00FF00', fontSize: '17px' }} title={envio.nomproducto}>
+                            {envio.codproducto} - {truncateText(envio.nomproducto, 80)}
+                          </span>
+                          <span className="sub-label-fids" style={{ color: '#38bdf8', fontWeight: 'bold' }}>{envio.campo} - {envio.sector}</span>
+                        </td>
+                        <td>
+                          <span className="fw-bold">TOTAL DE CAJAS: {envio.cajas}</span>
+                          <span className="sub-label-fids" style={{ color: '#9035e6', fontWeight: 'bold' }}>ENVASE: {envio.v_nombre_env}</span>
+                          <span className="sub-label-fids" style={{ color: '#a3e635', fontWeight: 'bold' }}>ETIQUETA: {envio.v_nombre_eti}</span>
+                          {/* <span className="sub-label-fids" style={{color: '#a3e635', fontWeight: 'bold'}}>ETIQUETA: {envio.v_nombre_eti}</span> */}
+                          <span className="sub-label-fids" style={{ color: '#f83838', fontWeight: 'bold' }}>TAMAÑO: {envio.v_nombre_tam}</span>
+                        </td>
+                        <td className="text-center">
+                          {/* Porcentaje de cumplimiento pendiente */}
+                          {/* <span className="fw-bold" style={{ color: '#38bdf8', fontSize: '18px' }}>
+                            {envio.porcentaje_cumplimiento ? `${envio.porcentaje_cumplimiento}%` : 'N/A'}
+                          </span> */}
+                        </td>
+                        <td className="text-center" style={{ paddingRight: '25px' }}>
+                          <div className="d-flex align-items-center justify-content-center gap-2">
+                            <span className={getStatusNeonClass(getEstatusRegistro(envio))}></span>
+                            <span className="fw-bold" style={{ fontSize: '15px' }}>{getEstatusRegistro(envio)}</span>
+                          </div>
+                        </td>
+                      </tr>
+                    ))
+                  )}
               </tbody>
             </table>
           </div>

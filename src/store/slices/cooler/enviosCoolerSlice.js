@@ -1,4 +1,5 @@
 import { createSlice } from '@reduxjs/toolkit';
+import { logout } from '../../auth/authSlice';
 
 export const enviosCoolerSlice = createSlice({
     name: 'enviosCooler',
@@ -19,6 +20,13 @@ export const enviosCoolerSlice = createSlice({
         setCoolers: (state, action) => {
             state.coolers = action.payload;
         },
+    },
+    extraReducers: (builder) => {
+        builder.addCase(logout, () => ({
+            envios: [],
+            coolers: [],
+            isLoading: false,
+        }));
     }
 });
 

@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useContext } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { startLoadingEnvios, startLoadingCoolers } from '../../store/slices/cooler/thunks';
+import { setEnvios } from '../../store/slices/cooler/enviosCoolerSlice';
 import { AuthContext } from '../../auth/context/AuthContext';
 
 export const EnviosCoolerPage = () => {
@@ -14,7 +15,12 @@ export const EnviosCoolerPage = () => {
   const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
+    dispatch(setEnvios([]));
     dispatch(startLoadingCoolers());
+
+    return () => {
+      dispatch(setEnvios([]));
+    };
   }, [dispatch]);
 
   useEffect(() => {

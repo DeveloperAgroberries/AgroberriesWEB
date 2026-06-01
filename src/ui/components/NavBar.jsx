@@ -447,7 +447,7 @@ export const NavBar = (props) => {
 										</li>
 									)}
 
-									{/* {user?.permissions.includes("02400") && (
+									{user?.permissions.includes("02600") && (
 										<>
 											<li className="nav-item dropdown">
 												<a className="dropdown-item dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
@@ -455,7 +455,7 @@ export const NavBar = (props) => {
 												</a>
 												<ul className="dropdown-menu-end">
 
-													{user?.permissions.includes("02400") && (
+													{user?.permissions.includes("02601") && (
 														<li className='nav-item'>
 															<NavLink className={({ isActive }) => `rounded-1 dropdown-item ${isActive ? 'active' : ''}`} to="/rindeGastos" onClick={() => {navigate("/rindeGastos");}} data-bs-dismiss="offcanvas">
 																Reporte Rinde Gastos
@@ -465,7 +465,7 @@ export const NavBar = (props) => {
 												</ul>
 											</li>
 										</>
-									)} */}
+									)}
 
 									{user?.permissions.includes("02500") && (
 										<>

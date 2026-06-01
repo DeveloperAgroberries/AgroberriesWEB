@@ -1,20 +1,29 @@
 
 @import url('https://fonts.googleapis.com/css?family=Numans');
 
-html, body {
-    /* Asegura que tanto html como body ocupen el 100% del alto del viewport */
+/* 1. Mantenemos el alto en el html para que sirva de base */
+html {
     height: 100%;
-    /* Elimina cualquier margen o padding por defecto que puedan causar barras de desplazamiento no deseadas */
+}
+
+/* 2. Modificamos el body para que herede el fondo pero permita el scroll de la tabla */
+body {
+    /* 🛠️ SOLUCIÓN: Cambiamos height por min-height para que crezca si la tabla es grande */
+    min-height: 100%; 
+    
+    /* 🚀 REGLA DE ORO: Asegura que el scroll vertical NUNCA se congele en el portal */
+    overflow-y: auto !important; 
+
     margin: 0;
     padding: 0;
-    /* Comportamiento de la imagen de fondo */
-    background-image: url('../../assets/Campo.png');
-    background-size: cover; /* ¡Esta es la clave! Escala la imagen para cubrir todo el elemento */
-    background-repeat: no-repeat; /* Evita que la imagen se repita */
-    background-position: center center; /* Centra la imagen en el elemento */
-    background-attachment: fixed; /* Opcional: Hace que la imagen de fondo sea fija al desplazarse */
     
-    /* Fuente que ya tenías */
+    /* Tu comportamiento de imagen de fondo (se queda igual) */
+    background-image: url('../../assets/Campo.png');
+    background-size: cover; 
+    background-repeat: no-repeat; 
+    background-position: center center; 
+    background-attachment: fixed; 
+    
     font-family: 'Numans', sans-serif;
 }
     

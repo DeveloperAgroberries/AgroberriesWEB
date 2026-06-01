@@ -88,7 +88,7 @@ export const AppRouter = () => {
     { path: "/catalogoChoferes", permission: "02353", component: CatalogoChoferesPage },
     { path: "/nomina", permission: "02451", component: NominaPage },
     { path: "/solicitaEquipo", permission: "02354", component: SolicitaEquipo },
-    { path: "/rindeGastos", permission: "02400", component: RindeGastosPage },
+    { path: "/rindeGastos", permission: "02600", component: RindeGastosPage },
     { path: "/reportes/reportechecadorfacial", permission: "02500", component: ReporteChecadorFacial },
     { path: "/reportes/reportekilometrajediario", permission: "02207", component: ReporteKilometrajeDiario },
     { path: "/reclutadores", permission: "02550", component: ReclutadoresPage },

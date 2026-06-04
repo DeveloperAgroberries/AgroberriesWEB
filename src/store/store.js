@@ -21,7 +21,7 @@ import { reporteChecadorFacialSlice } from './slices/reporteChecadorFacial/repor
 import { reclutadoresSlice } from './slices/reclutadores/reclutadoresSlice'; // Ajusta la ruta
 import { enviosCoolerSlice } from './slices/cooler/enviosCoolerSlice'; // Ajusta la ruta
 import { rindeGastosSlice } from './slices/rindeGastos/rindeGastosSlice';
-
+import { solicitudCajasSlice } from './slices/cajas/solicitudCajasSlice'; 
 
 export const store = configureStore({
 	reducer: {
@@ -57,5 +57,6 @@ export const store = configureStore({
 		reclutadores: reclutadoresSlice.reducer,
 		enviosCooler: enviosCoolerSlice.reducer, // Añade esta línea para el nuevo slice de envíos del cooler
 		rindeGastos: rindeGastosSlice.reducer,
+		solicitudCajas: solicitudCajasSlice.reducer, // Añade esta línea para el nuevo slice de solicitud de cajas
   	},
 })

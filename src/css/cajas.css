@@ -1,0 +1,350 @@
+/* SolicitudCajas.css */
+
+.solicitud-cajas-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 30px 20px;
+  background-color: #f8f9fa;
+  min-height: 100vh;
+}
+
+.header {
+  background: linear-gradient(135deg, #0086c3 0%, #004d7a 100%);
+  color: white;
+  padding: 35px 30px;
+  border-radius: 12px;
+  margin-bottom: 40px;
+  text-align: center;
+  box-shadow: 0 4px 15px rgba(0, 134, 195, 0.2);
+}
+
+.header h1 {
+  margin: 0 0 12px 0;
+  font-size: 32px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
+.header p {
+  margin: 0;
+  opacity: 0.95;
+  font-size: 15px;
+  font-weight: 300;
+}
+
+/* FORMULARIO */
+.formulario-cajas {
+  background: white;
+  padding: 20px;
+  border-radius: 12px;
+  margin-bottom: 20px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+  border-top: 4px solid #0086c3;
+}
+
+.formulario-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+  margin-bottom: 15px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.form-group label {
+  font-weight: 600;
+  margin-bottom: 6px;
+  color: #2c3e50;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.form-group input {
+  padding: 9px 11px;
+  border: 2px solid #e0e0e0;
+  border-radius: 6px;
+  font-size: 13px;
+  transition: all 0.3s ease;
+  background-color: #fff;
+  font-family: inherit;
+}
+
+.form-group input:hover {
+  border-color: #0086c3;
+}
+
+.form-group input:focus {
+  outline: none;
+  border-color: #0086c3;
+  box-shadow: 0 0 0 4px rgba(0, 134, 195, 0.1);
+  background-color: #f8fbfd;
+}
+
+.form-group select {
+  padding: 9px 11px;
+  font-size: 13px;
+  transition: all 0.3s ease;
+}
+
+.form-group select:hover {
+  border-color: #0086c3;
+}
+
+.form-group select:focus {
+  outline: none;
+  border-color: #0086c3;
+  box-shadow: 0 0 0 4px rgba(0, 134, 195, 0.1);
+}
+
+.btn-agregar {
+  background-color: #0086c3;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  width: 100%;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  box-shadow: 0 2px 8px rgba(0, 134, 195, 0.2);
+}
+
+.btn-agregar:hover {
+  background-color: #004d7a;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 134, 195, 0.3);
+}
+
+.btn-agregar:active {
+  transform: translateY(0);
+}
+
+/* TABLA */
+.tabla-container {
+  background: white;
+  padding: 30px;
+  border-radius: 12px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+  overflow-x: auto;
+}
+
+.tabla-cajas {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 25px;
+}
+
+.tabla-cajas thead {
+  background-color: #0086c3;
+  color: white;
+}
+
+.tabla-cajas th {
+  padding: 15px 12px;
+  text-align: left;
+  font-weight: 600;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.tabla-cajas td {
+  padding: 14px 12px;
+  border-bottom: 1px solid #ecf0f1;
+  font-size: 14px;
+  color: #34495e;
+}
+
+.tabla-cajas tbody tr {
+  transition: background-color 0.2s ease;
+}
+
+.tabla-cajas tbody tr:hover {
+  background-color: #f8fbfd;
+}
+
+.cajas-cell {
+  font-weight: 700;
+  color: #0086c3;
+  font-size: 15px;
+}
+
+.btn-eliminar {
+  background-color: #e74c3c;
+  color: white;
+  border: none;
+  padding: 7px 12px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+
+.btn-eliminar:hover {
+  background-color: #c0392b;
+  transform: scale(1.05);
+}
+
+.btn-editar {
+  background-color: #3498db;
+  color: white;
+  border: none;
+  padding: 7px 12px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+
+.btn-editar:hover {
+  background-color: #2980b9;
+  transform: scale(1.05);
+}
+
+/* RESUMEN */
+.resumen {
+  background: linear-gradient(135deg, #e8f4f8 0%, #f0f8fb 100%);
+  padding: 20px 25px;
+  border-radius: 8px;
+  margin-bottom: 25px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-left: 4px solid #0086c3;
+  box-shadow: 0 2px 8px rgba(0, 134, 195, 0.1);
+}
+
+.total {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  font-size: 16px;
+  color: #2c3e50;
+}
+
+.numero {
+  background-color: #0086c3;
+  color: white;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-weight: 700;
+  font-size: 19px;
+  box-shadow: 0 2px 6px rgba(0, 134, 195, 0.2);
+}
+
+.info-registros {
+  color: #7f8c8d;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+/* ACCIONES */
+.acciones-guardado {
+  display: flex;
+  gap: 15px;
+}
+
+.btn-guardar,
+.btn-limpiar {
+  flex: 1;
+  padding: 14px 20px;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.btn-guardar {
+  background-color: #27ae60;
+  color: white;
+}
+
+.btn-guardar:hover {
+  background-color: #229954;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(39, 174, 96, 0.3);
+}
+
+.btn-limpiar {
+  background-color: #e67e22;
+  color: white;
+}
+
+.btn-limpiar:hover {
+  background-color: #d35400;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(230, 126, 34, 0.3);
+}
+
+/* RESPONSIVE */
+@media (max-width: 768px) {
+  .solicitud-cajas-container {
+    padding: 20px 15px;
+  }
+
+  .header {
+    padding: 25px 20px;
+    margin-bottom: 30px;
+  }
+
+  .header h1 {
+    font-size: 24px;
+  }
+
+  .header p {
+    font-size: 14px;
+  }
+
+  .formulario-cajas {
+    padding: 25px;
+    margin-bottom: 30px;
+  }
+
+  .formulario-grid {
+    grid-template-columns: 1fr;
+    gap: 15px;
+  }
+
+  .tabla-container {
+    padding: 20px;
+  }
+
+  .tabla-cajas {
+    font-size: 12px;
+  }
+
+  .tabla-cajas th,
+  .tabla-cajas td {
+    padding: 10px 8px;
+  }
+
+  .resumen {
+    flex-direction: column;
+    gap: 15px;
+    text-align: center;
+  }
+
+  .acciones-guardado {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .btn-guardar,
+  .btn-limpiar {
+    padding: 12px 15px;
+  }
+}

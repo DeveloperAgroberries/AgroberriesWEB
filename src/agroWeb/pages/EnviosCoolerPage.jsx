@@ -296,7 +296,7 @@ export const EnviosCoolerPage = () => {
                   {/* <th style={{ width: '18%' }}>DESTINO / CHOFER</th> */}
                   <th style={{ width: '45%' }}>PRODUCTO / ORIGEN</th>
                   <th style={{ width: '15%' }}>CAJAS / ENVASE / TAMAÑO</th>
-                  <th style={{ width: '10%' }} className="text-center">% cumplimiento</th>
+                  <th style={{ width: '16%' }} className="text-center"><a style={{ color: '#10b981' }}>Acumuladas</a> / <a style={{ color: '#38bdf8' }}>SOLICITADAS</a></th>
                   <th style={{ width: '20%' }} className="text-center">ESTATUS</th>
                 </tr>
               </thead>
@@ -321,12 +321,12 @@ export const EnviosCoolerPage = () => {
                           </span>
 
                           {/* Chofer */}
-                          <span className="sub-label-fids" style={{ color: '#38bdf8', fontWeight: 'bold'}}>
+                          <span className="sub-label-fids" style={{ color: '#38bdf8', fontWeight: 'bold', fontSize: '8px'}}>
                             CHOFER: {envio.chofer}
                           </span>
 
                           {/* Placas: Color llamativo (puedes elegir entre los ejemplos de abajo) */}
-                          <span className="sub-label-fids" style={{ color: '#ffae00', fontWeight: 'bold'}}>
+                          <span className="sub-label-fids" style={{ color: '#ffae00', fontWeight: 'bold' }}>
                             PLACAS: {envio.placas}
                           </span>
                         </td>
@@ -349,11 +349,26 @@ export const EnviosCoolerPage = () => {
                           {/* <span className="sub-label-fids" style={{color: '#a3e635', fontWeight: 'bold'}}>ETIQUETA: {envio.v_nombre_eti}</span> */}
                           <span className="sub-label-fids" style={{ color: '#f83838', fontWeight: 'bold' }}>TAMAÑO: {envio.v_nombre_tam}</span>
                         </td>
-                        <td className="text-center">
-                          {/* Porcentaje de cumplimiento pendiente */}
-                          {/* <span className="fw-bold" style={{ color: '#38bdf8', fontSize: '18px' }}>
-                            {envio.porcentaje_cumplimiento ? `${envio.porcentaje_cumplimiento}%` : 'N/A'}
-                          </span> */}
+                        <td className="align-middle px-3" style={{ minWidth: '180px' }}>
+                          <div className="d-flex justify-content-between align-items-center mb-1">
+                            <span className="text-secondary" style={{ fontSize: '13px' }}>
+                              <strong style={{ color: '#10b981' }}>{envio.acumuladas || 0}</strong>
+                              <span className="text-muted mx-1">/</span>
+                              <span style={{ color: '#38bdf8' }}>{envio.solicitadas || 0}</span>
+                            </span>
+                            <span className="fw-bold" style={{ color: '#f59e0b', fontSize: '14px' }}>
+                              {envio.porcentaje_cumplimiento ? `${envio.porcentaje_cumplimiento}%` : '0%'}
+                            </span>
+                          </div>
+
+                          {/* Mini Barra de progreso automática de Bootstrap */}
+                          <div className="progress" style={{ height: '6px', backgroundColor: 'rgba(255,255,255,0.1)' }}>
+                            <div
+                              className="progress-bar"
+                              role="progressbar"
+                              style={{ width: `${Math.min(envio.porcentaje_cumplimiento || 0, 100)}%`, backgroundColor: '#f59e0b', transition: 'width 0.5s ease'}}/>
+                          </div>
+                          <a className="d-block text-center mt-1" style={{ color: '#f59e0b', fontSize: '12px', textDecoration: 'none' }}>Cumplimiento</a>
                         </td>
                         <td className="text-center" style={{ paddingRight: '25px' }}>
                           <div className="d-flex align-items-center justify-content-center gap-2">

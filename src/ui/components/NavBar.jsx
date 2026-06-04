@@ -237,6 +237,14 @@ export const NavBar = (props) => {
 															</NavLink>
 														</li>
 													)}
+
+													{user?.permissions.includes("02572") && (
+														<li className='nav-item'>
+															<NavLink className={({ isActive }) => `rounded-1 dropdown-item ${isActive ? 'active' : ''}`} to="/solicitudCajas" onClick={() => {navigate("/solicitudCajas");}} data-bs-dismiss="offcanvas">
+																Registro de cajas
+															</NavLink>
+														</li>
+													)}
 												</ul>
 											</li>
 										</>

@@ -5,6 +5,7 @@ import { AgroWebApp } from './AgroWebApp';
 import { Provider } from 'react-redux';
 import { store } from './store';
 import './css/styles.css';
+import './css/cajas.css';
 
 ReactDOM.createRoot(document.getElementById('root')).render(
 	<React.StrictMode>

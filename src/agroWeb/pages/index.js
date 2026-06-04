@@ -20,3 +20,4 @@ export * from './SolicitaEquipo';
 export * from './ReclutadoresPage';
 export * from './EnviosCoolerPage';
 export * from './RindeGastosPage';
+export * from './SolicitudCajasPage';

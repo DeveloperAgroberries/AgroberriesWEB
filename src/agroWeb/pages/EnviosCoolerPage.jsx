@@ -46,7 +46,9 @@ export const EnviosCoolerPage = () => {
 
   const enviosFiltrados = envios.filter(e =>
     e.placas?.toLowerCase().includes(busqueda.toLowerCase()) ||
-    e.campo?.toLowerCase().includes(busqueda.toLowerCase())
+    e.campo?.toLowerCase().includes(busqueda.toLowerCase()) ||
+    e.codproducto?.toLowerCase().includes(busqueda.toLowerCase()) ||
+    e.chofer?.toLowerCase().includes(busqueda.toLowerCase())
   );
 
   const normalizarEstatus = (envio) => (envio.VEstatusCoo || envio.estatus || '').trim().toUpperCase();
@@ -251,8 +253,8 @@ export const EnviosCoolerPage = () => {
                     id="envio-search"
                     type="text"
                     className="form-control form-control-sm"
-                    style={{ width: '220px', borderRadius: '10px', border: '1px solid #cbd5e1', background: '#ffffff' }}
-                    placeholder="Campo o Placas..."
+                    style={{ width: '320px', borderRadius: '10px', border: '1px solid #cbd5e1', background: '#ffffff' }}
+                    placeholder="Producto, Campo, Placas y Chofer..."
                     value={busqueda}
                     onChange={(e) => setBusqueda(e.target.value)}
                   />
@@ -294,7 +296,7 @@ export const EnviosCoolerPage = () => {
                 <tr>
                   <th style={{ width: '15%' }} className="text-center">HORA / CHOFER</th>
                   {/* <th style={{ width: '18%' }}>DESTINO / CHOFER</th> */}
-                  <th style={{ width: '45%' }}>PRODUCTO / ORIGEN</th>
+                  <th style={{ width: '34%' }}>PRODUCTO / ORIGEN</th>
                   <th style={{ width: '15%' }}>CAJAS / ENVASE / TAMAÑO</th>
                   <th style={{ width: '16%' }} className="text-center"><a style={{ color: '#10b981' }}>Acumuladas</a> / <a style={{ color: '#38bdf8' }}>SOLICITADAS</a></th>
                   <th style={{ width: '20%' }} className="text-center">ESTATUS</th>

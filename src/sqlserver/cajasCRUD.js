@@ -12,6 +12,28 @@ export const agregarSolicitudCajas = {
         }
     },
 
+    // NUEVO MÉTODO: Consultar solicitudes de cajas creadas para el día de hoy
+    getSolicitudesHoy: async () => {
+        try {
+            const { data } = await CoolerTrackAppApi.get('/GetSolicitudesCajasHoy');
+            return data.mensaje === "Ok" ? data.response : [];
+        } catch (error) {
+            console.error("Error al obtener solicitudes de hoy:", error);
+            return [];
+        }
+    },
+
+    // NUEVO MÉTODO: Actualizar una solicitud existente mediante su ID
+    actualizar: async (id, datosActualizados) => {
+        try {
+            const { data } = await CoolerTrackAppApi.put(`/UpdateSolicitudCaja/${id}`, datosActualizados);
+            return data.mensaje === "Solicitud actualizada correctamente" || data.response === true;
+        } catch (error) {
+            console.error(`Error al actualizar la solicitud con ID ${id}:`, error);
+            return false;
+        }
+    },
+
     // Nuevos métodos para los catálogos
     getCoolers: async () => {
         try {

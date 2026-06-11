@@ -21,3 +21,33 @@ export const startGuardarSolicitud = (datosSolicitud) => {
         }
     };
 };
+
+// NUEVO DISPARADOR: Para actualizar una solicitud específica en la Base de Datos
+export const startActualizarSolicitud = (id, datosActualizados) => {
+    return async (dispatch) => {
+        dispatch(setLoading(true)); // Activamos el spinner global de carga
+        try {
+            // Mapeamos los datos al formato exacto que espera tu modelo en C#
+            const modeloBackend = {
+                vCodcoolerCaj: datosActualizados.cooler,
+                vCodcampoCaj: datosActualizados.cCodigoCam,
+                vCodcultivoCaj: datosActualizados.cCodigoCul,
+                vClienteCaj: datosActualizados.cliente,
+                vSkuCaj: datosActualizados.sku,
+                vVariedadCaj: datosActualizados.variedad,
+                vEmbalajeCaj: datosActualizados.embalaje,
+                iCajasCaj: parseInt(datosActualizados.cajas),
+                vUsuarioCaj: datosActualizados.usuario || 'Usuario Modificador',
+                dFechaCaj: datosActualizados.fecha.includes("T") ? datosActualizados.fecha : `${datosActualizados.fecha}T00:00:00.000Z`
+            };
+
+            const respuesta = await agregarSolicitudCajas.actualizar(id, modeloBackend);
+            return respuesta; // Retorna true o false según la respuesta de la API
+        } catch (error) {
+            console.error(`Error al actualizar el registro ${id} en Thunk:`, error);
+            return false;
+        } finally {
+            dispatch(setLoading(false)); // Apagamos el loading
+        }
+    };
+};

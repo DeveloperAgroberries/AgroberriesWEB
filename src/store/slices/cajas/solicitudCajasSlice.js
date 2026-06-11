@@ -5,8 +5,8 @@ export const solicitudCajasSlice = createSlice({
     initialState: {
         registros: [],
         isLoading: false,
-        coolers: [], // Nuevo estado
-        tamanios: [], // Nuevo estado
+        coolers: [], 
+        tamanios: [], 
         campos: [],
         SKUs: []
     },
@@ -17,6 +17,14 @@ export const solicitudCajasSlice = createSlice({
         removeRegistro: (state, action) => {
             state.registros = state.registros.filter(reg => reg.id !== action.payload);
         },
+        // NUEVO REDUCER: Modifica un elemento existente directamente en el State
+        updateRegistroState: (state, action) => {
+            const { id, data } = action.payload;
+            const index = state.registros.findIndex(reg => reg.id === id);
+            if (index !== -1) {
+                state.registros[index] = { ...state.registros[index], ...data };
+            }
+        },
         clearRegistros: (state) => {
             state.registros = [];
         },
@@ -26,10 +34,18 @@ export const solicitudCajasSlice = createSlice({
         setCatalogos: (state, action) => {
             state.coolers = action.payload.coolers;
             state.tamanios = action.payload.tamanios;
-            state.campos = action.payload.campos; // Nuevo
-            state.SKUs = action.payload.SKUs; // Nuevo
+            state.campos = action.payload.campos; 
+            state.SKUs = action.payload.SKUs; 
         }
     }
 });
 
-export const { addRegistro, removeRegistro, clearRegistros, setLoading, setCatalogos } = solicitudCajasSlice.actions;
+// No olvides exportar la nueva acción
+export const { 
+    addRegistro, 
+    removeRegistro, 
+    updateRegistroState, 
+    clearRegistros, 
+    setLoading, 
+    setCatalogos 
+} = solicitudCajasSlice.actions;

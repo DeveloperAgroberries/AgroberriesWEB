@@ -8,6 +8,62 @@ import { agregarSolicitudCajas } from '../../sqlserver/cajasCRUD';
 import { AuthContext } from '../../auth/context/AuthContext';
 import '../../css/cajas.css';
 
+// === COLOCA EL OBJETO AQUÍ (AFUERA Y ARRIBA DE TODO) ===
+const styles = {
+    selectBase: {
+        padding: '10px 14px',
+        borderRadius: '8px',
+        border: '1px solid #d1c7bd',
+        backgroundColor: '#ffffff',
+        fontSize: '14px',
+        color: '#2d1f3d',
+        outline: 'none',
+        width: '100%',
+        height: '42px',
+        transition: 'all 0.2s'
+    },
+    inputBase: {
+        padding: '10px 14px',
+        borderRadius: '8px',
+        border: '1px solid #d1c7bd',
+        backgroundColor: '#ffffff',
+        fontSize: '14px',
+        color: '#2d1f3d',
+        outline: 'none',
+        width: '100%',
+        height: '42px',
+        transition: 'all 0.2s'
+    },
+    readOnlyBase: {
+        padding: '10px 14px',
+        borderRadius: '8px',
+        border: '1px solid #e1dbe9',
+        backgroundColor: '#f9f8fa',
+        fontSize: '14px',
+        color: '#6b5b7b',
+        outline: 'none',
+        fontWeight: '500',
+        width: '100%',
+        height: '42px',
+        cursor: 'not-allowed'
+    },
+    btnBase: {
+        flex: 1,
+        height: '42px',
+        borderRadius: '8px',
+        fontWeight: '600',
+        fontSize: '14px',
+        cursor: 'pointer',
+        display: 'inline-flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: '8px',
+        boxShadow: '0 4px 12px rgba(124, 48, 184, 0.08)',
+        transition: 'all 0.2s',
+        width: '100%'
+    }
+};
+
 export const SolicitudCajasPage = () => {
 
     const dispatch = useDispatch();
@@ -226,22 +282,19 @@ export const SolicitudCajasPage = () => {
                     const textoLimpio = normalizar(textoExcel);
                     if (!textoLimpio) return null;
 
-                    // 1. Intento rápido: Coincidencia exacta o directa por inclusión mutua
                     const coincidenciaDirecta = catalogo.find(item => {
                         const nombreCat = normalizar(item[propiedadNombre]);
                         return nombreCat === textoLimpio || nombreCat.includes(textoLimpio) || textoLimpio.includes(nombreCat);
                     });
                     if (coincidenciaDirecta) return coincidenciaDirecta;
 
-                    // 2. Intento avanzado: Segmentación por palabras (Soporta errores como "lagos aranda")
-                    const palabrasExcel = textoLimpio.split(/\s+/).filter(p => p.length > 2); // Ignoramos conectores cortos de 1 o 2 letras
+                    const palabrasExcel = textoLimpio.split(/\s+/).filter(p => p.length > 2);
 
                     let mejorMatch = null;
                     let maxCoincidencias = 0;
 
                     catalogo.forEach(item => {
                         const nombreCat = normalizar(item[propiedadNombre]);
-                        // Contamos cuántas palabras del Excel aparecen en este elemento del catálogo
                         const coincidencias = palabrasExcel.filter(palabra => nombreCat.includes(palabra)).length;
 
                         if (coincidencias > maxCoincidencias) {
@@ -250,11 +303,16 @@ export const SolicitudCajasPage = () => {
                         }
                     });
 
-                    // Si compartieron al menos una palabra clave larga, lo damos por válido
                     return maxCoincidencias > 0 ? mejorMatch : null;
                 };
 
+                // Variable bandera para saber si hubo errores en el archivo entero
+                let tieneErroresDeCultivo = false;
+
                 data.forEach((row, index) => {
+                    // Si ya detectamos un error en una fila anterior, saltamos el resto
+                    if (tieneErroresDeCultivo) return;
+
                     const skuFormateado = String(row.sku || '').trim();
 
                     // 1. BUSCAR COOLER
@@ -274,8 +332,30 @@ export const SolicitudCajasPage = () => {
                         cultivoCodigo = campoEncontrado.cCodigoCul;
                     }
 
-                    // 3. BUSCAR DATOS DEL SKU
-                    const skuEncontrado = SKUs.find(s => s.codigo === skuFormateado);
+                    // 3. EXCELENTE: Usamos 'tamanios' para amarrar la validación matemática del cultivo
+                    const tamanioEncontrado = tamanios.find(s => s.c_codigo_tam === skuFormateado);
+
+                    // 4. NUEVO: Recuperamos la metadata comercial desde tu catálogo original 'SKUs'
+                    const infoSkuComercial = SKUs.find(s => s.codigo === skuFormateado);
+
+                    // =========================================================================
+                    // VALIDACIÓN DE COMPATIBILIDAD POR CÓDIGO DE CULTIVO EXACTO
+                    // =========================================================================
+                    if (campoEncontrado && tamanioEncontrado) {
+                        const cultivoCampo = String(campoEncontrado.cCodigoCul || '').trim();
+                        const cultivoSku = String(tamanioEncontrado.c_codigo_cul || '').trim();
+
+                        if (cultivoSku && cultivoCampo && cultivoSku !== cultivoCampo) {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Incompatibilidad de Cultivo',
+                                text: `Línea ${index + 2} del Excel: El SKU "${skuFormateado}" no pertenece al cultivo del campo "${campoEncontrado.vNombreCam}".`,
+                            });
+                            tieneErroresDeCultivo = true;
+                            return;
+                        }
+                    }
+                    // =========================================================================
 
                     const nuevoRegistro = {
                         id: Date.now() + index + Math.random(),
@@ -285,15 +365,24 @@ export const SolicitudCajasPage = () => {
                         cCodigoCul: cultivoCodigo,
                         campo: `${campoCodigo}|${cultivoCodigo}`,
                         sku: skuFormateado,
-                        cliente: skuEncontrado ? skuEncontrado.cliente : (row.cliente ? String(row.cliente).trim() : 'N/A'),
-                        variedad: skuEncontrado ? skuEncontrado.variedad : (row.variedad ? String(row.variedad).trim() : 'N/A'),
-                        embalaje: skuEncontrado ? skuEncontrado.embalaje : (row.embalaje ? String(row.embalaje).trim() : 'N/A'),
+                        // Aquí usamos infoSkuComercial para recuperar las etiquetas correctas que se rompieron
+                        cliente: infoSkuComercial ? infoSkuComercial.cliente : (row.cliente ? String(row.cliente).trim() : 'N/A'),
+                        variedad: infoSkuComercial ? infoSkuComercial.variedad : (row.variedad ? String(row.variedad).trim() : 'N/A'),
+                        embalaje: infoSkuComercial ? infoSkuComercial.embalaje : (row.embalaje ? String(row.embalaje).trim() : 'N/A'),
                         cajas: parseInt(row.cajas) || 0,
                         usuario: user?.id || 'Usuario',
                         fechaCreacion: new Date().toLocaleString('es-ES')
                     };
                     dispatch(addRegistro(nuevoRegistro));
                 });
+
+                // Si se interrumpió por error, limpiamos el input y no mandamos mensaje de éxito
+                if (tieneErroresDeCultivo) {
+                    e.target.value = null;
+                    return;
+                }
+
+                setMostrarFormulario(true);
 
                 Swal.fire('¡Éxito!', `Se importaron ${data.length} líneas desde el archivo Excel.`, 'success');
             } catch (error) {
@@ -413,7 +502,7 @@ export const SolicitudCajasPage = () => {
         "0059": ["camichines", "refugio", "peña", "ignacio", "terrazas"],       // COOLER TALA
         "0060": ["fuerte"],       // COOLER EL FUERTE
         "0061": ["mochicahui"],       // COOLER MOCHIS
-        "0062": ["briseño"],       // COOLER ZACOALCO
+        "0062": ["briseño",],       // COOLER ZACOALCO
         "0063": ["verde", "anima"],       // COOLER USMAJAC
         "0064": ["lagos"],       // COOLER LAGOS
         "0074": [""],       // COOLER GLOBAL
@@ -429,16 +518,62 @@ export const SolicitudCajasPage = () => {
         const palabrasClave = RELACION_COOLER_CAMPOS[formData.cooler];
 
         return campos.filter(campo => {
-            // Normalizamos el nombre del campo (le quitamos acentos y pasamos a minúsculas)
+            // Normalizamos quitando acentos, pero PROTEGIENDO la Ñ/ñ
             const nombreCampoNormalizado = campo.vNombreCam
+                .toLowerCase()
                 .normalize("NFD")
-                .replace(/[\u0300-\u036f]/g, "")
-                .toLowerCase();
+                // Este regex elimina acentos comunes pero no toca la tilde de la eñe
+                .replace(/([^n\u0303])[\u0300-\u036f]/g, "$1")
+                .normalize("NFC");
 
-            // El campo pasa el filtro si contiene AL MENOS una de las palabras clave del cooler
+            // Ahora sí buscará "peña" dentro de "la peña - zarzamora"
             return palabrasClave.some(palabra => nombreCampoNormalizado.includes(palabra));
         });
     }, [formData.cooler, campos]);
+
+    const [isDragging, setIsDragging] = useState(false);
+
+    const handleDrop = (e) => {
+        e.preventDefault();
+        setIsDragging(false);
+
+        // Capturamos el archivo arrastrado
+        const file = e.dataTransfer.files[0];
+
+        if (file) {
+            // Validamos que sea un archivo de Excel
+            const tipoArchivo = file.name.split('.').pop().toLowerCase();
+            if (tipoArchivo !== 'xlsx' && tipoArchivo !== 'xls') {
+                Swal.fire('Error', 'Por favor, arrastra únicamente archivos de Excel (.xlsx o .xls)', 'error');
+                return;
+            }
+
+            // Creamos un evento falso con la misma estructura que esperaba tu input file original
+            const falsoEvento = { target: { files: [file], value: null } };
+            handleFileUpload(falsoEvento);
+        }
+    };
+
+    const [mostrarFormulario, setMostrarFormulario] = useState(false);
+
+    // Filtra los SKUs en tiempo real basándose en lo que el usuario escribe en el input
+    const tamaniosBusquedaFiltrados = useMemo(() => {
+        // Si no hay un cultivo seleccionado, no mostramos nada
+        if (!formData.cCodigoCul) return [];
+
+        // Si el input está vacío, mostramos todas las opciones permitidas para ese cultivo
+        if (!formData.sku) return tamaniosFiltrados;
+
+        const busqueda = formData.sku.toLowerCase().trim();
+
+        return tamaniosFiltrados.filter(t => {
+            const codigo = (t.c_codigo_tam || '').toLowerCase();
+            const nombre = (t.v_nombre_tam || '').toLowerCase();
+
+            // El SKU pasa el filtro si coincide con el código O con el nombre descriptivo
+            return codigo.includes(busqueda) || nombre.includes(busqueda);
+        });
+    }, [formData.sku, formData.cCodigoCul, tamaniosFiltrados]);
 
     return (
         <>
@@ -456,89 +591,294 @@ export const SolicitudCajasPage = () => {
                             <small className="text-muted">Descarga la plantilla oficial, llena las celdas y súbela al sistema.</small>
                         </div>
                         <div className="d-flex gap-2">
-                            <label className="btn btn-success m-0" style={{ cursor: 'pointer', background: '#1f8047', borderColor: '#1f8047' }}>
+                            {/* <label className="btn btn-success m-0" style={{ cursor: 'pointer', background: '#1f8047', borderColor: '#1f8047' }}>
                                 <i className="fas fa-file-excel me-2"></i> Importar Excel
                                 <input type="file" accept=".xlsx, .xls" onChange={handleFileUpload} style={{ display: 'none' }} />
-                            </label>
-                            <button className="btn btn-outline-secondary" type="button" onClick={descargarPlantilla}>
-                                <i className="fas fa-download me-2"></i> Obtener Plantilla
+                            </label> */}
+
+                            <button className="btn" type="button"
+                                onClick={() => {
+                                    // 1. Calculamos cuál será el siguiente estado
+                                    const proximoEstado = !mostrarFormulario;
+
+                                    // 2. Cambiamos la visibilidad del formulario
+                                    setMostrarFormulario(proximoEstado);
+
+                                    // 3. Si el próximo estado es TRUE (se va a mostrar), limpiamos los campos
+                                    if (proximoEstado) {
+                                        setFormData({
+                                            cooler: '', campo: '', cCodigoCam: '', cCodigoCul: '',
+                                            cliente: '', sku: '', variedad: '', embalaje: '', cajas: '', fecha: ''
+                                        });
+
+                                        // Opcional pero recomendado: si usas un estado para controlar qué ID editas, lo limpias aquí
+                                        if (typeof setRegistroEnEdicion === 'function') {
+                                            setRegistroEnEdicion(null);
+                                        }
+                                    }
+                                }}
+                                style={{
+                                    backgroundColor: mostrarFormulario ? '#f4ecf7' : '#7c30b8',
+                                    color: mostrarFormulario ? '#7c30b8' : '#ffffff',
+                                    border: '1px solid #7c30b8',
+                                    borderRadius: '8px',
+                                    padding: '8px 16px',
+                                    cursor: 'pointer',
+                                    fontSize: '14px',
+                                    fontWeight: '600',
+                                    display: 'inline-flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    minWidth: '200px',
+                                    height: '42px',
+                                    gap: '8px',
+                                    transition: 'all 0.2s ease',
+                                    marginBottom: '15px'
+                                }}
+                            >
+                                <i className={mostrarFormulario ? "fas fa-eye-slash" : "fas fa-eye"}></i>
+                                {mostrarFormulario ? "Ocultar Solicitud" : "Mostrar Solicitud Manual"}
+                            </button>
+
+                            <button className="btn btn-outline-secondary" type="button"
+                                onClick={descargarPlantilla}
+                                style={{
+                                    borderRadius: '8px',
+                                    padding: '8px 16px',
+                                    fontSize: '14px',
+                                    fontWeight: '600',
+                                    display: 'inline-flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center', // Centra el contenido horizontalmente
+                                    minWidth: '200px',        // Ancho mínimo idéntico para ambos
+                                    height: '42px',           // Altura fija idéntica para ambos
+                                    gap: '8px',
+                                    marginBottom: '15px'
+                                }}
+                            >
+                                <i className="fas fa-download"></i> Obtener Plantilla
                             </button>
                         </div>
                     </div>
                 </div>
 
-                <div className="formulario-cajas">
-                    <form onSubmit={handleAgregarRegistro}>
-                        <div className="formulario-grid">
-                            <div className="form-group">
-                                <label>Cooler *</label>
-                                <select name="cooler" value={formData.cooler} onChange={handleInputChange} required>
-                                    <option value="">Seleccione...</option>
-                                    {coolers.map(c => <option key={c.c_codigo_cam} value={c.c_codigo_cam}>{c.v_nombre_cam}</option>)}
-                                </select>
-                            </div>
+                <div
+                    className="zona-drop"
+                    onDragOver={(e) => {
+                        e.preventDefault();
+                        setIsDragging(true); // Se activa el color lila de fondo
+                    }}
+                    onDragLeave={() => setIsDragging(false)} // Vuelve a la normalidad si el usuario se arrepiente
+                    onDrop={handleDrop} // Procesa el archivo al soltarlo
+                    style={{
+                        border: isDragging ? '2px dashed #7c30b8' : '2px dashed #b39ddb',
+                        backgroundColor: isDragging ? '#f3e8ff' : '#fcfaff',
+                        borderRadius: '12px',
+                        padding: '10px 20px',
+                        textAlign: 'center',
+                        cursor: 'pointer',
+                        transition: 'all 0.2s ease',
+                        margin: '20px 0'
+                    }}>
+                    {/* Input oculto por si prefieren hacer clic en lugar de arrastrar */}
+                    <input
+                        type="file"
+                        id="excel-upload"
+                        accept=".xlsx, .xls"
+                        onChange={handleFileUpload}
+                        style={{ display: 'none' }} />
 
-                            <div className="form-group">
-                                <label>Campo *</label>
-                                <select name="campo" value={formData.campo} onChange={handleInputChange} required disabled={!formData.cooler}>
-                                    <option value="">
-                                        {formData.cooler ? "Seleccione un campo..." : "Primero elige un Cooler..."}
-                                    </option>
-                                    {camposFiltrados.map((c) => (
-                                        <option key={`${c.cCodigoCam}-${c.cCodigoCul}`} value={`${c.cCodigoCam}|${c.cCodigoCul}`}>
-                                            {c.vNombreCam}
-                                        </option>
-                                    ))}
-                                </select>
-                            </div>
-
-                            <div className="form-group">
-                                <label>SKU *</label>
-                                <select name="sku" value={formData.sku} onChange={handleInputChange} required disabled={!formData.cCodigoCul}>
-                                    <option value="">Seleccione...</option>
-                                    {tamaniosFiltrados.map(t => <option key={t.c_codigo_tam} value={t.c_codigo_tam}>{t.c_codigo_tam} - {t.v_nombre_tam}</option>)}
-                                </select>
-                            </div>
-
-                            <div className="form-group">
-                                <label>Etiqueta *</label>
-                                <input type="text" name="cliente" value={formData.cliente} onChange={handleInputChange} placeholder="Ej: Berry Fresh" readOnly required />
-                            </div>
-
-                            <div className="form-group">
-                                <label>Variedad *</label>
-                                <input type="text" name="variedad" value={formData.variedad} onChange={handleInputChange} placeholder="Ej: Sweet Karoline" readOnly required />
-                            </div>
-
-                            <div className="form-group">
-                                <label>Embalaje *</label>
-                                <input type="text" name="embalaje" value={formData.embalaje} onChange={handleInputChange} placeholder="Ej: 12x18oz BF SK" readOnly required />
-                            </div>
-
-                            <div className="form-group">
-                                <label>Cajas *</label>
-                                <input type="number" name="cajas" value={formData.cajas} onChange={handleInputChange} placeholder="0" min="1" required />
-                            </div>
-
-                            <div className="form-group">
-                                <label>Fecha de Solicitud *</label>
-                                <input type="date" name="fecha" value={formData.fecha} onChange={handleInputChange} required />
-                            </div>
-                        </div>
-
-                        <div style={{ display: 'flex', gap: '10px' }}>
-                            <button type="submit" className="btn-agregar" style={{ flex: 1 }}>
-                                <i className={`fas ${registroEnEdicion ? 'fa-edit' : 'fa-plus'} me-2`}></i>
-                                {registroEnEdicion ? 'Actualizar Línea' : 'Agregar Línea a la Solicitud'}
-                            </button>
-                            {registroEnEdicion && (
-                                <button type="button" className="btn-limpiar" onClick={handleCancelarEdicion} style={{ flex: 1 }}>
-                                    <i className="fas fa-times me-2"></i> Cancelar Edición
-                                </button>
-                            )}
-                        </div>
-                    </form>
+                    <label htmlFor="excel-upload" style={{ cursor: 'pointer', display: 'block' }}>
+                        <i className="fas fa-file-excel fa-3x" style={{ color: '#7c30b8', marginBottom: '10px' }}></i>
+                        <p style={{ margin: '5px 0', fontSize: '16px', fontWeight: '600', color: '#2d1f3d' }}>
+                            {isDragging ? "¡Suéltalo aquí mismo!" : "Arrastra y suelta tu archivo Excel aquí"}
+                        </p>
+                        <span style={{ fontSize: '13px', color: '#8a7a99' }}>
+                            o haz clic para buscarlo en tu computadora
+                        </span>
+                    </label>
                 </div>
+
+                {mostrarFormulario && (
+                    <div className="formulario-cajas" style={{
+                        backgroundColor: '#ffffff',
+                        borderRadius: '16px',
+                        padding: '28px',
+                        boxShadow: '0 10px 30px rgba(124, 48, 184, 0.06)',
+                        border: '1px solid #e9e2f3',
+                        marginBottom: '30px',
+                        fontFamily: 'Segoe UI, sans-serif'
+                    }}>
+                        {/* Título e Indicador */}
+                        <div style={{ display: 'flex', justifyContent: 'between', alignItems: 'center', marginBottom: '24px', borderBottom: '1px solid #f1eaf7', paddingBottom: '12px' }}>
+                            <h4 style={{ color: '#2d1f3d', fontWeight: '600', margin: 0, fontSize: '18px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                <i className="fas fa-file-invoice" style={{ color: '#7c30b8' }}></i>
+                                {registroEnEdicion ? 'Modificar Registro Seleccionado' : 'Captura Manual de Solicitud'}
+                            </h4>
+                            <span style={{ fontSize: '12px', color: '#8a7a99', fontWeight: '500' }}>* Campos obligatorios</span>
+                        </div>
+
+                        <form onSubmit={handleAgregarRegistro}>
+
+                            {/* GRUPO 1: ORIGEN Y DESTINO (Distribución Pro) */}
+                            <h5 style={{ fontSize: '13px', color: '#7c30b8', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '14px' }}>1. Logística de Origen y Destino</h5>
+
+                            <div style={{
+                                display: 'grid',
+                                gridTemplateColumns: 'repeat(12, 1fr)', // Sistema de 12 columnas estilo Bootstrap/Tailwind
+                                gap: '16px',
+                                marginBottom: '24px'
+                            }}>
+                                {/* COOLER (Ocupa 4 de 12 columnas) */}
+                                <div style={{ gridColumn: 'span 4', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                                    <label style={{ color: '#4a3b59', fontWeight: '600', fontSize: '13px' }}>Cooler *</label>
+                                    <select name="cooler" value={formData.cooler} onChange={handleInputChange} required style={styles.selectBase}>
+                                        <option value="">Seleccione...</option>
+                                        {coolers.map(c => <option key={c.c_codigo_cam} value={c.c_codigo_cam}>{c.v_nombre_cam}</option>)}
+                                    </select>
+                                </div>
+
+                                {/* CAMPO (Ocupa 5 de 12 columnas - Es más ancho porque los nombres son largos) */}
+                                <div style={{ gridColumn: 'span 5', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                                    <label style={{ color: '#4a3b59', fontWeight: '600', fontSize: '13px' }}>Campo *</label>
+                                    <select
+                                        name="campo"
+                                        value={formData.campo}
+                                        onChange={handleInputChange}
+                                        required
+                                        disabled={!formData.cooler}
+                                        style={{ ...styles.selectBase, backgroundColor: !formData.cooler ? '#f5f2f8' : '#ffffff', color: !formData.cooler ? '#a395b0' : '#2d1f3d', cursor: !formData.cooler ? 'not-allowed' : 'default' }}
+                                    >
+                                        <option value="">{formData.cooler ? "Seleccione un campo..." : "Primero elige un Cooler..."}</option>
+                                        {camposFiltrados.map((c) => (
+                                            <option key={`${c.cCodigoCam}-${c.cCodigoCul}`} value={`${c.cCodigoCam}|${c.cCodigoCul}`}>{c.vNombreCam}</option>
+                                        ))}
+                                    </select>
+                                </div>
+
+                                {/* FECHA DE SOLICITUD (Ocupa 3 de 12 columnas) */}
+                                <div style={{ gridColumn: 'span 3', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                                    <label style={{ color: '#4a3b59', fontWeight: '600', fontSize: '13px' }}>Fecha Solicitud *</label>
+                                    <input type="date" name="fecha" value={formData.fecha} onChange={handleInputChange} required style={styles.inputBase} />
+                                </div>
+                            </div>
+
+                            {/* Separador sutil */}
+                            <div style={{ height: '1px', backgroundColor: '#f5effa', marginBottom: '20px' }}></div>
+
+                            {/* GRUPO 2: DETALLES DEL PRODUCTO (Distribución Pro) */}
+                            {/* GRUPO 2: DETALLES DEL PRODUCTO (Distribución Pro y Equilibrada) */}
+                            <h5 style={{ fontSize: '13px', color: '#7c30b8', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '14px' }}>2. Especificaciones del Producto</h5>
+
+                            <div style={{
+                                display: 'grid',
+                                gridTemplateColumns: 'repeat(12, 1fr)', // Volvemos a usar la rejilla de 12
+                                gap: '16px',
+                                marginBottom: '32px'
+                            }}>
+                                {/* SKU (Ocupa 2 de 12 columnas - Es un selector corto) */}
+                                {/* SKU (Buscador con filtrado estricto por variable de React) */}
+                                <div style={{ gridColumn: 'span 2', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                                    <label style={{ color: '#4a3b59', fontWeight: '600', fontSize: '13px' }}>SKU *</label>
+
+                                    <input
+                                        type="text"
+                                        name="sku"
+                                        list="opciones-sku"
+                                        value={formData.sku}
+                                        onChange={handleInputChange}
+                                        placeholder={formData.cCodigoCul ? "Escribe para buscar..." : "Bloqueado"}
+                                        required
+                                        disabled={!formData.cCodigoCul}
+                                        style={{
+                                            ...styles.inputBase,
+                                            backgroundColor: !formData.cCodigoCul ? '#f5f2f8' : '#ffffff',
+                                            color: !formData.cCodigoCul ? '#2d1f3d' : '#2d1f3d',
+                                            cursor: !formData.cCodigoCul ? 'not-allowed' : 'default'
+                                        }}
+                                    />
+
+                                    {/* El datalist ahora se alimenta de la lista previamente recortada por React */}
+                                    <datalist id="opciones-sku">
+                                        {tamaniosBusquedaFiltrados.map(t => (
+                                            <option
+                                                key={t.c_codigo_tam}
+                                                value={t.c_codigo_tam}
+                                            >
+                                                {t.c_codigo_tam} - {t.v_nombre_tam}
+                                            </option>
+                                        ))}
+                                    </datalist>
+                                </div>
+
+                                {/* ETIQUETA / CLIENTE (Ocupa 3 de 12 columnas) */}
+                                <div style={{ gridColumn: 'span 3', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                                    <label style={{ color: '#4a3b59', fontWeight: '600', fontSize: '13px' }}>Etiqueta</label>
+                                    <input type="text" name="cliente" value={formData.cliente} readOnly style={styles.readOnlyBase} placeholder="Automático" />
+                                </div>
+
+                                {/* VARIEDAD (Ocupa 2 de 12 columnas) */}
+                                <div style={{ gridColumn: 'span 2', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                                    <label style={{ color: '#4a3b59', fontWeight: '600', fontSize: '13px' }}>Variedad</label>
+                                    <input type="text" name="variedad" value={formData.variedad} readOnly style={styles.readOnlyBase} placeholder="Automático" />
+                                </div>
+
+                                {/* EMBALAJE (Ocupa 3 de 12 columnas) */}
+                                <div style={{ gridColumn: 'span 3', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                                    <label style={{ color: '#4a3b59', fontWeight: '600', fontSize: '13px' }}>Embalaje</label>
+                                    <input type="text" name="embalaje" value={formData.embalaje} readOnly style={styles.readOnlyBase} placeholder="Automático" />
+                                </div>
+
+                                {/* CANTIDAD CAJAS (Ocupa las últimas 2 columnas para sumar exactamente 12: 2+3+2+3+2 = 12) */}
+                                <div style={{ gridColumn: 'span 2', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                                    <label style={{ color: '#4a3b59', fontWeight: '600', fontSize: '13px' }}>Cantidad Cajas *</label>
+                                    <input
+                                        type="number"
+                                        name="cajas"
+                                        value={formData.cajas}
+                                        onChange={handleInputChange}
+                                        placeholder="0"
+                                        min="1"
+                                        required
+                                        style={{
+                                            ...styles.inputBase,
+                                            border: '1px solid #7c30b8',
+                                            color: '#7c30b8',
+                                            fontWeight: '700',
+                                            fontSize: '15px',
+                                            backgroundColor: '#fdfaff' // Un fondo lila súper sutil para que resalte que es editable
+                                        }}
+                                    />
+                                </div>
+                            </div>
+                            {/* SECCIÓN DE BOTONES DE ACCIÓN */}
+                            <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end', borderTop: '1px solid #f1eaf7', paddingTop: '20px' }}>
+                                {registroEnEdicion && (
+                                    <button
+                                        type="button"
+                                        onClick={handleCancelarEdicion}
+                                        style={{ ...styles.btnBase, backgroundColor: '#ffffff', color: '#dc3545', border: '1px solid #dc3545', maxWidth: '180px' }}
+                                        onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#fdf2f2'; }}
+                                        onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = '#ffffff'; }}
+                                    >
+                                        <i className="fas fa-times"></i> Cancelar
+                                    </button>
+                                )}
+
+                                <button
+                                    type="submit"
+                                    style={{ ...styles.btnBase, backgroundColor: '#7c30b8', color: '#ffffff', border: 'none', maxWidth: registroEnEdicion ? '220px' : '260px' }}
+                                    onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#622294'; }}
+                                    onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = '#7c30b8'; }}
+                                >
+                                    <i className={`fas ${registroEnEdicion ? 'fa-save' : 'fa-plus'}`}></i>
+                                    {registroEnEdicion ? 'Guardar Cambios' : 'Agregar a la Solicitud'}
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                )}
+
 
                 {/* TABLA DE REGISTROS TEMPORALES (EN COLA DE GUARDADO) */}
                 {registros.length > 0 && (
@@ -649,108 +989,137 @@ export const SolicitudCajasPage = () => {
                 </div>
 
 
-                <div style={{ borderRadius: '14px', overflow: 'hidden', boxShadow: '0 4px 15px rgba(124, 48, 184, 0.08)', border: '1px solid #e1d5ed', backgroundColor: '#fff' }}>
+                <div className="table-responsive" style={{
+                    borderRadius: '14px',
+                    overflow: 'auto',
+                    maxHeight: '450px',
+                    boxShadow: '0 4px 15px rgba(124, 48, 184, 0.08)',
+                    border: '1px solid #e1d5ed',
+                    backgroundColor: '#fff'
+                }}>
                     {solicitudesGuardadas.length === 0 ? (
                         <p className="text-muted text-center my-4" style={{ fontFamily: 'Segoe UI, sans-serif', color: '#8a7a99' }}>
                             <i className="fas fa-folder-open me-2" style={{ color: '#b39ddb' }}></i> No se han procesado solicitudes de cajas el día de hoy.
                         </p>
                     ) : (
-                        <table className="tabla-cajas" style={{ width: '100%', borderCollapse: 'collapse', fontFamily: 'Segoe UI, sans-serif', fontSize: '14px' }}>
+                        <table className="table" style={{
+                            width: '100%',
+                            borderCollapse: 'separate',
+                            borderSpacing: '0',
+                            fontFamily: 'Segoe UI, sans-serif',
+                            fontSize: '14px',
+                            margin: 0
+                        }}>
                             <thead>
-                                <tr style={{ background: 'linear-gradient(135deg, #7c30b8 0%, #9652d9 100%)', color: '#ffffff' }}>
-                                    <th style={{ padding: '14px 16px', textAlign: 'left', fontWeight: '600', letterSpacing: '0.5px' }}>Fecha</th>
-                                    <th style={{ padding: '14px 16px', textAlign: 'left', fontWeight: '600', letterSpacing: '0.5px' }}>Cooler Destino</th>
-                                    <th style={{ padding: '14px 16px', textAlign: 'left', fontWeight: '600', letterSpacing: '0.5px' }}>Campo Origen</th>
-                                    <th style={{ padding: '14px 16px', textAlign: 'left', fontWeight: '600', letterSpacing: '0.5px' }}>Etiqueta</th>
-                                    <th style={{ padding: '14px 16px', textAlign: 'left', fontWeight: '600', letterSpacing: '0.5px' }}>SKU</th>
-                                    <th style={{ padding: '14px 16px', textAlign: 'right', fontWeight: '600', letterSpacing: '0.5px' }}>Cajas</th>
-                                    <th style={{ padding: '14px 16px', textAlign: 'center', fontWeight: '600', letterSpacing: '0.5px' }}>Acción</th>
+                                <tr style={{ backgroundColor: '#7c30b8', color: '#ffffff' }}>
+                                    <th style={{ padding: '14px 16px', textAlign: 'left', fontWeight: '600', letterSpacing: '0.5px', position: 'sticky', top: 0, zIndex: 10, backgroundColor: '#7c30b8', color: '#ffffff', borderTopLeftRadius: '14px' }}>Fecha</th>
+                                    <th style={{ padding: '14px 16px', textAlign: 'left', fontWeight: '600', letterSpacing: '0.5px', position: 'sticky', top: 0, zIndex: 10, backgroundColor: '#7c30b8', color: '#ffffff' }}>Cooler Destino</th>
+                                    <th style={{ padding: '14px 16px', textAlign: 'left', fontWeight: '600', letterSpacing: '0.5px', position: 'sticky', top: 0, zIndex: 10, backgroundColor: '#7c30b8', color: '#ffffff' }}>Campo Origen</th>
+                                    <th style={{ padding: '14px 16px', textAlign: 'left', fontWeight: '600', letterSpacing: '0.5px', position: 'sticky', top: 0, zIndex: 10, backgroundColor: '#7c30b8', color: '#ffffff' }}>Etiqueta</th>
+                                    <th style={{ padding: '14px 16px', textAlign: 'left', fontWeight: '600', letterSpacing: '0.5px', position: 'sticky', top: 0, zIndex: 10, backgroundColor: '#7c30b8', color: '#ffffff' }}>SKU</th>
+                                    <th style={{ padding: '14px 16px', textAlign: 'right', fontWeight: '600', letterSpacing: '0.5px', position: 'sticky', top: 0, zIndex: 10, backgroundColor: '#7c30b8', color: '#ffffff' }}>Cajas</th>
+                                    <th style={{ padding: '14px 16px', textAlign: 'center', fontWeight: '600', letterSpacing: '0.5px', position: 'sticky', top: 0, zIndex: 10, backgroundColor: '#7c30b8', color: '#ffffff', borderTopRightRadius: '14px' }}>Acción</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                {solicitudesGuardadas.map((sol, index) => (
-                                    <tr
-                                        key={sol.id_solicitud}
-                                        style={{
-                                            backgroundColor: index % 2 === 0 ? '#ffffff' : '#fcfaff',
-                                            borderBottom: '1px solid #f1eaf7',
-                                            transition: 'background-color 0.2s ease'
-                                        }}
-                                        onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f3e8ff'}
-                                        onMouseLeave={(e) => e.currentTarget.style.backgroundColor = index % 2 === 0 ? '#ffffff' : '#fcfaff'}
-                                    >
-                                        <td style={{ padding: '12px 16px', color: '#4a3b59', fontWeight: '500' }}>
-                                            {sol.fecha ? (() => {
-                                                const [year, month, day] = sol.fecha.split('T')[0].split('-');
-                                                return new Date(year, month - 1, day).toLocaleDateString('es-ES');
-                                            })() : '-'}
-                                        </td>
+                                {solicitudesGuardadas.map((sol, index) => {
+                                    // Definimos el color base de la fila según si es par o impar
+                                    const colorBase = index % 2 === 0 ? '#ffffff' : '#fcfaff';
 
-                                        <td style={{ padding: '12px 16px', color: '#2d1f3d' }}>
-                                            <span style={{ display: 'inline-block', padding: '4px 8px', borderRadius: '6px', backgroundColor: '#f0e6fa', color: '#7c30b8', fontWeight: '600', fontSize: '12px' }}>
-                                                {sol.cooler}
-                                            </span>
-                                        </td>
-                                        <td style={{ padding: '12px 16px', color: '#554960' }}>{sol.campo}</td>
-                                        <td style={{ padding: '12px 16px', color: '#554960' }}>{sol.etiqueta}</td>
-                                        <td style={{ padding: '12px 16px', fontFamily: 'Courier New, monospace', fontWeight: 'bold', color: '#6200ea' }}>{sol.sku}</td>
-                                        <td className="cajas-cell" style={{ padding: '12px 16px', textAlign: 'right', fontWeight: '700', color: '#7c30b8', fontSize: '15px' }}>
-                                            {sol.cajas.toLocaleString()}
-                                        </td>
+                                    return (
+                                        <tr
+                                            key={sol.id_solicitud}
+                                            style={{
+                                                borderBottom: '1px solid #f1eaf7',
+                                                transition: 'background-color 0.2s ease'
+                                            }}
+                                            // Cuando el cursor entra, pintamos el fondo de todas las celdas de esta fila
+                                            onMouseEnter={(e) => {
+                                                const celdas = e.currentTarget.querySelectorAll('td');
+                                                celdas.forEach(td => td.style.backgroundColor = '#e9d5ff'); // <-- Aquí cambias tu morado hover
+                                            }}
+                                            // Cuando el cursor sale, regresamos las celdas a su color base (blanco o lila claro)
+                                            onMouseLeave={(e) => {
+                                                const celdas = e.currentTarget.querySelectorAll('td');
+                                                celdas.forEach(td => td.style.backgroundColor = colorBase);
+                                            }}
+                                        >
+                                            <td style={{ padding: '12px 16px', color: '#4a3b59', fontWeight: '500', backgroundColor: colorBase, transition: 'background-color 0.2s' }}>
+                                                {sol.fecha ? (() => {
+                                                    const [year, month, day] = sol.fecha.split('T')[0].split('-');
+                                                    return new Date(year, month - 1, day).toLocaleDateString('es-ES');
+                                                })() : '-'}
+                                            </td>
 
-                                        <td style={{ padding: '12px 16px', textAlign: 'center' }}>
-                                            <button
-                                                type="button"
-                                                className="btn-editar"
-                                                onClick={() => {
-                                                    const coolerCod = coolers.find(c => c.v_nombre_cam === sol.cooler)?.c_codigo_cam || '';
-                                                    const campoObj = campos.find(c => c.vNombreCam === sol.campo);
+                                            <td style={{ padding: '12px 16px', color: '#2d1f3d', backgroundColor: colorBase, transition: 'background-color 0.2s' }}>
+                                                <span style={{ display: 'inline-block', padding: '4px 8px', borderRadius: '6px', backgroundColor: '#f0e6fa', color: '#7c30b8', fontWeight: '600', fontSize: '12px' }}>
+                                                    {sol.cooler}
+                                                </span>
+                                            </td>
+                                            <td style={{ padding: '12px 16px', color: '#554960', backgroundColor: colorBase, transition: 'background-color 0.2s' }}>{sol.campo}</td>
+                                            <td style={{ padding: '12px 16px', color: '#554960', backgroundColor: colorBase, transition: 'background-color 0.2s' }}>{sol.etiqueta}</td>
+                                            <td style={{ padding: '12px 16px', fontFamily: 'Courier New, monospace', fontWeight: 'bold', color: '#6200ea', backgroundColor: colorBase, transition: 'background-color 0.2s' }}>{sol.sku}</td>
+                                            <td className="cajas-cell" style={{ padding: '12px 16px', textAlign: 'right', fontWeight: '700', color: '#7c30b8', fontSize: '15px', backgroundColor: colorBase, transition: 'background-color 0.2s' }}>
+                                                {sol.cajas.toLocaleString()}
+                                            </td>
 
-                                                    setFormData({
-                                                        cooler: coolerCod,
-                                                        campo: campoObj ? `${campoObj.cCodigoCam}|${campoObj.cCodigoCul}` : '',
-                                                        cCodigoCam: campoObj ? campoObj.cCodigoCam : '',
-                                                        cCodigoCul: campoObj ? campoObj.cCodigoCul : '',
-                                                        cliente: sol.etiqueta,
-                                                        sku: sol.sku,
-                                                        variedad: sol.variedad || 'N/A',
-                                                        embalaje: sol.embalaje || 'N/A',
-                                                        cajas: sol.cajas,
-                                                        fecha: sol.fecha ? sol.fecha.split('T')[0] : ''
-                                                    });
+                                            <td style={{ padding: '12px 16px', textAlign: 'center', backgroundColor: colorBase, transition: 'background-color 0.2s' }}>
+                                                <button
+                                                    type="button"
+                                                    className="btn-editar"
+                                                    onClick={() => {
+                                                        const coolerCod = coolers.find(c => c.v_nombre_cam === sol.cooler)?.c_codigo_cam || '';
+                                                        const campoObj = campos.find(c => c.vNombreCam === sol.campo);
 
-                                                    setRegistroEnEdicion(sol.id_solicitud);
-                                                }}
-                                                style={{
-                                                    backgroundColor: '#ffffff',
-                                                    color: '#7c30b8',
-                                                    border: '1px solid #7c30b8',
-                                                    borderRadius: '6px',
-                                                    padding: '6px 12px',
-                                                    cursor: 'pointer',
-                                                    fontSize: '13px',
-                                                    fontWeight: '500',
-                                                    display: 'inline-flex',
-                                                    alignItems: 'center',
-                                                    gap: '6px',
-                                                    transition: 'all 0.2s ease',
-                                                    boxShadow: '0 2px 4px rgba(124, 48, 184, 0.05)'
-                                                }}
-                                                onMouseEnter={(e) => {
-                                                    e.currentTarget.style.backgroundColor = '#7c30b8';
-                                                    e.currentTarget.style.color = '#ffffff';
-                                                }}
-                                                onMouseLeave={(e) => {
-                                                    e.currentTarget.style.backgroundColor = '#ffffff';
-                                                    e.currentTarget.style.color = '#7c30b8';
-                                                }}
-                                                title="Editar registro en Base de Datos"
-                                            >
-                                                <i className="fas fa-pencil-alt" style={{ fontSize: '12px' }}></i> Editar
-                                            </button>
-                                        </td>
-                                    </tr>
-                                ))}
+                                                        // === AQUÍ ACTIVAMOS EL FORMULARIO AL EDITAR ===
+                                                        setMostrarFormulario(true);
+
+                                                        setFormData({
+                                                            cooler: coolerCod,
+                                                            campo: campoObj ? `${campoObj.cCodigoCam}|${campoObj.cCodigoCul}` : '',
+                                                            cCodigoCam: campoObj ? campoObj.cCodigoCam : '',
+                                                            cCodigoCul: campoObj ? campoObj.cCodigoCul : '',
+                                                            cliente: sol.etiqueta,
+                                                            sku: sol.sku,
+                                                            variedad: sol.variedad || 'N/A',
+                                                            embalaje: sol.embalaje || 'N/A',
+                                                            cajas: sol.cajas,
+                                                            fecha: sol.fecha ? sol.fecha.split('T')[0] : ''
+                                                        });
+
+                                                        setRegistroEnEdicion(sol.id_solicitud);
+                                                    }}
+                                                    style={{
+                                                        backgroundColor: '#ffffff',
+                                                        color: '#7c30b8',
+                                                        border: '1px solid #7c30b8',
+                                                        borderRadius: '6px',
+                                                        padding: '6px 12px',
+                                                        cursor: 'pointer',
+                                                        fontSize: '13px',
+                                                        fontWeight: '500',
+                                                        display: 'inline-flex',
+                                                        alignItems: 'center',
+                                                        gap: '6px',
+                                                        transition: 'all 0.2s ease',
+                                                        boxShadow: '0 2px 4px rgba(124, 48, 184, 0.05)'
+                                                    }}
+                                                    onMouseEnter={(e) => {
+                                                        e.currentTarget.style.backgroundColor = '#7c30b8';
+                                                        e.currentTarget.style.color = '#ffffff';
+                                                    }}
+                                                    onMouseLeave={(e) => {
+                                                        e.currentTarget.style.backgroundColor = '#ffffff';
+                                                        e.currentTarget.style.color = '#7c30b8';
+                                                    }}
+                                                    title="Editar registro en Base de Datos"
+                                                >
+                                                    <i className="fas fa-pencil-alt" style={{ fontSize: '12px' }}></i> Editar
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    );
+                                })}
                             </tbody>
                         </table>
                     )}

@@ -1084,6 +1084,7 @@ export const ActivosPage = () => {
 
         const dataToSend = {
             ...formDataEdit,
+            cUsumodAfi: user?.id
             /*cNumeconAfi: activoEncontrado.cCodigoAfi,
             vNombreAfi: activoEncontrado.vNombreAfi, // Asegura el formato "0" o "1"
             vPlacasAfi: activoEncontrado.vPlacasAfi ? "TEST03" : null */
@@ -1106,7 +1107,7 @@ export const ActivosPage = () => {
         const success = await dispatch(startUpdateActivo(dataToSend)); // Asegúrate de tener este thunk
         if (success) {
             setIsLoadingGuardado(false);
-            dispatch(getActivos()); // Recarga los choferes para ver los cambios
+            dispatch(getActivos()); 
             closeEditModal();
         } else {
             setIsLoadingGuardado(false);
@@ -1135,6 +1136,8 @@ export const ActivosPage = () => {
 
         const dataToSend = {
             ...formDataExtras,
+            cUsumodAfi: user?.id,
+            dModAti: dayjs().format("YYYY-MM-DDTHH:mm:ss") // Fecha de creación actual
             /*cNumeconAfi: activoEncontrado.cCodigoAfi,
             vNombreAfi: activoEncontrado.vNombreAfi, // Asegura el formato "0" o "1"
             vPlacasAfi: activoEncontrado.vPlacasAfi ? "TEST03" : null */
@@ -1169,6 +1172,8 @@ export const ActivosPage = () => {
             vComentariosAti: historico.vComentariosAti || null,
             vDocresponsivaAti: historico.vDocresponsivaAti || null,
             vDepartamentoAti: historico.vDepartamentoAti || null,
+            cUsumodAfi: user?.id,
+            dModAti: dayjs().format("YYYY-MM-DDTHH:mm:ss") // Fecha de creación actual
         };
 
         if (responsableActual != '' && responsableActual !== dataToSend.cResponsableAti) {

@@ -298,7 +298,8 @@ export const AddActivo = ({ onClose, subfamilias, handleEstatusChange }) => {
 
     const onSubmit = async (event) => {
         event.preventDefault();
-        // console.log(nuevoCodigoActivo);
+        // console.log(user?.id);
+        // return; // Detener la ejecución si no hay usuario
         if (
             !nuevoCodigoActivo ||
             !vNombreAfi ||
@@ -383,7 +384,7 @@ export const AddActivo = ({ onClose, subfamilias, handleEstatusChange }) => {
                 cCodigoLot: codigoLoteSeleccionado || '',
                 cCodigoCul: codigoCultivoSeleccionado || '',
                 cCodigoAct: cCodigoAct.trim() || '',
-                cCodigoUsu: '', // Asumiendo que ti enes la información del usuario
+                cCodigoUsu: user?.id || '', // Asumiendo que ti enes la información del usuario
                 dCreacionAfi: dayjs().format("YYYY-MM-DDTHH:mm:ss"), // Fecha de creación actual
                 cUsumodAfi: '', // Usuario que modifica
                 dModifiAfi: dayjs().format("YYYY-MM-DDTHH:mm:ss"), // Fecha de modificación actual
@@ -426,7 +427,9 @@ export const AddActivo = ({ onClose, subfamilias, handleEstatusChange }) => {
                     vMarcaAfi: afData.vMarcaAfi,
                     vModeloAfi: afData.vModeloAfi,
                     vNumserieAfi: afData.vNumserieAfi,
-                    vEstatusAti: 'STOCK'
+                    vEstatusAti: 'STOCK',
+                    cCodigoUsu: user?.id,
+                    dCreacionAti: dayjs().format("YYYY-MM-DDTHH:mm:ss") // Fecha de creación actual
                 }));
                 
                 if (success && successExtras) {

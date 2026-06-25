@@ -240,6 +240,18 @@ export const SolicitudCajasPage = () => {
         }
     };
 
+    // RELACIÓN ENTRE COOLERS Y CAMPOS - Se usa tanto en la validación de importación como en el filtrado
+    const RELACION_COOLER_CAMPOS = {
+        "0059": ["camichines", "refugio", "peña", "ignacio", "terrazas"],       // COOLER TALA
+        "0060": ["fuerte"],       // COOLER EL FUERTE
+        "0061": ["mochicahui"],       // COOLER MOCHIS
+        "0062": ["briseño",],       // COOLER ZACOALCO
+        "0063": ["verde", "anima"],       // COOLER USMAJAC
+        "0064": ["lagos"],       // COOLER LAGOS
+        "0074": [""],       // COOLER GLOBAL
+        // Puedes seguir agregando los coolers que te hagan falta aquí abajo:
+    };
+
     const handleFileUpload = (e) => {
         const file = e.target.files[0];
         if (!file) return;
@@ -353,6 +365,39 @@ export const SolicitudCajasPage = () => {
                             });
                             tieneErroresDeCultivo = true;
                             return;
+                        }
+                    }
+                    // =========================================================================
+
+                    // =========================================================================
+                    // VALIDACIÓN: VERIFICAR QUE EL CAMPO PERTENECE AL COOLER
+                    // =========================================================================
+                    if (coolerEncontrado && campoEncontrado) {
+                        const codigosCooler = coolerEncontrado.c_codigo_cam;
+                        const palabrasClavesCooler = RELACION_COOLER_CAMPOS[codigosCooler];
+
+                        if (palabrasClavesCooler && palabrasClavesCooler.length > 0 && palabrasClavesCooler[0] !== '') {
+                            // Normalizamos el nombre del campo para comparación
+                            const nombreCampoNormalizado = campoEncontrado.vNombreCam
+                                .toLowerCase()
+                                .normalize("NFD")
+                                .replace(/([^n\u0303])[\u0300-\u036f]/g, "$1")
+                                .normalize("NFC");
+
+                            // Verificamos si el nombre del campo contiene una palabra clave del cooler
+                            const campoPerteneceCooler = palabrasClavesCooler.some(palabra =>
+                                nombreCampoNormalizado.includes(palabra.toLowerCase())
+                            );
+
+                            if (!campoPerteneceCooler) {
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: 'Campo No Pertenece al Cooler',
+                                    text: `Línea ${index + 2} del Excel: El campo "${campoEncontrado.vNombreCam}" no pertenece al cooler "${coolerEncontrado.v_nombre_cam}".`,
+                                });
+                                tieneErroresDeCultivo = true;
+                                return;
+                            }
                         }
                     }
                     // =========================================================================
@@ -497,17 +542,6 @@ export const SolicitudCajasPage = () => {
     };
 
     const totalCajas = registros.reduce((sum, reg) => sum + reg.cajas, 0);
-
-    const RELACION_COOLER_CAMPOS = {
-        "0059": ["camichines", "refugio", "peña", "ignacio", "terrazas"],       // COOLER TALA
-        "0060": ["fuerte"],       // COOLER EL FUERTE
-        "0061": ["mochicahui"],       // COOLER MOCHIS
-        "0062": ["briseño",],       // COOLER ZACOALCO
-        "0063": ["verde", "anima"],       // COOLER USMAJAC
-        "0064": ["lagos"],       // COOLER LAGOS
-        "0074": [""],       // COOLER GLOBAL
-        // Puedes seguir agregando los coolers que te hagan falta aquí abajo:
-    };
 
     // Calcular campos filtrados basado en el cooler seleccionado
     const camposFiltrados = useMemo(() => {

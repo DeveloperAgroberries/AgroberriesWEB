@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef, useContext } from "react";
+import { useEffect, useState, useRef, useContext, useMemo } from "react";
 import { AuthContext } from '../../auth/context/AuthContext';
 import { ActivosList } from "../components/Combustibles/ActivosList";
 import { AddActivo } from "../components/Combustibles/AddActivo";
@@ -20,6 +20,11 @@ export const ActivosPage = () => {
     const dispatch = useDispatch();
     const tableRef = useRef(null);
     const { subfamilias } = useSelector((state) => state.combustibles);
+
+    // 💡 ESTA LÍNEA ES LA CLAVE: Mantendrá vivo el temporizador sin importar cuántos re-renders haga la página
+    const debounceTimeoutRef = useRef(null);
+    // 💡 AGREGA ESTA LÍNEA AQUÍ ABAJO:
+    const [isEditingResponsable, setIsEditingResponsable] = useState(false);
 
     // 1. NUEVO ESTADO PARA FILTRAR POR FAMILIA
     const [familiaSeleccionada, setFamiliaSeleccionada] = useState("");
@@ -53,15 +58,20 @@ export const ActivosPage = () => {
     }, [dispatch, familiaSeleccionada]);
 
     // 3. ACTUALIZAR RECORDS CUANDO CAMBIAN LOS DATOS
+    // ✅ CÓDIGO CORREGIDO CON CANDADO:
     useEffect(() => {
+        // Si el usuario está escribiendo o editando el responsable en el modal,
+        // CONGELAMOS la tabla de atrás para que no se re-renderice ni parpadee.
+        if (isEditingResponsable) return;
+
         if (activosData && activosData.length > 0) {
             setRecords(activosData);
         }
-    }, [activosData]);
+    }, [activosData, isEditingResponsable]);
 
     useEffect(() => {
         dispatch(getCamposActivos());
-        dispatch(getEmpleados());
+        // dispatch(getEmpleados());
     }, [dispatch]);
 
     //FUNCION PARA LLENAR EMPLEADOS
@@ -71,38 +81,99 @@ export const ActivosPage = () => {
     const [isLoadingEmpleados, setIsLoadingEmpleados] = useState(false);
     const searchResultsEmpleados = useSelector(state => state.combustibles.empleados);
 
+    const normalizarCodigoUsuario = (codigo) => String(codigo || '').trim();
+    const esEmpleadoInactivo = (empleado) => String(empleado?.cActivoUsu || '').trim() === '0';
+    const esResponsableInactivoEnFila = (item) => {
+        const estadoDirecto = String(
+            item?.cActivoUsu ?? item?.cActivoResponsable ?? item?.cActivoResp ?? ''
+        ).trim();
+
+        if (estadoDirecto === '0') return true;
+        if (estadoDirecto === '1') return false;
+
+        const codigoFila = normalizarCodigoUsuario(
+            item?.cResponsableAti ?? item?.cCodigoUsu ?? item?.cCodresponsableAti
+        );
+        const nombreFila = String(item?.vNombreEmpleado || '').trim().toLowerCase();
+
+        const empleadoEncontrado = (searchResultsEmpleados || []).find(emp => {
+            const codigoEmp = normalizarCodigoUsuario(emp?.cCodigoUsu);
+            const nombreEmp = String(emp?.vNombreUsu || '').trim().toLowerCase();
+
+            if (codigoFila && codigoEmp === codigoFila) return true;
+            if (!codigoFila && nombreFila && nombreEmp === nombreFila) return true;
+            return false;
+        });
+
+        return esEmpleadoInactivo(empleadoEncontrado);
+    };
+
+    const esResponsableSeleccionadoInactivo = () => {
+        const codigoSeleccionado = normalizarCodigoUsuario(formDataExtras?.cResponsableAti);
+        if (!codigoSeleccionado) return false;
+
+        const empleadoEncontrado = (searchResultsEmpleados || []).find(emp =>
+            normalizarCodigoUsuario(emp?.cCodigoUsu) === codigoSeleccionado
+        );
+        return esEmpleadoInactivo(empleadoEncontrado);
+    };
+
     const [responsableActual, setResponsableActual] = useState(''); // Ref para almacenar el responsable actual
     const [historico, sethistorico] = useState('');
     useEffect(() => {
         // console.log('*** responsableActual AHORA es:', responsableActual);
     }, [responsableActual, historico]);
 
-    const handleSearchEmpleadoChange = (event) => {
-        const searchText = event.target.value;
-        setSearchEmpleado(searchText);
-        setMostrarListaEmpleados(searchText.length > 0); // Modificado para mostrar si hay cualquier texto
+    // Agrega esta lógica o modifica tu función handleSearchEmpleadoChange existente:
+    const handleSearchEmpleadoChange = (e) => {
+        const valor = e.target.value;
 
-        // Opcional: limpiar los estados si el input de búsqueda se vacía
-        if (searchText === '') {
-            setFormDataExtras(prevData => ({
-                ...prevData,
-                cResponsableAti: '',
-            }));
+        // 1. Actualizamos el useState visual para que se pinte en pantalla
+        setSearchEmpleado(valor);
+        setIsEditingResponsable(true);
+
+        // 2. 💡 LA CLAVE: Forzamos a que useForm guarde el texto en su estado interno.
+        // Pasamos un objeto que simula el evento onChange real para 'vNombreEmpleado'
+        handleInputChangeExtras({
+            target: {
+                name: 'vNombreEmpleado',
+                value: valor
+            }
+        });
+
+        if (debounceTimeoutRef.current) {
+            clearTimeout(debounceTimeoutRef.current);
+        }
+
+        if (valor.trim().length >= 2) {
+            setMostrarListaEmpleados(true);
+
+            debounceTimeoutRef.current = setTimeout(() => {
+                dispatch(getEmpleados(valor));
+            }, 600); // 600ms para evitar consultas por cada tecla
+
+        } else {
+            setMostrarListaEmpleados(false);
         }
     };
 
     const handleSelectEmpleado = (empleado) => {
-        // 1. Ocultar la lista de resultados
+        // 1. Apagamos la lista inmediatamente para evitar procesos extra
         setMostrarListaEmpleados(false);
+        setIsEditingResponsable(false);
 
-        setFormDataExtras(prevData => ({
-            ...prevData,
-            cResponsableAti: empleado.cCodigoUsu,
-        }));
-        // 3. Actualizar el estado del input de búsqueda con el nombre seleccionado
-        //    Esto hace que el nombre del empleado aparezca en el campo de texto
+        // 2. Actualizamos el estado visual del input de forma forzada
         setSearchEmpleado(empleado.vNombreUsu);
-        setMostrarListaEmpleados(false);
+
+        // 3. Actualizamos el formulario (esto suele causar el borrado, 
+        // pero al poner el set de arriba primero y el dispatch después, debería estabilizarse)
+        handleInputChangeExtras({ target: { name: 'cResponsableAti', value: empleado.cCodigoUsu } });
+        // handleInputChangeExtras({ target: { name: 'vNombreEmpleado', value: empleado.vNombreUsu } });
+
+        // 💡 TRUCO: Si aun así se borra, el siguiente setTimeout es infalible:
+        setTimeout(() => {
+            setSearchEmpleado(empleado.vNombreUsu);
+        }, 50);
     };
     // TERMINA FUNCION PARA LLENAR EMPLEADOS
 
@@ -170,13 +241,23 @@ export const ActivosPage = () => {
     const openEditModal = (cCodigoAfi) => { // Recibe el objeto chofer como argumento
         const activoSeleccionado = activosData.find(activo => activo.cCodigoAfi === cCodigoAfi);
 
+        if (!activoSeleccionado) return;
+
         const codigoResponsable = activoSeleccionado.cResponsableAti || '';
         setResponsableActual(codigoResponsable); // Guarda el responsable actual
         sethistorico(activoSeleccionado);
 
+        // Planchamos el nombre completo del responsable en la caja de texto visual
+        setSearchEmpleado(activoSeleccionado.vNombreEmpleado || '');
+
+        // Precarga sugerencias para estabilizar la búsqueda de responsable en el modal
+        if (activoSeleccionado.vNombreEmpleado) {
+            dispatch(getEmpleados(activoSeleccionado.vNombreEmpleado));
+        }
+
         setActiveKey('general'); // Reinicia a la pestaña "General" al abrir el modal
-        setActivoEncontrado(activosData.find(activo => activo.cCodigoAfi === cCodigoAfi));
-        setAssetSelected(activosData.find(activo => activo.cCodigoAfi === cCodigoAfi)); // Guarda el activo seleccionado
+        setActivoEncontrado(activoSeleccionado);
+        setAssetSelected(activoSeleccionado); // Guarda el activo seleccionado
         setShowEditModal(true);         // Abre el modal de edición
     }
     const closeEditModal = () => {
@@ -186,6 +267,9 @@ export const ActivosPage = () => {
         setRecords('');
         setBusqueda('');
         setRecords([]);
+
+        // 💡 Agrega esta línea: Rompe el candado para que el próximo modal cargue bien
+        setFormDataExtras(prev => ({ ...prev, idActivoAti: null }));
     };
 
     // Inicializa el tooltip de Bootstrap en el encabezado de la columna
@@ -358,17 +442,13 @@ export const ActivosPage = () => {
 
     const [records, setRecords] = useState([]);
     const [initialLoadComplete, setInitialLoadComplete] = useState(false);
+    const [sortConfig, setSortConfig] = useState({ key: 'cCodigoAfi', direction: 'asc' });
 
     useEffect(() => {
-        const timeout = setTimeout(() => {
-            if (records.length === 0 && activosData) {
-                setInitialLoadComplete(true); // Indica que la carga inicial con timeout se completó
-            }
-        }, 3000);
-
-        // Función de limpieza para evitar fugas de memoria
-        return () => clearTimeout(timeout);
-    }, [activosData, records]); // Dependencias importantes
+        if (activosData) {
+            setInitialLoadComplete(true);
+        }
+    }, [activosData]); // Dependencias importantes
 
     //FUNCION PARA BUSQUEDA POR NOMBRE EN TABLE
     const [busqueda, setBusqueda] = useState(""); // Agrega este state arriba en tu componente
@@ -393,6 +473,81 @@ export const ActivosPage = () => {
             );
         });
         setRecords(filterRecords);
+    };
+
+    const getCampoNombre = (item) => {
+        const campoEncontrado = campos.find(campo => campo.cCodigoCam === item.cCodigoCam);
+        return campoEncontrado?.vNombreCam || '';
+    };
+
+    const getSortValue = (item, key) => {
+        switch (key) {
+            case 'campoNombre':
+                return getCampoNombre(item);
+            case 'estatus':
+                return item?.vEstatusAti || '';
+            case 'noDepreciar':
+                return item?.cNoDepreciarAfi === '1' ? 1 : 0;
+            case 'operativo':
+                return item?.cOperativoAfi === '1' ? 1 : 0;
+            default:
+                return item?.[key] ?? '';
+        }
+    };
+
+    const dataMostrada = useMemo(
+        () => (busqueda.trim() !== "" ? records : activosData),
+        [busqueda, records, activosData]
+    );
+
+    const dataOrdenada = useMemo(() => {
+        if (!Array.isArray(dataMostrada)) return [];
+
+        const data = [...dataMostrada];
+        const { key, direction } = sortConfig;
+
+        data.sort((a, b) => {
+            const valorA = getSortValue(a, key);
+            const valorB = getSortValue(b, key);
+
+            const aNum = Number(valorA);
+            const bNum = Number(valorB);
+            const ambosNumericos = !Number.isNaN(aNum) && !Number.isNaN(bNum) && valorA !== '' && valorB !== '';
+
+            if (ambosNumericos) {
+                return direction === 'asc' ? aNum - bNum : bNum - aNum;
+            }
+
+            const aTexto = String(valorA || '').toLowerCase();
+            const bTexto = String(valorB || '').toLowerCase();
+
+            if (aTexto < bTexto) return direction === 'asc' ? -1 : 1;
+            if (aTexto > bTexto) return direction === 'asc' ? 1 : -1;
+            return 0;
+        });
+
+        return data;
+    }, [dataMostrada, sortConfig, campos]);
+
+    const handleSort = (key) => {
+        setSortConfig(prev => {
+            if (prev.key === key) {
+                return {
+                    key,
+                    direction: prev.direction === 'asc' ? 'desc' : 'asc'
+                };
+            }
+
+            return {
+                key,
+                direction: 'asc'
+            };
+        });
+    };
+
+    const renderSortIcon = (key) => {
+        if (sortConfig.key !== key) return ' ↕';
+        return sortConfig.direction === 'asc' ? ' ▲' : ' ▼';
     };
 
     // Crea tu propio tema
@@ -483,7 +638,7 @@ export const ActivosPage = () => {
         }
     };
 
-    // Función para renderizar el contenido según el activeKey
+    // Función para renderizar el contenido según el activeKey modal general
     const renderContent = () => {
         switch (activeKey) {
             case 'general':
@@ -544,6 +699,8 @@ export const ActivosPage = () => {
                         <p>No hay activo seleccionado para editar.</p>
                     )}
                 </div>;
+
+            //MODAL RRHH
             case 'RRHH':
                 return <div>
                     {activoEncontrado ? (
@@ -585,26 +742,40 @@ export const ActivosPage = () => {
                                 <Col md={3}>
                                     <Form.Group controlId="cResponsableAti">
                                         <Form.Label>Responsable de equipo:</Form.Label>
-                                        {/* Input de búsqueda para empleados */}
-                                        <Form.Control style={{ fontSize: '0.7rem' }} type="text" placeholder="Buscar responsable..." name="cResponsableAti" value={searchEmpleado} onChange={handleSearchEmpleadoChange} />
-                                        {/* Lista de resultados, se muestra solo si hay texto de búsqueda */}
-                                        {mostrarListaEmpleados && (
-                                            <ul className="list-group" style={{ position: 'absolute', zIndex: 1000, width: '40%', maxHeight: '200px', overflowY: 'auto' }}>
-                                                {/* Filtrar los resultados */}
-                                                {searchResultsEmpleados.filter(empleado =>
-                                                    empleado.vNombreUsu.toLowerCase().includes(searchEmpleado.toLowerCase())
-                                                ).length > 0 ? (
-                                                    // Si hay resultados, mapearlos
-                                                    searchResultsEmpleados.filter(empleado =>
-                                                        empleado.vNombreUsu.toLowerCase().includes(searchEmpleado.toLowerCase())
-                                                    ).map(empleado => (
-                                                        <li key={empleado.cCodigoUsu} className="list-group-item list-group-item-action" onClick={() => handleSelectEmpleado(empleado)}>
+
+                                        <Form.Control
+                                            style={{ fontSize: '0.7rem', color: esResponsableSeleccionadoInactivo() ? '#dc3545' : undefined }}
+                                            type="text"
+                                            placeholder="Buscar responsable..."
+                                            name="vNombreEmpleado"
+                                            // 💡 Leemos únicamente del estado visual e independiente para garantizar persistencia 100%
+                                            value={searchEmpleado}
+                                            onChange={handleSearchEmpleadoChange}
+                                            autoComplete="off"
+                                        />
+
+                                        {mostrarListaEmpleados && isEditingResponsable && (
+                                            <ul className="list-group" style={{ position: 'absolute', zIndex: 1000, width: '100%', maxHeight: '200px', overflowY: 'auto' }}>
+                                                {searchResultsEmpleados.length > 0 ? (
+                                                    searchResultsEmpleados.map(empleado => (
+                                                        <li
+                                                            key={empleado.cCodigoUsu}
+                                                            className="list-group-item list-group-item-action"
+                                                            onClick={() => handleSelectEmpleado(empleado)}
+                                                            style={{
+                                                                fontSize: '0.75rem',
+                                                                cursor: 'pointer',
+                                                                color: esEmpleadoInactivo(empleado) ? '#dc3545' : undefined,
+                                                                fontWeight: esEmpleadoInactivo(empleado) ? '600' : undefined
+                                                            }}
+                                                        >
                                                             {empleado.vNombreUsu} - {empleado.cCodigoUsu}
                                                         </li>
                                                     ))
                                                 ) : (
-                                                    // Si no hay resultados, mostrar un mensaje de 'no encontrado'
-                                                    <li className="list-group-item text-danger">No se encontraron empleados.</li>
+                                                    <li className="list-group-item text-danger" style={{ fontSize: '0.75rem' }}>
+                                                        No se encontraron coincidencias.
+                                                    </li>
                                                 )}
                                             </ul>
                                         )}
@@ -743,6 +914,7 @@ export const ActivosPage = () => {
                         <p>No hay activo seleccionado para editar.</p>
                     )}
                 </div>;
+            //MODAL TI
             case 'ti':
                 return <div>
                     {activoEncontrado ? (
@@ -784,26 +956,40 @@ export const ActivosPage = () => {
                                 <Col md={4}>
                                     <Form.Group controlId="cResponsableAti">
                                         <Form.Label>Responsable de equipo:</Form.Label>
-                                        {/* Input de búsqueda para empleados */}
-                                        <Form.Control style={{ fontSize: '0.7rem' }} type="text" placeholder="Buscar responsable..." name="cResponsableAti" value={searchEmpleado} onChange={handleSearchEmpleadoChange} />
-                                        {/* Lista de resultados, se muestra solo si hay texto de búsqueda */}
-                                        {mostrarListaEmpleados && (
-                                            <ul className="list-group" style={{ position: 'absolute', zIndex: 1000, width: '40%', maxHeight: '200px', overflowY: 'auto' }}>
-                                                {/* Filtrar los resultados */}
-                                                {searchResultsEmpleados.filter(empleado =>
-                                                    empleado.vNombreUsu.toLowerCase().includes(searchEmpleado.toLowerCase())
-                                                ).length > 0 ? (
-                                                    // Si hay resultados, mapearlos
-                                                    searchResultsEmpleados.filter(empleado =>
-                                                        empleado.vNombreUsu.toLowerCase().includes(searchEmpleado.toLowerCase())
-                                                    ).map(empleado => (
-                                                        <li key={empleado.cCodigoUsu} className="list-group-item list-group-item-action" onClick={() => handleSelectEmpleado(empleado)}>
+
+                                        <Form.Control
+                                            style={{ fontSize: '0.7rem', color: esResponsableSeleccionadoInactivo() ? '#dc3545' : undefined }}
+                                            type="text"
+                                            placeholder="Buscar responsable..."
+                                            name="vNombreEmpleado"
+                                            // 💡 Leemos únicamente del estado visual e independiente para garantizar persistencia 100%
+                                            value={searchEmpleado}
+                                            onChange={handleSearchEmpleadoChange}
+                                            autoComplete="off"
+                                        />
+
+                                        {mostrarListaEmpleados && isEditingResponsable && (
+                                            <ul className="list-group" style={{ position: 'absolute', zIndex: 1000, width: '100%', maxHeight: '200px', overflowY: 'auto' }}>
+                                                {searchResultsEmpleados.length > 0 ? (
+                                                    searchResultsEmpleados.map(empleado => (
+                                                        <li
+                                                            key={empleado.cCodigoUsu}
+                                                            className="list-group-item list-group-item-action"
+                                                            onClick={() => handleSelectEmpleado(empleado)}
+                                                            style={{
+                                                                fontSize: '0.75rem',
+                                                                cursor: 'pointer',
+                                                                color: esEmpleadoInactivo(empleado) ? '#dc3545' : undefined,
+                                                                fontWeight: esEmpleadoInactivo(empleado) ? '600' : undefined
+                                                            }}
+                                                        >
                                                             {empleado.vNombreUsu} - {empleado.cCodigoUsu}
                                                         </li>
                                                     ))
                                                 ) : (
-                                                    // Si no hay resultados, mostrar un mensaje de 'no encontrado'
-                                                    <li className="list-group-item text-danger">No se encontraron empleados.</li>
+                                                    <li className="list-group-item text-danger" style={{ fontSize: '0.75rem' }}>
+                                                        No se encontraron coincidencias.
+                                                    </li>
                                                 )}
                                             </ul>
                                         )}
@@ -1065,17 +1251,31 @@ export const ActivosPage = () => {
     });
 
     // useEffect para inicializar formDataEdit cuando se selecciona un chofer para editar
+    // useEffect para inicializar los formularios cuando se selecciona un activo para editar
+    // useEffect para inicializar los formularios cuando se selecciona un activo para editar
     useEffect(() => {
         if (activoEncontrado) {
+            // 1. Esto sigue llenando tus formularios perfectamente en segundo plano
             setFormDataEdit({
-                // Asegúrate de mapear todos los campos relevantes para la edición
-                cNumeconAfi: activoEncontrado.cCodigoAfi || '', // ID es crucial para la actualización
+                cNumeconAfi: activoEncontrado.cCodigoAfi || '',
                 vNombreAfi: activoEncontrado.vNombreAfi || '',
                 vPlacasAfi: activoEncontrado.vPlacasAfi || null,
                 cRutafactAfi: activoEncontrado.cRutafactAfi || '',
             });
+
+            setFormDataExtras({
+                ...activoEncontrado,
+                cNumeconAfi: activoEncontrado.cCodigoAfi || '',
+            });
+
+            // 💡 LA SOLUCIÓN AQUÍ: Solo planchamos el nombre original al abrir el modal.
+            // Si 'isEditingResponsable' es true (porque estás tecleando "rica..."),
+            // congelamos este paso para que la recarga de la tabla de atrás NO te borre nada.
+            if (!isEditingResponsable) {
+                setSearchEmpleado(activoEncontrado.vNombreEmpleado || '');
+            }
         }
-    }, [activoEncontrado]);
+    }, [activoEncontrado, isEditingResponsable]); // 💡 Agrega 'isEditingResponsable' aquí
 
     // Función para manejar el envío del formulario de EDICIÓN
     const handleSubmitEdit = async (event) => {
@@ -1107,7 +1307,7 @@ export const ActivosPage = () => {
         const success = await dispatch(startUpdateActivo(dataToSend)); // Asegúrate de tener este thunk
         if (success) {
             setIsLoadingGuardado(false);
-            dispatch(getActivos()); 
+            dispatch(getActivos());
             closeEditModal();
         } else {
             setIsLoadingGuardado(false);
@@ -1134,14 +1334,47 @@ export const ActivosPage = () => {
         event.preventDefault();
         setIsLoadingGuardado(true);
 
+        console.log("¿Qué tiene formDataExtras antes de enviar?", formDataExtras);
+
+        // Blindaje: si el codigo no viene en el estado, intentamos reconstruirlo con el nombre buscado
+        const nombreResponsable = String(searchEmpleado || '').trim();
+        const responsableDesdeBusqueda = searchResultsEmpleados.find(emp =>
+            String(emp.vNombreUsu || '').trim().toLowerCase() === nombreResponsable.toLowerCase()
+        );
+
+        const nombreVacio = nombreResponsable === '';
+        const codigoResponsableFinal = nombreVacio
+            ? ''
+            : String(
+                formDataExtras.cResponsableAti ||
+                responsableDesdeBusqueda?.cCodigoUsu ||
+                responsableActual ||
+                ''
+            ).trim();
+
+        if (!nombreVacio && !codigoResponsableFinal) {
+            setIsLoadingGuardado(false);
+            Swal.fire({
+                icon: 'warning',
+                title: 'Falta responsable',
+                text: 'Selecciona un responsable de la lista antes de guardar EXTRAS.'
+            });
+            return;
+        }
+
         const dataToSend = {
             ...formDataExtras,
+            cResponsableAti: codigoResponsableFinal,
+            vNombreEmpleado: nombreResponsable,
+            cNumeconAfi: String(formDataExtras.cNumeconAfi || activoEncontrado?.cCodigoAfi || '').trim(),
             cUsumodAfi: user?.id,
             dModAti: dayjs().format("YYYY-MM-DDTHH:mm:ss") // Fecha de creación actual
             /*cNumeconAfi: activoEncontrado.cCodigoAfi,
             vNombreAfi: activoEncontrado.vNombreAfi, // Asegura el formato "0" o "1"
             vPlacasAfi: activoEncontrado.vPlacasAfi ? "TEST03" : null */
         };
+
+        console.log('Datos a enviar para actualizar activo:', dataToSend);
 
         const dataForHistoricApi = {
             cNumeconAfi: historico.cCodigoAfi || null,
@@ -1198,17 +1431,32 @@ export const ActivosPage = () => {
             if (uploadResult && uploadResult.ruta) {
                 dataToSend.vDocresponsivaAti = uploadResult.ruta;
             } else {
-                setErrorMessage('Error al subir el archivo.');
-                uploadSuccessful = false;
+                setErrorMessageCarga('Error al subir el archivo de responsiva.');
                 setIsLoadingGuardado(false);
+                return;
             }
         }
 
         // console.log('Datos a enviar:', dataToSend);
         // return
 
+        const normalizarFechaNullable = (valor) => {
+            if (valor === null || valor === undefined) return null;
+            if (typeof valor !== 'string') return valor;
+            const limpio = valor.trim();
+            return limpio === '' ? null : limpio;
+        };
+
+        const payloadExtras = {
+            ...dataToSend,
+            dFcompraAti: normalizarFechaNullable(dataToSend.dFcompraAti),
+            dFgarantiaAti: normalizarFechaNullable(dataToSend.dFgarantiaAti),
+            dFasignacionAti: normalizarFechaNullable(dataToSend.dFasignacionAti),
+        };
+
         // Llama al thunk de actualización
-        const success = await dispatch(modificarExtras(dataToSend)); // Asegúrate de tener este thunk
+        const success = await dispatch(modificarExtras(payloadExtras)); // Asegúrate de tener este thunk
+        console.log("Resultado del dispatch:", success); // 💡 ESTO TE DIRÁ QUÉ ESTÁ PASANDO
         if (success) {
             // ✅ 1. Cerramos el modal primero para liberar la pantalla
             closeEditModal();
@@ -1223,7 +1471,6 @@ export const ActivosPage = () => {
         } else {
             setIsLoadingGuardado(false);
             alert('Ocurrió un error al actualizar EXTRAS. Comunícate con Soporte TI.');
-            closeEditModal();
         }
     };
 
@@ -1263,17 +1510,26 @@ export const ActivosPage = () => {
 
     // useEffect para inicializar formDataExtras cuando se selecciona un activo para editar
     useEffect(() => {
-        if (activoEncontrado && searchResultsEmpleados.length > 0) {
+        // 💡 Ejecutamos solo si hay un activo seleccionado
+        if (activoEncontrado) {
+
+            // 🔒 EL CANDADO SUPREMO:
+            // Si el ID del formulario ya coincide con el del activo que abriste, 
+            // significa que ya se cargó la primera vez. 
+            // Hacemos un 'return' para evitar que este hook planche tus datos al escribir.
+            if (formDataExtras.idActivoAti === activoEncontrado.idActivoAti && formDataExtras.idActivoAti !== null) {
+                return;
+            }
 
             const responsableCodigo = activoEncontrado.cResponsableAti || '';
-            // Busca el objeto del empleado en la lista.
             const empleadoEncontrado = searchResultsEmpleados.find(
                 empleado => empleado.cCodigoUsu.trim() === responsableCodigo
             );
-            const nombreResponsable = empleadoEncontrado ? empleadoEncontrado.vNombreUsu : '';
+            // Si no lo encuentra en la lista actual, usa el nombre original que ya venía
+            const nombreResponsable = empleadoEncontrado ? empleadoEncontrado.vNombreUsu : (activoEncontrado.vNombreEmpleado || '');
 
             setFormDataExtras({
-                // Mapeo de campos de ZAfiactivoti
+                // Mapeo de campos original intacto
                 idActivoAti: activoEncontrado.idActivoAti || null,
                 cNumeconAfi: activoEncontrado.cNumeconAfiExtra || '',
                 cReponsivaAti: activoEncontrado.cReponsivaAti || '',
@@ -1306,12 +1562,10 @@ export const ActivosPage = () => {
                 vEstatusAti: activoEncontrado.vEstatusAti || '',
                 vDetalleAti: activoEncontrado.vDetalleAti || ''
             });
-            // 2. Llenar el estado de búsqueda con el nombre del responsable de la DB
-            // Esto asegura que el input no se muestre vacío al cargar
+
             setSearchEmpleado(nombreResponsable);
         }
     }, [activoEncontrado, searchResultsEmpleados]);
-
     // Función para manejar cambios en los inputs del formulario de EDICIÓN
     const handleInputChangeExtras = (e) => {
         const { name, value, type, checked } = e.target;
@@ -1572,17 +1826,17 @@ export const ActivosPage = () => {
                     <table className="table table-striped table-hover">
                         <thead style={{ position: 'sticky', top: '0', zIndex: '1' }}>
                             <tr>
-                                <th>Código AF</th>
-                                <th>Nom AF</th>
-                                <th>Estatus</th>
-                                <th>Campo</th>
-                                <th>Usuario aginado</th>
-                                <th>Marca</th>
-                                <th>Modelo</th>
-                                <th>No. serie</th>
+                                <th style={{ cursor: 'pointer' }} onClick={() => handleSort('cCodigoAfi')}>Código AF{renderSortIcon('cCodigoAfi')}</th>
+                                <th style={{ cursor: 'pointer' }} onClick={() => handleSort('vNombreAfi')}>Nom AF{renderSortIcon('vNombreAfi')}</th>
+                                <th style={{ cursor: 'pointer' }} onClick={() => handleSort('estatus')}>Estatus{renderSortIcon('estatus')}</th>
+                                <th style={{ cursor: 'pointer' }} onClick={() => handleSort('campoNombre')}>Campo{renderSortIcon('campoNombre')}</th>
+                                <th style={{ cursor: 'pointer' }} onClick={() => handleSort('vNombreEmpleado')}>Usuario aginado{renderSortIcon('vNombreEmpleado')}</th>
+                                <th style={{ cursor: 'pointer' }} onClick={() => handleSort('vMarcaAfi')}>Marca{renderSortIcon('vMarcaAfi')}</th>
+                                <th style={{ cursor: 'pointer' }} onClick={() => handleSort('vModeloAfi')}>Modelo{renderSortIcon('vModeloAfi')}</th>
+                                <th style={{ cursor: 'pointer' }} onClick={() => handleSort('vNumserieAfi')}>No. serie{renderSortIcon('vNumserieAfi')}</th>
                                 <th>Factura</th>
-                                <th>D</th>
-                                <th>O</th>
+                                <th style={{ cursor: 'pointer' }} onClick={() => handleSort('noDepreciar')}>D{renderSortIcon('noDepreciar')}</th>
+                                <th style={{ cursor: 'pointer' }} onClick={() => handleSort('operativo')}>O{renderSortIcon('operativo')}</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -1600,8 +1854,8 @@ export const ActivosPage = () => {
                                     // Cambiamos la lógica aquí: 
                                     // Si hay algo escrito en 'busqueda', usamos 'records'. 
                                     // Si no hay nada escrito, usamos 'activosData'.
-                                    (busqueda.trim() !== "" ? records : activosData).length > 0 ? (
-                                        (busqueda.trim() !== "" ? records : activosData).map((item) => {
+                                    dataOrdenada.length > 0 ? (
+                                        dataOrdenada.map((item) => {
                                             const campoEncontrado = campos.find(campo => campo.cCodigoCam === item.cCodigoCam);
                                             return (
                                                 <tr key={`${item.idActivoAti}-${item.cCodigoAfi}`}>
@@ -1612,7 +1866,14 @@ export const ActivosPage = () => {
                                                     <td>{item.vNombreAfi}</td>
                                                     <td>{getEstatusIcon(item.vEstatusAti)}</td>
                                                     <td>{campoEncontrado ? campoEncontrado.vNombreCam : "N/A"}</td>
-                                                    <td>{item.vNombreEmpleado || "Sin asignar"}</td>
+                                                    <td>
+                                                        <span style={{
+                                                            color: esResponsableInactivoEnFila(item) ? '#dc3545' : undefined,
+                                                            fontWeight: esResponsableInactivoEnFila(item) ? '600' : undefined
+                                                        }}>
+                                                            {item.vNombreEmpleado || "Sin asignar"}
+                                                        </span>
+                                                    </td>
                                                     <td>{item.vMarcaAfi}</td>
                                                     <td>{item.vModeloAfi}</td>
                                                     <td>{item.vNumserieAfi}</td>
@@ -1679,6 +1940,12 @@ export const ActivosPage = () => {
                                     <th>Office</th>
                                     <th>Comentarios</th>
                                     <th>Actividades puesto</th>
+                                    <th>Usuario Eclipse</th>
+                                    <th>Contraseña Eclipse</th>
+                                    <th>Escritorio Remoto</th>
+                                    <th>Contraseña Escritorio Remoto</th>
+                                    <th>Email</th>
+                                    <th>Contraseña email</th>
                                 </>
                             )}
                         </tr>
@@ -1724,6 +1991,12 @@ export const ActivosPage = () => {
                                             <td>{item.vOfficeAti}</td>
                                             <td>{item.vComentariosAti}</td>
                                             <td>{item.vDetalleAti}</td>
+                                            <td>{item.vUsreclipseAti}</td>
+                                            <td>{item.vPwdeclipseAti}</td>
+                                            <td>{item.vUsrrdAti}</td>
+                                            <td>{item.vPwdremotoAti}</td>
+                                            <td>{item.vEmailAti}</td>
+                                            <td>{item.vPwdemailAti}</td>
                                         </>
                                     )}
                                 </tr>

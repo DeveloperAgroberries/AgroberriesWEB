@@ -352,8 +352,8 @@ export const startUpdateActivo = (activo) => {
 
 //Modificar Extras TI
 export const modificarExtras = (extrasTIObject) => {
-    //console.log('Llegue al thunk con: '+JSON.stringify(extrasTIObject, null, 2));
-    //return
+    console.log('Llegue al thunk con: '+JSON.stringify(extrasTIObject, null, 2));
+    // return
     return async(dispatch) => {
         dispatch(checkingIsLoading());
 
@@ -373,11 +373,23 @@ export const modificarExtras = (extrasTIObject) => {
     };
 };
 
-export const getEmpleados = () => {
+export const getEmpleados = (criterio = '') => {
     return async (dispatch) => {
+        // Evita consultas vacías, pero permite búsqueda temprana para responsable
+        if (criterio.trim().length < 2) return;
+
         dispatch(checkingIsLoading()); 
         try {
-            const { data } = await activosApi.get('/ListEmpleados');
+            const search = encodeURIComponent(criterio);
+            // Intento principal
+            let { data } = await activosApi.get(`/ListEmpleados?search=${search}`);
+
+            // Fallback para backends que esperan otro nombre de parámetro
+            if (!data || !data.response) {
+                const fallback = await activosApi.get(`/ListEmpleados?criterio=${search}`);
+                data = fallback.data;
+            }
+
             if (data && data.response) {
                 dispatch(setEmpleados(data.response));
             } else {
@@ -385,7 +397,7 @@ export const getEmpleados = () => {
             }
         } catch (error) {
             console.error("Error al cargar los empleados:", error);
-            dispatch(setErrorEmpleados(error.message || 'Error desconocido al cargar chofempleadoseres'));
+            dispatch(setErrorEmpleados(error.message || 'Error desconocido al cargar empleados'));
         }
     };
 };

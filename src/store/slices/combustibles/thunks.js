@@ -352,7 +352,7 @@ export const startUpdateActivo = (activo) => {
 
 //Modificar Extras TI
 export const modificarExtras = (extrasTIObject) => {
-    console.log('Llegue al thunk con: '+JSON.stringify(extrasTIObject, null, 2));
+    // console.log('Llegue al thunk con: '+JSON.stringify(extrasTIObject, null, 2));
     // return
     return async(dispatch) => {
         dispatch(checkingIsLoading());

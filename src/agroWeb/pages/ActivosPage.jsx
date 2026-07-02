@@ -1250,9 +1250,8 @@ export const ActivosPage = () => {
         cRutafactAfi: '',
     });
 
-    // useEffect para inicializar formDataEdit cuando se selecciona un chofer para editar
-    // useEffect para inicializar los formularios cuando se selecciona un activo para editar
-    // useEffect para inicializar los formularios cuando se selecciona un activo para editar
+    // useEffect para inicializar formDataEdit cuando se selecciona un activo para editar
+    // Nota: formDataExtras se inicializa en el otro useEffect con candado para evitar que se replanché al editar responsable.
     useEffect(() => {
         if (activoEncontrado) {
             // 1. Esto sigue llenando tus formularios perfectamente en segundo plano
@@ -1261,11 +1260,6 @@ export const ActivosPage = () => {
                 vNombreAfi: activoEncontrado.vNombreAfi || '',
                 vPlacasAfi: activoEncontrado.vPlacasAfi || null,
                 cRutafactAfi: activoEncontrado.cRutafactAfi || '',
-            });
-
-            setFormDataExtras({
-                ...activoEncontrado,
-                cNumeconAfi: activoEncontrado.cCodigoAfi || '',
             });
 
             // 💡 LA SOLUCIÓN AQUÍ: Solo planchamos el nombre original al abrir el modal.
@@ -1334,7 +1328,7 @@ export const ActivosPage = () => {
         event.preventDefault();
         setIsLoadingGuardado(true);
 
-        console.log("¿Qué tiene formDataExtras antes de enviar?", formDataExtras);
+        // console.log("¿Qué tiene formDataExtras antes de enviar?", formDataExtras);
 
         // Blindaje: si el codigo no viene en el estado, intentamos reconstruirlo con el nombre buscado
         const nombreResponsable = String(searchEmpleado || '').trim();
@@ -1374,7 +1368,7 @@ export const ActivosPage = () => {
             vPlacasAfi: activoEncontrado.vPlacasAfi ? "TEST03" : null */
         };
 
-        console.log('Datos a enviar para actualizar activo:', dataToSend);
+        // console.log('Datos a enviar para actualizar activo:', dataToSend);
 
         const dataForHistoricApi = {
             cNumeconAfi: historico.cCodigoAfi || null,
@@ -1456,7 +1450,7 @@ export const ActivosPage = () => {
 
         // Llama al thunk de actualización
         const success = await dispatch(modificarExtras(payloadExtras)); // Asegúrate de tener este thunk
-        console.log("Resultado del dispatch:", success); // 💡 ESTO TE DIRÁ QUÉ ESTÁ PASANDO
+        
         if (success) {
             // ✅ 1. Cerramos el modal primero para liberar la pantalla
             closeEditModal();
